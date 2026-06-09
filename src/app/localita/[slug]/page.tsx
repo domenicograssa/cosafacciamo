@@ -73,24 +73,24 @@ export default async function LocalitaPage({ params }: Props) {
       </section>
 
       <section className="bg-white border-b border-gray-100">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 grid grid-cols-4 gap-2">
           <div className="text-center">
-            <p className="text-2xl font-extrabold text-amber-500">{eventiLocali.length}</p>
-            <p className="text-xs text-gray-500">eventi in programma</p>
+            <p className="text-xl sm:text-2xl font-extrabold text-amber-500">{eventiLocali.length}</p>
+            <p className="text-[10px] sm:text-xs text-gray-500">eventi</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-extrabold text-blue-500">{attivitaLocali.length}</p>
-            <p className="text-xs text-gray-500">attività permanenti</p>
+            <p className="text-xl sm:text-2xl font-extrabold text-blue-500">{attivitaLocali.length}</p>
+            <p className="text-[10px] sm:text-xs text-gray-500">attività</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-extrabold text-green-500">{eventiLocali.filter(e => e.gratuito).length}</p>
-            <p className="text-xs text-gray-500">gratuiti</p>
+            <p className="text-xl sm:text-2xl font-extrabold text-green-500">{eventiLocali.filter(e => e.gratuito).length}</p>
+            <p className="text-[10px] sm:text-xs text-gray-500">gratuiti</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-extrabold text-purple-500">
+            <p className="text-xl sm:text-2xl font-extrabold text-purple-500">
               {new Set(eventiLocali.flatMap(e => e.categorie.map(c => c.slug))).size}
             </p>
-            <p className="text-xs text-gray-500">categorie</p>
+            <p className="text-[10px] sm:text-xs text-gray-500">categorie</p>
           </div>
         </div>
       </section>

@@ -140,6 +140,20 @@ export default async function DettaglioEvento({ params }: Props) {
         </div>
       </div>
 
+      {/* ── Sticky bottom bar mobile ── */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 px-4 py-3 flex items-center gap-3 shadow-lg">
+        <div className="flex-1 min-w-0">
+          <p className={`text-lg font-extrabold leading-none ${evento.gratuito ? 'text-green-600' : 'text-gray-900'}`}>{prezzo}</p>
+          <p className="text-xs text-gray-500 mt-0.5 truncate">{formatData(evento.dataInizio, { day: 'numeric', month: 'short' })} · {formatOra(evento.dataInizio)}</p>
+        </div>
+        <button className="bg-amber-400 hover:bg-amber-500 text-white font-bold py-3 px-6 rounded-xl transition-colors shrink-0">
+          {evento.gratuito ? '✓ Partecipo' : 'Acquista'}
+        </button>
+      </div>
+
+      {/* spazio per la sticky bar su mobile */}
+      <div className="lg:hidden h-20" />
+
       {correlati.length > 0 && (
         <section className="mt-14">
           <h2 className="text-xl font-bold text-gray-900 mb-5">Potrebbe interessarti</h2>
