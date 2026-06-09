@@ -105,49 +105,30 @@ export default function HomepageClient({ eventiOggi, categorie, comuni }: Props)
         </div>
 
         {/* content */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-16">
-          <div className="grid lg:grid-cols-2 gap-10 items-center">
-            <div>
-              <h1 className="text-4xl sm:text-5xl font-extrabold text-white leading-tight">
-                Cosa facciamo <span className="text-amber-400">oggi?</span>
-              </h1>
-              <p className="mt-4 text-white/80 text-lg">
-                Eventi, esperienze e attività nei posti che ami.
-              </p>
-              <p className="text-white/60 text-base">
-                {comuni.map(c => c.nome).join(', ')} e dintorni.
-              </p>
-              <div className="mt-8">
-                <SearchBar comuni={comuni} />
-              </div>
-            </div>
+        <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 w-full py-14 text-center">
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-white leading-tight">
+            Cosa facciamo <span className="text-amber-400">oggi?</span>
+          </h1>
+          <p className="mt-3 text-white/80 text-lg">
+            Eventi, esperienze e attività nei posti che ami.
+          </p>
 
-            <div className="hidden lg:block">
-              <div className="bg-white rounded-2xl shadow-xl p-5 max-w-xs ml-auto">
-                <p className="font-bold text-gray-900 mb-3">Esplora le località</p>
-                {comuni.map(comune => (
-                  <Link
-                    key={comune.id}
-                    href={`/localita/${comune.slug}`}
-                    className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0 group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center text-lg">🏖️</div>
-                      <div>
-                        <p className="font-semibold text-sm text-gray-900 group-hover:text-amber-600 transition-colors">{comune.nome}</p>
-                        <p className="text-xs text-gray-500">Scopri cosa fare</p>
-                      </div>
-                    </div>
-                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Link>
-                ))}
-                <Link href="/localita" className="block text-center text-sm text-amber-600 font-semibold mt-3 hover:underline">
-                  Vedi tutte le località →
-                </Link>
-              </div>
-            </div>
+          <div className="mt-6">
+            <SearchBar comuni={comuni} />
+          </div>
+
+          {/* Città — chip orizzontali */}
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            {comuni.map(comune => (
+              <Link
+                key={comune.id}
+                href={`/localita/${comune.slug}`}
+                className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors"
+              >
+                <span>📍</span>
+                <span>{comune.nome}</span>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
