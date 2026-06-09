@@ -6,7 +6,7 @@ import { getComuni } from '@/lib/queries/geo'
 export const revalidate = 300
 
 export const metadata = {
-  title: 'Eventi — cosafacciamo',
+  title: 'Eventi — che facciamo?',
   description: 'Tutti gli eventi ad Alcamo, Castellammare del Golfo, San Vito Lo Capo e dintorni.',
 }
 
