@@ -2,6 +2,31 @@
 
 import { Categoria } from '@/types'
 
+const ICONA_EMOJI: Record<string, string> = {
+  'music-note': '🎵',
+  'building': '🏛️',
+  'trophy': '🏆',
+  'map': '🗺️',
+  'utensils': '🍽️',
+  'users': '👨‍👩‍👧',
+  'waves': '🌊',
+  'moon': '🌙',
+  'gift': '🎁',
+  'frame': '🖼️',
+  'leaf': '🌿',
+  'landmark': '🏺',
+  'mountain': '⛰️',
+  'home': '🏘️',
+  'eye': '👁️',
+  'palette': '🎨',
+  'heart': '💚',
+  'anchor': '⚓',
+}
+
+export function icona(slug: string): string {
+  return ICONA_EMOJI[slug] ?? '✨'
+}
+
 interface CategoryChipProps {
   categoria: Categoria
   attiva?: boolean
@@ -19,7 +44,7 @@ export default function CategoryChip({ categoria, attiva = false, onClick }: Cat
       }`}
       style={attiva ? { backgroundColor: categoria.colore, borderColor: categoria.colore } : {}}
     >
-      <span className="text-xl">{categoria.icona}</span>
+      <span className="text-xl">{icona(categoria.icona)}</span>
       <span>{categoria.nome}</span>
     </button>
   )

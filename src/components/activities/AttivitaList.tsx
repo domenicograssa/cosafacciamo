@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import ActivityCard from './ActivityCard'
 import type { Attivita, Categoria, GeoNodo } from '@/types'
+import { icona } from '@/components/ui/CategoryChip'
 
 interface FiltriState {
   categorie: string[]
@@ -51,32 +52,16 @@ export default function AttivitaList({ attivita, categorie, comuni, titoloInizia
       {/* Comune */}
       <div>
         <p className="text-sm font-semibold text-gray-900 mb-3">Località</p>
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="radio"
-              name="comune"
-              value=""
-              checked={filtri.comune === ''}
-              onChange={() => setFiltri(p => ({ ...p, comune: '' }))}
-              className="accent-amber-500"
-            />
-            <span className="text-sm text-gray-700">Tutte</span>
-          </label>
+        <select
+          value={filtri.comune}
+          onChange={e => setFiltri(p => ({ ...p, comune: e.target.value }))}
+          className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+        >
+          <option value="">Tutte le località</option>
           {comuni.map(c => (
-            <label key={c.id} className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="comune"
-                value={c.slug}
-                checked={filtri.comune === c.slug}
-                onChange={() => setFiltri(p => ({ ...p, comune: c.slug }))}
-                className="accent-amber-500"
-              />
-              <span className="text-sm text-gray-700">{c.nome}</span>
-            </label>
+            <option key={c.id} value={c.slug}>{c.nome}</option>
           ))}
-        </div>
+        </select>
       </div>
 
       {/* Gratuiti */}
@@ -107,7 +92,7 @@ export default function AttivitaList({ attivita, categorie, comuni, titoloInizia
               }`}
               style={filtri.categorie.includes(cat.slug) ? { backgroundColor: cat.colore, borderColor: cat.colore } : {}}
             >
-              <span>{cat.icona}</span>
+              <span>{icona(cat.icona)}</span>
               <span>{cat.nome}</span>
             </button>
           ))}
