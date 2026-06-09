@@ -87,6 +87,9 @@ export default async function DettaglioEvento({ params }: Props) {
             {evento.descrizioneBreve && (
               <p className="mt-3 text-lg text-gray-600 leading-relaxed">{evento.descrizioneBreve}</p>
             )}
+            {evento.descrizione && (
+              <div className="mt-4 text-gray-700 leading-relaxed whitespace-pre-line">{evento.descrizione}</div>
+            )}
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
@@ -100,10 +103,55 @@ export default async function DettaglioEvento({ params }: Props) {
               {evento.luogoNome ?? evento.indirizzo ?? evento.geoNodo.nome}
               {evento.indirizzo && evento.luogoNome && <span className="block text-sm text-gray-500">{evento.indirizzo}</span>}
             </InfoRow>
+            <InfoRow icon="🏛️" label="Comune">
+              {evento.geoNodo.nome}
+            </InfoRow>
             <InfoRow icon="🏷️" label="Prezzo">
               <span className={evento.gratuito ? 'text-green-600 font-bold' : 'font-semibold'}>{prezzo}</span>
             </InfoRow>
+            <InfoRow icon="🏢" label="Organizzatore">
+              {evento.organizzatore.nome}
+            </InfoRow>
+            {evento.emailContatto && (
+              <InfoRow icon="✉️" label="Email">
+                <a href={`mailto:${evento.emailContatto}`} className="text-amber-600 hover:underline">{evento.emailContatto}</a>
+              </InfoRow>
+            )}
+            {evento.telefonoContatto && (
+              <InfoRow icon="📞" label="Telefono">
+                <a href={`tel:${evento.telefonoContatto}`} className="text-amber-600 hover:underline">{evento.telefonoContatto}</a>
+              </InfoRow>
+            )}
           </div>
+
+          {/* CTA sito ufficiale + prenotazione */}
+          {(evento.sitoUfficiale || evento.urlPrenotazione) && (
+            <div className="flex flex-col sm:flex-row gap-3">
+              {evento.sitoUfficiale && (
+                <a
+                  href={evento.sitoUfficiale}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-2 bg-amber-400 hover:bg-amber-500 text-white font-bold py-3 px-6 rounded-xl transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                  VISITA IL SITO UFFICIALE
+                </a>
+              )}
+              {evento.urlPrenotazione && (
+                <a
+                  href={evento.urlPrenotazione}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-2 border-2 border-amber-400 text-amber-600 hover:bg-amber-50 font-bold py-3 px-6 rounded-xl transition-colors"
+                >
+                  🎟️ Prenota / Acquista biglietti
+                </a>
+              )}
+            </div>
+          )}
 
           {evento.lat && evento.lng && (
             <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm">

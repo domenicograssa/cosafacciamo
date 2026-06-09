@@ -45,6 +45,7 @@ export interface Evento {
   titolo: string
   slug: string
   descrizioneBreve: string | null
+  descrizione: string | null
   // immagine diretta (legacy, non usare per nuovi contenuti)
   immagineCopertura: string | null
   // immagine da media_assets — unica fonte autorizzata
@@ -61,6 +62,10 @@ export interface Evento {
   prezzoMin: number | null
   prezzoMax: number | null
   urlBiglietti: string | null
+  sitoUfficiale: string | null
+  emailContatto: string | null
+  telefonoContatto: string | null
+  urlPrenotazione: string | null
   stato: StatoEvento
   geoNodo: GeoNodo
   categorie: Categoria[]

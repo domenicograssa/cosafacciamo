@@ -1,6 +1,13 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import type { Attivita } from '@/types'
 import type { AttivitaConRelazioni } from '@/lib/supabase/types'
+
+function createClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}
 
 function mapAttivita(row: AttivitaConRelazioni): Attivita {
   return {
@@ -58,7 +65,7 @@ export async function getAttivita(opzioni?: {
   soloGratuite?: boolean
   limit?: number
 }): Promise<Attivita[]> {
-  const sb = await createClient()
+  const sb = createClient()
 
   let query = sb
     .from('attivita')
@@ -87,7 +94,7 @@ export async function getAttivita(opzioni?: {
 }
 
 export async function getAttivitaBySlug(slug: string): Promise<Attivita | null> {
-  const sb = await createClient()
+  const sb = createClient()
 
   const { data, error } = await sb
     .from('attivita')
@@ -101,7 +108,7 @@ export async function getAttivitaBySlug(slug: string): Promise<Attivita | null> 
 }
 
 export async function getAttivitaCorrelate(attivitaId: string, categoriaIds: string[], limit = 4): Promise<Attivita[]> {
-  const sb = await createClient()
+  const sb = createClient()
 
   const { data: attIds } = await sb
     .from('attivita_categorie')

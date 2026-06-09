@@ -1,6 +1,14 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import type { Evento } from '@/types'
 import type { EventoConRelazioni } from '@/lib/supabase/types'
+
+// Client plain senza cookie — funziona sia in SSR che in static generation
+function createClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}
 
 // Mappa da riga DB → tipo frontend
 function mapEvento(row: EventoConRelazioni): Evento {
@@ -9,6 +17,7 @@ function mapEvento(row: EventoConRelazioni): Evento {
     titolo: row.titolo,
     slug: row.slug,
     descrizioneBreve: row.descrizione_breve,
+    descrizione: (row as Record<string, unknown>).descrizione as string | null ?? null,
     immagineCopertura: row.immagine_copertina,
     mediaAssetUrl: null,   // popolato solo quando media_assets ha immagini autorizzate
     mediaAssetAlt: null,
@@ -23,6 +32,10 @@ function mapEvento(row: EventoConRelazioni): Evento {
     prezzoMin: row.prezzo_min,
     prezzoMax: row.prezzo_max,
     urlBiglietti: row.url_biglietti,
+    sitoUfficiale: (row as Record<string, unknown>).sito_ufficiale as string | null ?? null,
+    emailContatto: (row as Record<string, unknown>).email_contatto as string | null ?? null,
+    telefonoContatto: (row as Record<string, unknown>).telefono_contatto as string | null ?? null,
+    urlPrenotazione: (row as Record<string, unknown>).url_prenotazione as string | null ?? null,
     stato: row.stato,
     geoNodo: {
       id: row.geo_nodi.id,
@@ -73,7 +86,7 @@ export async function getEventiApprovati(opzioni?: {
   data?: string          // 'YYYY-MM-DD'
   limit?: number
 }): Promise<Evento[]> {
-  const sb = await createClient()
+  const sb = createClient()
 
   let query = sb
     .from('eventi')
@@ -108,7 +121,7 @@ export async function getEventiApprovati(opzioni?: {
 }
 
 export async function getEventoBySlug(slug: string): Promise<Evento | null> {
-  const sb = await createClient()
+  const sb = createClient()
 
   const { data, error } = await sb
     .from('eventi')
@@ -122,7 +135,7 @@ export async function getEventoBySlug(slug: string): Promise<Evento | null> {
 }
 
 export async function getEventiCorrelati(eventoId: string, categoriaIds: string[], limit = 4): Promise<Evento[]> {
-  const sb = await createClient()
+  const sb = createClient()
 
   const { data: eventiIds } = await sb
     .from('eventi_categorie')
@@ -147,7 +160,7 @@ export async function getEventiCorrelati(eventoId: string, categoriaIds: string[
 // ─── Query admin ────────────────────────────────────────────────────────────
 
 export async function getEventiAdmin(stato?: string): Promise<EventoConRelazioni[]> {
-  const sb = await createClient()
+  const sb = createClient()
 
   let query = sb
     .from('eventi')
@@ -163,7 +176,7 @@ export async function getEventiAdmin(stato?: string): Promise<EventoConRelazioni
 }
 
 export async function getEventoAdminBySlug(slug: string): Promise<EventoConRelazioni | null> {
-  const sb = await createClient()
+  const sb = createClient()
 
   const { data, error } = await sb
     .from('eventi')

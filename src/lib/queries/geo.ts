@@ -1,6 +1,13 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import type { GeoNodo } from '@/types'
 import type { Database } from '@/lib/supabase/types'
+
+function createClient() {
+  return createSupabaseClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}
 
 type GeoNodoDB = Database['public']['Tables']['geo_nodi']['Row']
 
@@ -16,7 +23,7 @@ function mapGeoNodo(row: GeoNodoDB): GeoNodo {
 }
 
 export async function getComuni(): Promise<GeoNodo[]> {
-  const sb = await createClient()
+  const sb = createClient()
   const { data, error } = await sb
     .from('geo_nodi')
     .select('*')
@@ -28,7 +35,7 @@ export async function getComuni(): Promise<GeoNodo[]> {
 }
 
 export async function getGeoNodoBySlug(slug: string): Promise<GeoNodo | null> {
-  const sb = await createClient()
+  const sb = createClient()
   const { data, error } = await sb
     .from('geo_nodi')
     .select('*')
@@ -40,7 +47,7 @@ export async function getGeoNodoBySlug(slug: string): Promise<GeoNodo | null> {
 }
 
 export async function getGeoNodiFigli(parentPath: string): Promise<GeoNodo[]> {
-  const sb = await createClient()
+  const sb = createClient()
   const { data, error } = await sb
     .from('geo_nodi')
     .select('*')

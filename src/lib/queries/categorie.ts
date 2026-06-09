@@ -1,6 +1,13 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import type { Categoria } from '@/types'
 import type { Database } from '@/lib/supabase/types'
+
+function createClient() {
+  return createSupabaseClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}
 
 type CategoriaDB = Database['public']['Tables']['categorie']['Row']
 
@@ -16,7 +23,7 @@ function mapCategoria(row: CategoriaDB): Categoria {
 }
 
 export async function getCategorie(): Promise<Categoria[]> {
-  const sb = await createClient()
+  const sb = createClient()
   const { data, error } = await sb
     .from('categorie')
     .select('*')
