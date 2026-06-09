@@ -4,12 +4,16 @@ import type { EventoConRelazioni } from '@/lib/supabase/types'
 
 // Mappa da riga DB → tipo frontend
 function mapEvento(row: EventoConRelazioni): Evento {
+  // Usa media_assets se disponibile, mai immagini non autorizzate
+  const mediaAsset = (row as Record<string, unknown>).media_asset as { url: string; alt_text: string } | null
   return {
     id: row.id,
     titolo: row.titolo,
     slug: row.slug,
     descrizioneBreve: row.descrizione_breve,
     immagineCopertura: row.immagine_copertina,
+    mediaAssetUrl: mediaAsset?.url ?? null,
+    mediaAssetAlt: mediaAsset?.alt_text ?? null,
     luogoNome: row.luogo_nome,
     indirizzo: row.indirizzo,
     lat: row.lat,
@@ -51,7 +55,8 @@ const EVENTO_SELECT = `
   *,
   geo_nodi(*),
   organizzatori(id, nome, slug, logo_url),
-  categorie:eventi_categorie(categorie(*))
+  categorie:eventi_categorie(categorie(*)),
+  media_asset:media_assets(url, alt_text)
 `
 
 // Semplifica la struttura annidata eventi_categorie → categorie

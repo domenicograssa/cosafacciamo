@@ -45,7 +45,11 @@ export interface Evento {
   titolo: string
   slug: string
   descrizioneBreve: string | null
+  // immagine diretta (legacy, non usare per nuovi contenuti)
   immagineCopertura: string | null
+  // immagine da media_assets — unica fonte autorizzata
+  mediaAssetUrl: string | null
+  mediaAssetAlt: string | null
   luogoNome: string | null
   indirizzo: string | null
   lat: number | null

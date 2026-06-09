@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Evento } from '@/types'
-import { formatOra, formatPrezzo, formatData } from '@/lib/utils'
+import { formatOra, formatPrezzo } from '@/lib/utils'
+import EventImagePlaceholder from '@/components/ui/EventImagePlaceholder'
 
 interface EventCardProps {
   evento: Evento
@@ -12,12 +13,23 @@ export default function EventCard({ evento, compact = false }: EventCardProps) {
   const prezzo = formatPrezzo(evento.prezzoMin, evento.prezzoMax, evento.gratuito)
   const categoria = evento.categorie[0]
 
+  // Mostra immagine solo se autorizzata (campo mediaAssetUrl popolato dalla query)
+  // altrimenti sempre placeholder per categoria
+  const immagineAutorizzata = evento.mediaAssetUrl ?? null
+
   if (compact) {
     return (
       <Link href={`/eventi/${evento.slug}`} className="flex gap-3 group">
         <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-gray-100">
-          {evento.immagineCopertura && (
-            <Image src={evento.immagineCopertura} alt={evento.titolo} fill className="object-cover" />
+          {immagineAutorizzata ? (
+            <Image src={immagineAutorizzata} alt={evento.mediaAssetAlt ?? evento.titolo} fill className="object-cover" />
+          ) : (
+            <EventImagePlaceholder
+              categoriaSlug={categoria?.slug}
+              categoriaNome={categoria?.nome}
+              categoriaColore={categoria?.colore}
+              compact
+            />
           )}
         </div>
         <div className="flex-1 min-w-0">
@@ -40,21 +52,27 @@ export default function EventCard({ evento, compact = false }: EventCardProps) {
   return (
     <Link href={`/eventi/${evento.slug}`} className="group flex flex-col rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow border border-gray-100">
 
-      {/* Immagine */}
+      {/* Immagine o placeholder */}
       <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
-        {evento.immagineCopertura && (
+        {immagineAutorizzata ? (
           <Image
-            src={evento.immagineCopertura}
-            alt={evento.titolo}
+            src={immagineAutorizzata}
+            alt={evento.mediaAssetAlt ?? evento.titolo}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <EventImagePlaceholder
+            categoriaSlug={categoria?.slug}
+            categoriaNome={categoria?.nome}
+            categoriaColore={categoria?.colore}
           />
         )}
 
         {/* Badge categoria */}
         {categoria && (
           <span
-            className="absolute top-3 left-3 text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wide"
+            className="absolute top-3 left-3 text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wide z-10"
             style={{ backgroundColor: categoria.colore }}
           >
             {categoria.nome}
@@ -63,7 +81,7 @@ export default function EventCard({ evento, compact = false }: EventCardProps) {
 
         {/* Preferiti */}
         <button
-          className="absolute top-3 right-3 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-colors"
+          className="absolute top-3 right-3 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-colors z-10"
           onClick={(e) => { e.preventDefault() }}
           aria-label="Aggiungi ai preferiti"
         >

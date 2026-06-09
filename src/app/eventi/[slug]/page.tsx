@@ -1,11 +1,26 @@
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
+import { createClient } from '@supabase/supabase-js'
 import { getEventoBySlug, getEventiCorrelati } from '@/lib/queries/eventi'
 import EventCard from '@/components/events/EventCard'
+import EventImagePlaceholder from '@/components/ui/EventImagePlaceholder'
 import { formatData, formatOra, formatPrezzo } from '@/lib/utils'
 
-export const revalidate = 300
+export const revalidate = 3600
+
+// Pre-builda tutte le pagine evento al deploy → file HTML statici, zero serverless functions
+export async function generateStaticParams() {
+  const sb = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+  const { data } = await sb
+    .from('eventi')
+    .select('slug')
+    .eq('stato', 'approvato')
+  return (data ?? []).map(e => ({ slug: e.slug }))
+}
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -49,10 +64,14 @@ export default async function DettaglioEvento({ params }: Props) {
         {/* Colonna principale */}
         <div className="lg:col-span-2 space-y-6">
           <div className="relative aspect-video rounded-2xl overflow-hidden bg-gray-100">
-            {evento.immagineCopertura ? (
-              <Image src={evento.immagineCopertura} alt={evento.titolo} fill className="object-cover" priority />
+            {evento.mediaAssetUrl ? (
+              <Image src={evento.mediaAssetUrl} alt={evento.mediaAssetAlt ?? evento.titolo} fill className="object-cover" priority />
             ) : (
-              <div className="flex items-center justify-center h-full text-6xl">🎉</div>
+              <EventImagePlaceholder
+                categoriaSlug={evento.categorie[0]?.slug}
+                categoriaNome={evento.categorie[0]?.nome}
+                categoriaColore={evento.categorie[0]?.colore}
+              />
             )}
             <div className="absolute top-4 left-4 flex gap-2">
               {evento.categorie.map(cat => (

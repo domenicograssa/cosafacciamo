@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { createClient } from '@supabase/supabase-js'
 import { getGeoNodoBySlug, getComuni } from '@/lib/queries/geo'
 import { getEventiApprovati } from '@/lib/queries/eventi'
 import { getAttivita } from '@/lib/queries/attivita'
@@ -7,7 +8,16 @@ import { getCategorie } from '@/lib/queries/categorie'
 import EventiList from '@/components/events/EventiList'
 import ActivityCard from '@/components/activities/ActivityCard'
 
-export const revalidate = 300
+export const revalidate = 3600
+
+export async function generateStaticParams() {
+  const sb = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+  const { data } = await sb.from('geo_nodi').select('slug').eq('tipo', 'comune')
+  return (data ?? []).map(n => ({ slug: n.slug }))
+}
 
 interface Props {
   params: Promise<{ slug: string }>
