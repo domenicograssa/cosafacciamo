@@ -107,7 +107,7 @@ export default function HomepageClient({ eventiOggi, categorie, comuni }: Props)
         {/* content */}
         <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 w-full py-14 text-center">
           <h1 className="text-4xl sm:text-5xl font-extrabold text-white leading-tight">
-            Cosa facciamo <span className="text-amber-400">oggi?</span>
+            che facciamo <span className="text-amber-400">oggi?</span>
           </h1>
           <p className="mt-3 text-white/80 text-lg">
             Eventi, esperienze e attività nei posti che ami.

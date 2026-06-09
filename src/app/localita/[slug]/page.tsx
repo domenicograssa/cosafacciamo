@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props) {
   const { slug } = await params
   const nodo = await getGeoNodoBySlug(slug)
   if (!nodo) return {}
-  return { title: `${nodo.nome} — cosafacciamo`, description: `Scopri eventi e attività a ${nodo.nome}.` }
+  return { title: `${nodo.nome} — che facciamo?`, description: `Scopri eventi e attività a ${nodo.nome}.` }
 }
 
 export default async function LocalitaPage({ params }: Props) {

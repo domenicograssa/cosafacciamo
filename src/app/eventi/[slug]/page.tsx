@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: Props) {
   const evento = await getEventoBySlug(slug)
   if (!evento) return {}
   return {
-    title: `${evento.titolo} — cosafacciamo`,
+    title: `${evento.titolo} — che facciamo?`,
     description: evento.descrizioneBreve ?? undefined,
   }
 }

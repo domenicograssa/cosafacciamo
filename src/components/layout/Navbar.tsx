@@ -14,10 +14,10 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 shrink-0">
             <div className="w-8 h-8 bg-amber-400 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">c</span>
+              <span className="text-white font-bold text-sm">CF</span>
             </div>
             <div className="hidden sm:block">
-              <span className="font-bold text-gray-900 text-lg leading-none">cosafacciamo</span>
+              <span className="font-bold text-gray-900 text-lg leading-none">che facciamo<span className="text-amber-400">?</span></span>
               <p className="text-[10px] text-gray-500 leading-none">Scopri. Partecipa. Vivi il territorio.</p>
             </div>
           </Link>
