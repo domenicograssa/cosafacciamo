@@ -33,6 +33,21 @@ export interface EsitoPubblicazione {
   errore?: string
 }
 
+// Registra le 4 accettazioni obbligatorie con timestamp, IP e versione documento
+async function registraConsensi(
+  sb: Awaited<ReturnType<typeof createAdminClient>>,
+  organizzatoreId: string,
+) {
+  const h = await headers()
+  const ip = (h.get('x-forwarded-for') ?? '').split(',')[0].trim() || h.get('x-real-ip') || 'sconosciuto'
+  await sb.from('legal_acceptances').insert([
+    { user_id: organizzatoreId, document_type: 'termini_e_condizioni', document_version: VERSIONE_DOCUMENTI, ip_address: ip },
+    { user_id: organizzatoreId, document_type: 'condizioni_organizzatori', document_version: VERSIONE_DOCUMENTI, ip_address: ip },
+    { user_id: organizzatoreId, document_type: 'privacy_policy', document_version: VERSIONE_DOCUMENTI, ip_address: ip },
+    { user_id: organizzatoreId, document_type: 'diritti_contenuti', document_version: VERSIONE_DOCUMENTI, ip_address: ip },
+  ])
+}
+
 // Invia una mail di avviso al gestore quando arriva un nuovo evento.
 // Richiede le variabili d'ambiente RESEND_API_KEY e NOTIFICA_EMAIL su Vercel.
 // Se non configurate, non blocca la pubblicazione.
@@ -81,10 +96,13 @@ export async function pubblicaEvento(fd: FormData): Promise<EsitoPubblicazione> 
     const comuneId = campo('comuneId')
     const dataInizio = campo('dataInizio'), oraInizio = campo('oraInizio')
 
+    const tipoContenuto = campo('tipo') || 'evento'
     if (!nome || !cognome || !emailOrg || !telefonoOrg || !comuneOrgId)
       return { ok: false, errore: 'Compila tutti i dati obbligatori dell\'organizzatore.' }
-    if (!titolo || !descrizione || !comuneId || !dataInizio || !oraInizio)
-      return { ok: false, errore: 'Compila tutti i dati obbligatori dell\'evento.' }
+    if (!titolo || !descrizione || !comuneId)
+      return { ok: false, errore: 'Compila tutti i dati obbligatori.' }
+    if (tipoContenuto === 'evento' && (!dataInizio || !oraInizio))
+      return { ok: false, errore: 'Indica data e ora di inizio dell\'evento.' }
     if (fd.get('accettaTermini') !== 'true' || fd.get('accettaPrivacy') !== 'true' || fd.get('accettaDiritti') !== 'true')
       return { ok: false, errore: 'Tutte e tre le dichiarazioni sono obbligatorie.' }
 
@@ -140,9 +158,60 @@ export async function pubblicaEvento(fd: FormData): Promise<EsitoPubblicazione> 
       immagineUrl = pub.publicUrl
     }
 
+    // ── Esperienza (attività permanente) oppure evento ──
+    const tipo = campo('tipo') || 'evento'
+    const gratuito = fd.get('gratuito') === 'true'
+
+    if (tipo === 'esperienza') {
+      let slugAtt = slugify(titolo)
+      const inserisciAttivita = async (slug: string) =>
+        sb.from('attivita').insert({
+          organizzatore_id: organizzatoreId,
+          geo_nodo_id: comuneId,
+          titolo,
+          slug,
+          descrizione,
+          descrizione_breve: descrizione.slice(0, 280),
+          immagine_copertina: immagineUrl,
+          quando: campo('quando') || null,
+          durata: campo('durata') || null,
+          livello: campo('livello') || null,
+          gratuito,
+          prezzo_min: !gratuito && campo('prezzoMin') ? Number(campo('prezzoMin')) : null,
+          prezzo_max: !gratuito && campo('prezzoMax') ? Number(campo('prezzoMax')) : null,
+          sito_ufficiale: campo('sitoUfficiale') || null,
+          email_contatto: campo('emailContatto') || null,
+          telefono_contatto: campo('telefonoContatto') || null,
+          url_prenotazione: campo('urlBiglietti') || null,
+          stato: 'bozza', // in revisione: l'admin la pubblica
+        }).select('id').single()
+
+      let { data: att, error: errAtt } = await inserisciAttivita(slugAtt)
+      if (errAtt?.code === '23505') {
+        slugAtt = `${slugAtt}-${Date.now().toString(36)}`
+        ;({ data: att, error: errAtt } = await inserisciAttivita(slugAtt))
+      }
+      if (errAtt || !att) return { ok: false, errore: 'Errore nel salvataggio dell\'esperienza. Riprova.' }
+
+      const catSlugs = String(fd.get('categorie') ?? '').split(',').filter(Boolean)
+      if (catSlugs.length > 0) {
+        const { data: cats } = await sb.from('categorie').select('id').in('slug', catSlugs)
+        if (cats?.length) {
+          await sb.from('attivita_categorie').insert(cats.map(c => ({ attivita_id: att.id, categoria_id: c.id })))
+        }
+      }
+
+      await registraConsensi(sb, organizzatoreId)
+      await notificaGestore({
+        titolo: `[Esperienza] ${titolo}`, slugEvento: slugAtt, emailOrg,
+        nomeReferente: `${nome} ${cognome}`, dataInizio: campo('quando') || 'permanente', immagineUrl,
+      })
+      revalidatePath('/cosa-fare')
+      return { ok: true }
+    }
+
     // ── Evento in revisione ──
     const dataFine = campo('dataFine'), oraFine = campo('oraFine')
-    const gratuito = fd.get('gratuito') === 'true'
     let slugEvento = `${slugify(titolo)}-${new Date(dataInizio).getFullYear()}`
 
     const inserisciEvento = async (slug: string) =>
@@ -185,14 +254,7 @@ export async function pubblicaEvento(fd: FormData): Promise<EsitoPubblicazione> 
     }
 
     // ── Log accettazioni (GDPR): timestamp, IP, versione documento ──
-    const h = await headers()
-    const ip = (h.get('x-forwarded-for') ?? '').split(',')[0].trim() || h.get('x-real-ip') || 'sconosciuto'
-    await sb.from('legal_acceptances').insert([
-      { user_id: organizzatoreId, document_type: 'termini_e_condizioni', document_version: VERSIONE_DOCUMENTI, ip_address: ip },
-      { user_id: organizzatoreId, document_type: 'condizioni_organizzatori', document_version: VERSIONE_DOCUMENTI, ip_address: ip },
-      { user_id: organizzatoreId, document_type: 'privacy_policy', document_version: VERSIONE_DOCUMENTI, ip_address: ip },
-      { user_id: organizzatoreId, document_type: 'diritti_contenuti', document_version: VERSIONE_DOCUMENTI, ip_address: ip },
-    ])
+    await registraConsensi(sb, organizzatoreId)
 
     // ── Notifica email al gestore del portale (se configurata) ──
     await notificaGestore({

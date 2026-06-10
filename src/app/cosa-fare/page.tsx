@@ -6,8 +6,8 @@ import { getComuni } from '@/lib/queries/geo'
 export const revalidate = 3600
 
 export const metadata = {
-  title: 'Cosa fare — cosafacciamo',
-  description: 'Scopri le migliori attività permanenti ad Alcamo, Castellammare del Golfo, San Vito Lo Capo e in tutta la provincia di Trapani.',
+  title: 'Esperienze — che facciamo?',
+  description: 'Snorkeling, corsi di cucina, giri in barca, escursioni: le esperienze da vivere nella provincia di Trapani.',
 }
 
 export default async function CosaFarePage() {

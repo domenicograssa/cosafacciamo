@@ -24,7 +24,7 @@ export default function Navbar() {
 
           {/* Nav desktop */}
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-            <Link href="/cosa-fare" className="hover:text-gray-900 transition-colors">Attività</Link>
+            <Link href="/cosa-fare" className="hover:text-gray-900 transition-colors">Esperienze</Link>
             <Link href="/eventi" className="hover:text-gray-900 transition-colors">Eventi</Link>
             <Link href="/localita" className="hover:text-gray-900 transition-colors">Località</Link>
             <Link href="/organizzatori" className="hover:text-gray-900 transition-colors">Per organizzatori</Link>
@@ -61,7 +61,7 @@ export default function Navbar() {
         {/* Mobile menu dropdown */}
         {menuOpen && (
           <nav className="md:hidden border-t border-gray-100 py-4 flex flex-col gap-3 text-sm font-medium text-gray-600">
-            <Link href="/cosa-fare" className="px-2 py-1 hover:text-gray-900" onClick={() => setMenuOpen(false)}>Attività</Link>
+            <Link href="/cosa-fare" className="px-2 py-1 hover:text-gray-900" onClick={() => setMenuOpen(false)}>Esperienze</Link>
             <Link href="/eventi" className="px-2 py-1 hover:text-gray-900" onClick={() => setMenuOpen(false)}>Eventi</Link>
             <Link href="/localita" className="px-2 py-1 hover:text-gray-900" onClick={() => setMenuOpen(false)}>Località</Link>
             <Link href="/organizzatori" className="px-2 py-1 hover:text-gray-900" onClick={() => setMenuOpen(false)}>Per organizzatori</Link>

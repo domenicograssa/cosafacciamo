@@ -41,7 +41,9 @@ export default function OrganizzatoriPage() {
         <p className="text-gray-600 mt-4 leading-relaxed">
           Associazioni, enti, pro loco, attività commerciali e organizzatori:
           pubblicare su <strong>che facciamo?</strong> è <strong>gratuito</strong>.
-          Il tuo evento raggiunge chi cerca cosa fare nei 25 comuni del territorio.
+          Puoi proporre <strong>eventi</strong> con una data precisa oppure{' '}
+          <strong>esperienze</strong> continuative — snorkeling, corsi di cucina,
+          giri in barca, escursioni — e raggiungere chi cerca cosa fare nei 25 comuni del territorio.
         </p>
         <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
           <Link

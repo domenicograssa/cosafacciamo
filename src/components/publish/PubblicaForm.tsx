@@ -37,6 +37,12 @@ interface FormData {
   denominazione: string   // organizzazione (facoltativo)
   comuneOrgId: string
   sitoWeb: string
+  // Tipo di contenuto
+  tipo: 'evento' | 'esperienza'
+  // Esperienza (attività continuativa)
+  quando: string
+  durata: string
+  livello: string
   // Evento
   titolo: string
   descrizione: string
@@ -123,6 +129,7 @@ export default function PubblicaForm({ comuni, categorie }: PubblicaFormProps) {
   const [form, setForm] = useState<FormData>({
     nome: '', cognome: '', emailOrg: '', telefonoOrg: '',
     denominazione: '', comuneOrgId: '', sitoWeb: '',
+    tipo: 'evento', quando: '', durata: '', livello: '',
     titolo: '', descrizione: '', categorieSelezionate: [], comuneId: '',
     luogoNome: '', indirizzo: '', dataInizio: '', oraInizio: '',
     dataFine: '', oraFine: '', gratuito: false, prezzoMin: '', prezzoMax: '',
@@ -146,7 +153,10 @@ export default function PubblicaForm({ comuni, categorie }: PubblicaFormProps) {
   const categorieSel = categorie.filter(c => form.categorieSelezionate.includes(c.slug))
 
   const canProceedStep1 = form.nome && form.cognome && form.emailOrg && form.telefonoOrg && form.comuneOrgId
-  const canProceedStep2 = form.titolo && form.descrizione && form.comuneId && form.dataInizio && form.oraInizio && form.categorieSelezionate.length > 0
+  const baseStep2 = form.titolo && form.descrizione && form.comuneId && form.categorieSelezionate.length > 0
+  const canProceedStep2 = form.tipo === 'esperienza'
+    ? baseStep2 && form.quando
+    : baseStep2 && form.dataInizio && form.oraInizio
   const canProceedConsenso = form.accettaTermini && form.accettaPrivacy && form.accettaDiritti
 
   const selezionaImmagine = (file: File | null) => {
@@ -165,6 +175,7 @@ export default function PubblicaForm({ comuni, categorie }: PubblicaFormProps) {
       const fd = new window.FormData()
       const campi: (keyof FormData)[] = [
         'nome', 'cognome', 'emailOrg', 'telefonoOrg', 'denominazione', 'comuneOrgId', 'sitoWeb',
+        'tipo', 'quando', 'durata', 'livello',
         'titolo', 'descrizione', 'comuneId', 'luogoNome', 'indirizzo',
         'dataInizio', 'oraInizio', 'dataFine', 'oraFine',
         'prezzoMin', 'prezzoMax', 'urlBiglietti', 'sitoUfficiale', 'emailContatto', 'telefonoContatto',
@@ -350,12 +361,40 @@ export default function PubblicaForm({ comuni, categorie }: PubblicaFormProps) {
         </div>
       )}
 
-      {/* ── Step 2: L'evento ── */}
+      {/* ── Step 2: L'evento / L'esperienza ── */}
       {step === 'evento' && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
-          <h2 className="font-bold text-gray-900 text-lg">Dettagli evento</h2>
 
-          <Field label="Titolo evento" required>
+          {/* Tipo di contenuto */}
+          <div>
+            <h2 className="font-bold text-gray-900 text-lg mb-3">Cosa vuoi pubblicare?</h2>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => update('tipo', 'evento')}
+                className={`p-4 rounded-xl border-2 text-left transition-colors ${
+                  form.tipo === 'evento' ? 'border-amber-400 bg-amber-50' : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <p className="text-2xl">🎪</p>
+                <p className="font-bold text-sm text-gray-900 mt-1">Evento</p>
+                <p className="text-xs text-gray-500 mt-0.5">Con una data precisa: concerto, festa, sagra, spettacolo…</p>
+              </button>
+              <button
+                type="button"
+                onClick={() => update('tipo', 'esperienza')}
+                className={`p-4 rounded-xl border-2 text-left transition-colors ${
+                  form.tipo === 'esperienza' ? 'border-amber-400 bg-amber-50' : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <p className="text-2xl">🤿</p>
+                <p className="font-bold text-sm text-gray-900 mt-1">Esperienza</p>
+                <p className="text-xs text-gray-500 mt-0.5">Attività continuativa: snorkeling, corso di cucina, giro in barca…</p>
+              </button>
+            </div>
+          </div>
+
+          <Field label={form.tipo === 'esperienza' ? 'Titolo esperienza' : 'Titolo evento'} required>
             <input
               value={form.titolo}
               onChange={e => update('titolo', e.target.value)}
@@ -458,21 +497,54 @@ export default function PubblicaForm({ comuni, categorie }: PubblicaFormProps) {
             />
           </Field>
 
-          {/* Date */}
-          <div className="grid sm:grid-cols-2 gap-5">
-            <Field label="Data inizio" required>
-              <input type="date" value={form.dataInizio} onChange={e => update('dataInizio', e.target.value)} className={inputClass} />
-            </Field>
-            <Field label="Ora inizio" required>
-              <input type="time" value={form.oraInizio} onChange={e => update('oraInizio', e.target.value)} className={inputClass} />
-            </Field>
-            <Field label="Data fine">
-              <input type="date" value={form.dataFine} onChange={e => update('dataFine', e.target.value)} className={inputClass} />
-            </Field>
-            <Field label="Ora fine">
-              <input type="time" value={form.oraFine} onChange={e => update('oraFine', e.target.value)} className={inputClass} />
-            </Field>
-          </div>
+          {/* Date (eventi) oppure disponibilità (esperienze) */}
+          {form.tipo === 'evento' ? (
+            <div className="grid sm:grid-cols-2 gap-5">
+              <Field label="Data inizio" required>
+                <input type="date" value={form.dataInizio} onChange={e => update('dataInizio', e.target.value)} className={inputClass} />
+              </Field>
+              <Field label="Ora inizio" required>
+                <input type="time" value={form.oraInizio} onChange={e => update('oraInizio', e.target.value)} className={inputClass} />
+              </Field>
+              <Field label="Data fine">
+                <input type="date" value={form.dataFine} onChange={e => update('dataFine', e.target.value)} className={inputClass} />
+              </Field>
+              <Field label="Ora fine">
+                <input type="time" value={form.oraFine} onChange={e => update('oraFine', e.target.value)} className={inputClass} />
+              </Field>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 gap-5">
+              <Field label="Quando si svolge" required>
+                <input
+                  value={form.quando}
+                  onChange={e => update('quando', e.target.value)}
+                  placeholder="Es: tutti i giorni su prenotazione, weekend di luglio…"
+                  className={inputClass}
+                />
+              </Field>
+              <Field label="Durata">
+                <input
+                  value={form.durata}
+                  onChange={e => update('durata', e.target.value)}
+                  placeholder="Es: 2 ore, mezza giornata…"
+                  className={inputClass}
+                />
+              </Field>
+              <Field label="Livello di difficoltà">
+                <select
+                  value={form.livello}
+                  onChange={e => update('livello', e.target.value)}
+                  className={inputClass}
+                >
+                  <option value="">Non specificato</option>
+                  <option value="facile">Facile — adatto a tutti</option>
+                  <option value="medio">Medio</option>
+                  <option value="esperto">Esperto</option>
+                </select>
+              </Field>
+            </div>
+          )}
 
           {/* Prezzo */}
           <div>
@@ -664,7 +736,11 @@ export default function PubblicaForm({ comuni, categorie }: PubblicaFormProps) {
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Quando</p>
-                  <p className="text-sm font-medium">{form.dataInizio} {form.oraInizio && `ore ${form.oraInizio}`}</p>
+                  <p className="text-sm font-medium">
+                    {form.tipo === 'esperienza'
+                      ? form.quando
+                      : `${form.dataInizio} ${form.oraInizio && `ore ${form.oraInizio}`}`}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Prezzo</p>
