@@ -7,6 +7,7 @@ import { getAttivita } from '@/lib/queries/attivita'
 import { getCategorie } from '@/lib/queries/categorie'
 import EventiList from '@/components/events/EventiList'
 import ActivityCard from '@/components/activities/ActivityCard'
+import { COMUNE_IMMAGINI } from '@/data/comuni-immagini'
 
 export const revalidate = 3600
 
@@ -56,14 +57,26 @@ export default async function LocalitaPage({ params }: Props) {
   ])
   const altriComuni = tuttiComuni.filter(c => c.slug !== slug)
   const info = COVER_COMUNI[slug] ?? { immagine: '', descrizione: '', emoji: '📍' }
+  const fotoComune = COMUNE_IMMAGINI[slug]
+  const heroImmagine = info.immagine || fotoComune?.url || ''
 
   return (
     <>
       <section
         className="relative h-64 sm:h-80 flex items-end bg-gray-800 overflow-hidden"
-        style={info.immagine ? { backgroundImage: `url(${info.immagine})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+        style={heroImmagine ? { backgroundImage: `url(${heroImmagine})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
       >
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        {!info.immagine && fotoComune && (
+          <a
+            href={fotoComune.creditoUrl ?? '#'}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute top-2 right-3 z-10 text-[10px] text-white/60 hover:text-white/90"
+          >
+            Foto: {fotoComune.credito}
+          </a>
+        )}
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-8">
           <nav className="flex items-center gap-2 text-xs text-white/60 mb-3">
             <Link href="/" className="hover:text-white">Home</Link>

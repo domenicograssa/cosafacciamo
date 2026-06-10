@@ -86,6 +86,20 @@ export default async function DettaglioEvento({ params }: Props) {
             </div>
           </div>
 
+          {/* Credito immagine (richiesto dalle licenze Creative Commons) */}
+          {!evento.mediaAssetUrl && fotoCitta && (
+            <p className="text-[11px] text-gray-400 -mt-4">
+              Foto:{' '}
+              {fotoCitta.creditoUrl ? (
+                <a href={fotoCitta.creditoUrl} target="_blank" rel="noopener noreferrer" className="hover:text-gray-600 underline">
+                  {fotoCitta.credito}
+                </a>
+              ) : (
+                fotoCitta.credito
+              )}
+            </p>
+          )}
+
           <div>
             <h1 className="text-3xl font-extrabold text-gray-900 leading-tight">{evento.titolo}</h1>
             {evento.descrizioneBreve && (
