@@ -11,11 +11,12 @@ export interface ImmagineComune {
 }
 
 export const COMUNE_IMMAGINI: Record<string, ImmagineComune> = {
-  // photo-1524942434100-2b3f200f5b40 — Jacek Dylag / Unsplash (Alcamo, Sicily)
+  // Wikimedia Commons — CC BY-SA 3.0 — autore: Esculapio
   'alcamo': {
-    url: 'https://images.unsplash.com/photo-1524942434100-2b3f200f5b40?w=1400&q=80',
-    alt: 'Veduta di Alcamo',
-    credito: 'Jacek Dylag / Unsplash',
+    url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Castello_di_Alcamo_0024.JPG?width=1280',
+    alt: 'Il Castello dei Conti di Modica ad Alcamo',
+    credito: 'Esculapio, CC BY-SA 3.0, via Wikimedia Commons',
+    creditoUrl: 'https://commons.wikimedia.org/wiki/File:Castello_di_Alcamo_0024.JPG',
   },
   // photo-1756990901059-90f464223f3f — Gabriele Merlino / Unsplash (Castellammare del Golfo)
   'castellammare-del-golfo': {

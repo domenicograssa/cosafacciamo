@@ -25,8 +25,8 @@ interface Props {
 }
 
 const COVER_COMUNI: Record<string, { immagine: string; descrizione: string; emoji: string }> = {
-  // photo-1524942434100-2b3f200f5b40 — "aerial photography of brown town near ocean" (Jacek Dylag / Unsplash, alcamo sicily)
-  'alcamo':                  { immagine: 'https://images.unsplash.com/photo-1524942434100-2b3f200f5b40?w=1400&q=80', descrizione: 'Borgo medievale alle pendici del Monte Bonifato, con il suo storico castello e i vigneti dell\'Alcamo DOC.', emoji: '🏰' },
+  // immagine: usa il fallback da COMUNE_IMMAGINI (Castello dei Conti di Modica, Wikimedia Commons)
+  'alcamo':                  { immagine: '', descrizione: 'Borgo medievale alle pendici del Monte Bonifato, con il suo storico castello e i vigneti dell\'Alcamo DOC.', emoji: '🏰' },
   // photo-1756990901059-90f464223f3f — "Coastal town with harbor at sunset" (Gabriele Merlino / Unsplash, castellammare del golfo)
   'castellammare-del-golfo': { immagine: 'https://images.unsplash.com/photo-1756990901059-90f464223f3f?w=1400&q=80', descrizione: 'Incantevole cittadina affacciata sul golfo omonimo, porta d\'accesso alla Riserva dello Zingaro.', emoji: '⛵' },
   // photo-1730193488340-0af0fe404306 — "An aerial view of a beach and ocean" (Paul Sebastian Saliba / Unsplash, san vito lo capo)

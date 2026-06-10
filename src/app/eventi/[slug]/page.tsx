@@ -212,15 +212,29 @@ export default async function DettaglioEvento({ params }: Props) {
                 {formatData(evento.dataInizio, { weekday: 'short', day: 'numeric', month: 'short' })} · {formatOra(evento.dataInizio)}
               </p>
             </div>
-            <button className="w-full bg-amber-400 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition-colors">
-              {evento.gratuito ? '✓ Partecipo' : 'Acquista biglietto'}
-            </button>
-            <button className="w-full flex items-center justify-center gap-2 border-2 border-gray-200 hover:border-amber-400 text-gray-700 font-semibold py-3 rounded-xl transition-colors">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-              Salva nei preferiti
-            </button>
+            {(evento.urlPrenotazione || evento.urlBiglietti) ? (
+              <a
+                href={(evento.urlPrenotazione ?? evento.urlBiglietti)!}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-center w-full bg-amber-400 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition-colors"
+              >
+                🎟️ Prenota / Biglietti
+              </a>
+            ) : evento.sitoUfficiale ? (
+              <a
+                href={evento.sitoUfficiale}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-center w-full bg-amber-400 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition-colors"
+              >
+                Info sul sito ufficiale
+              </a>
+            ) : (
+              <p className="text-xs text-center text-gray-400">
+                Per informazioni contatta l&apos;organizzatore
+              </p>
+            )}
           </div>
 
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
@@ -243,9 +257,16 @@ export default async function DettaglioEvento({ params }: Props) {
           <p className={`text-lg font-extrabold leading-none ${evento.gratuito ? 'text-green-600' : 'text-gray-900'}`}>{prezzo}</p>
           <p className="text-xs text-gray-500 mt-0.5 truncate">{formatData(evento.dataInizio, { day: 'numeric', month: 'short' })} · {formatOra(evento.dataInizio)}</p>
         </div>
-        <button className="bg-amber-400 hover:bg-amber-500 text-white font-bold py-3 px-6 rounded-xl transition-colors shrink-0">
-          {evento.gratuito ? '✓ Partecipo' : 'Acquista'}
-        </button>
+        {(evento.urlPrenotazione || evento.urlBiglietti || evento.sitoUfficiale) && (
+          <a
+            href={(evento.urlPrenotazione ?? evento.urlBiglietti ?? evento.sitoUfficiale)!}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-amber-400 hover:bg-amber-500 text-white font-bold py-3 px-6 rounded-xl transition-colors shrink-0"
+          >
+            {evento.urlPrenotazione || evento.urlBiglietti ? 'Prenota' : 'Info'}
+          </a>
+        )}
       </div>
 
       {/* spazio per la sticky bar su mobile */}

@@ -24,8 +24,8 @@ const HERO_SLIDES = [
     emoji: '🏖️',
   },
   {
-    // Fonte: unsplash.com/s/photos/alcamo-sicily — "aerial photography of brown town near ocean"
-    src: 'https://images.unsplash.com/photo-1524942434100-2b3f200f5b40?w=1400&q=80',
+    // Fonte: Wikimedia Commons — Esculapio, CC BY-SA 3.0 (Castello dei Conti di Modica)
+    src: 'https://commons.wikimedia.org/wiki/Special:FilePath/Castello_di_Alcamo_0024.JPG?width=1280',
     nome: 'Alcamo',
     slug: 'alcamo',
     emoji: '🏰',
