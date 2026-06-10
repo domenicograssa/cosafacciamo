@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { useSearchParams } from 'next/navigation'
 import EventCard from './EventCard'
 import { Evento, Categoria, GeoNodo } from '@/types'
 import CategoryChip, { icona } from '@/components/ui/CategoryChip'
@@ -21,17 +20,18 @@ interface EventiListProps {
   categorie: Categoria[]
   comuni: GeoNodo[]
   titoloIniziale?: string
+  /** Filtri iniziali (es. dai parametri URL della ricerca in homepage) */
+  filtriIniziali?: Partial<FiltriState>
 }
 
-export default function EventiList({ eventi, categorie, comuni, titoloIniziale }: EventiListProps) {
-  // Inizializza i filtri dai parametri URL (es. ricerca dalla homepage: /eventi?comune=...&q=...)
-  const searchParams = useSearchParams()
+export default function EventiList({ eventi, categorie, comuni, titoloIniziale, filtriIniziali }: EventiListProps) {
   const [filtri, setFiltri] = useState<FiltriState>(() => ({
-    testo: searchParams.get('q') ?? '',
-    categorie: searchParams.get('categoria') ? [searchParams.get('categoria')!] : [],
-    comune: searchParams.get('comune') ?? '',
-    soloGratuiti: searchParams.get('gratuiti') === 'true',
-    data: searchParams.get('data') ?? '',
+    testo: '',
+    categorie: [],
+    comune: '',
+    soloGratuiti: false,
+    data: '',
+    ...filtriIniziali,
   }))
   const [filtroaperto, setFiltroAperto] = useState(false)
 

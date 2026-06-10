@@ -1,4 +1,3 @@
-import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
@@ -106,14 +105,12 @@ export default async function LocalitaPage({ params }: Props) {
         </div>
       </section>
 
-      <Suspense>
-        <EventiList
-          eventi={eventiLocali}
-          categorie={categorie}
-          comuni={[nodo]}
-          titoloIniziale={`Eventi a ${nodo.nome}`}
-        />
-      </Suspense>
+      <EventiList
+        eventi={eventiLocali}
+        categorie={categorie}
+        comuni={[nodo]}
+        titoloIniziale={`Eventi a ${nodo.nome}`}
+      />
 
       {/* Sezione attività permanenti */}
       {attivitaLocali.length > 0 && (
