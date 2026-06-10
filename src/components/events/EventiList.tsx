@@ -1,11 +1,15 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
 import EventCard from './EventCard'
 import { Evento, Categoria, GeoNodo } from '@/types'
 import CategoryChip, { icona } from '@/components/ui/CategoryChip'
+import ComuneCombobox from '@/components/ui/ComuneCombobox'
+import { normalizzaTesto } from '@/lib/utils'
 
 interface FiltriState {
+  testo: string
   categorie: string[]
   comune: string
   soloGratuiti: boolean
@@ -20,16 +24,24 @@ interface EventiListProps {
 }
 
 export default function EventiList({ eventi, categorie, comuni, titoloIniziale }: EventiListProps) {
-  const [filtri, setFiltri] = useState<FiltriState>({
-    categorie: [],
-    comune: '',
-    soloGratuiti: false,
-    data: '',
-  })
+  // Inizializza i filtri dai parametri URL (es. ricerca dalla homepage: /eventi?comune=...&q=...)
+  const searchParams = useSearchParams()
+  const [filtri, setFiltri] = useState<FiltriState>(() => ({
+    testo: searchParams.get('q') ?? '',
+    categorie: searchParams.get('categoria') ? [searchParams.get('categoria')!] : [],
+    comune: searchParams.get('comune') ?? '',
+    soloGratuiti: searchParams.get('gratuiti') === 'true',
+    data: searchParams.get('data') ?? '',
+  }))
   const [filtroaperto, setFiltroAperto] = useState(false)
 
   const eventiFiltrati = useMemo(() => {
     return eventi.filter(e => {
+      if (filtri.testo) {
+        const q = normalizzaTesto(filtri.testo)
+        const campi = [e.titolo, e.descrizioneBreve ?? '', e.luogoNome ?? '', e.geoNodo.nome]
+        if (!campi.some(campo => normalizzaTesto(campo).includes(q))) return false
+      }
       if (filtri.categorie.length > 0 && !e.categorie.some(c => filtri.categorie.includes(c.slug))) return false
       if (filtri.comune && e.geoNodo.slug !== filtri.comune) return false
       if (filtri.soloGratuiti && !e.gratuito) return false
@@ -50,24 +62,20 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale }
     }))
   }
 
-  const resetFiltri = () => setFiltri({ categorie: [], comune: '', soloGratuiti: false, data: '' })
-  const haFiltriAttivi = filtri.categorie.length > 0 || filtri.comune || filtri.soloGratuiti || filtri.data
+  const resetFiltri = () => setFiltri({ testo: '', categorie: [], comune: '', soloGratuiti: false, data: '' })
+  const haFiltriAttivi = !!filtri.testo || filtri.categorie.length > 0 || !!filtri.comune || filtri.soloGratuiti || !!filtri.data
 
   const PannelloFiltri = () => (
     <div className="space-y-6">
       {/* Comune */}
       <div>
         <p className="text-sm font-semibold text-gray-900 mb-3">Località</p>
-        <select
+        <ComuneCombobox
+          comuni={comuni}
           value={filtri.comune}
-          onChange={e => setFiltri(p => ({ ...p, comune: e.target.value }))}
-          className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-amber-400 bg-white"
-        >
-          <option value="">Tutte le località</option>
-          {comuni.map(c => (
-            <option key={c.id} value={c.slug}>{c.nome}</option>
-          ))}
-        </select>
+          onChange={v => setFiltri(p => ({ ...p, comune: v }))}
+          placeholder="Tutte le località — cerca…"
+        />
       </div>
 
       {/* Data */}
@@ -131,7 +139,7 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale }
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
             {titoloIniziale ?? 'Tutti gli eventi'}
@@ -154,6 +162,31 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale }
         </button>
       </div>
 
+      {/* Barra di ricerca */}
+      <div className="relative mb-6">
+        <svg className="w-5 h-5 text-amber-500 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input
+          type="search"
+          value={filtri.testo}
+          onChange={e => setFiltri(p => ({ ...p, testo: e.target.value }))}
+          placeholder="Cerca un evento, un luogo o un comune…"
+          className="w-full text-sm bg-white border border-gray-200 rounded-2xl pl-11 pr-4 py-3.5 shadow-sm outline-none focus:ring-2 focus:ring-amber-400 placeholder-gray-400"
+        />
+        {filtri.testo && (
+          <button
+            onClick={() => setFiltri(p => ({ ...p, testo: '' }))}
+            aria-label="Cancella ricerca"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+      </div>
+
       <div className="flex gap-8">
 
         {/* Sidebar filtri desktop */}
@@ -167,7 +200,7 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale }
                 </button>
               )}
             </div>
-            <PannelloFiltri />
+            {PannelloFiltri()}
           </div>
         </aside>
 
@@ -205,7 +238,7 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale }
                 </svg>
               </button>
             </div>
-            <PannelloFiltri />
+            {PannelloFiltri()}
             <button
               onClick={() => setFiltroAperto(false)}
               className="w-full mt-6 bg-amber-400 hover:bg-amber-500 text-white font-semibold py-3 rounded-xl transition-colors"

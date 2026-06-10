@@ -3,8 +3,9 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Evento } from '@/types'
-import { formatOra, formatPrezzo } from '@/lib/utils'
+import { formatData, formatOra, formatPrezzo } from '@/lib/utils'
 import EventImagePlaceholder from '@/components/ui/EventImagePlaceholder'
+import { immagineComune } from '@/data/comuni-immagini'
 
 interface EventCardProps {
   evento: Evento
@@ -15,9 +16,9 @@ export default function EventCard({ evento, compact = false }: EventCardProps) {
   const prezzo = formatPrezzo(evento.prezzoMin, evento.prezzoMax, evento.gratuito)
   const categoria = evento.categorie[0]
 
-  // Mostra immagine solo se autorizzata (campo mediaAssetUrl popolato dalla query)
-  // altrimenti sempre placeholder per categoria
+  // Priorità immagine: 1) immagine autorizzata dell'evento, 2) foto della città, 3) placeholder categoria
   const immagineAutorizzata = evento.mediaAssetUrl ?? null
+  const fotoCitta = immagineComune(evento.geoNodo.slug)
 
   if (compact) {
     return (
@@ -25,6 +26,8 @@ export default function EventCard({ evento, compact = false }: EventCardProps) {
         <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-gray-100">
           {immagineAutorizzata ? (
             <Image src={immagineAutorizzata} alt={evento.mediaAssetAlt ?? evento.titolo} fill className="object-cover" />
+          ) : fotoCitta ? (
+            <Image src={fotoCitta.url} alt={fotoCitta.alt} fill className="object-cover" />
           ) : (
             <EventImagePlaceholder
               categoriaSlug={categoria?.slug}
@@ -35,7 +38,9 @@ export default function EventCard({ evento, compact = false }: EventCardProps) {
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs text-gray-500">{formatOra(evento.dataInizio)}</p>
+          <p className="text-xs font-semibold text-amber-600">
+            {formatData(evento.dataInizio)} · {formatOra(evento.dataInizio)}
+          </p>
           <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-amber-600 transition-colors">{evento.titolo}</p>
           <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,6 +68,13 @@ export default function EventCard({ evento, compact = false }: EventCardProps) {
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
+        ) : fotoCitta ? (
+          <Image
+            src={fotoCitta.url}
+            alt={fotoCitta.alt}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+          />
         ) : (
           <EventImagePlaceholder
             categoriaSlug={categoria?.slug}
@@ -81,6 +93,16 @@ export default function EventCard({ evento, compact = false }: EventCardProps) {
           </span>
         )}
 
+        {/* Badge data */}
+        <div className="absolute bottom-3 left-3 z-10 bg-white/95 backdrop-blur-sm rounded-xl px-2.5 py-1.5 text-center shadow-sm min-w-[44px]">
+          <p className="text-base font-extrabold text-gray-900 leading-none">
+            {new Date(evento.dataInizio).getDate()}
+          </p>
+          <p className="text-[10px] font-bold uppercase text-amber-600 leading-none mt-0.5">
+            {new Date(evento.dataInizio).toLocaleDateString('it-IT', { month: 'short' }).replace('.', '')}
+          </p>
+        </div>
+
         {/* Preferiti */}
         <button
           className="absolute top-3 right-3 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-colors z-10"
@@ -95,11 +117,11 @@ export default function EventCard({ evento, compact = false }: EventCardProps) {
 
       {/* Contenuto */}
       <div className="p-4 flex flex-col gap-1.5">
-        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-600">
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          <span>{formatOra(evento.dataInizio)}</span>
+          <span>{formatData(evento.dataInizio)} · {formatOra(evento.dataInizio)}</span>
         </div>
 
         <h3 className="font-bold text-gray-900 text-sm leading-tight group-hover:text-amber-600 transition-colors line-clamp-2">

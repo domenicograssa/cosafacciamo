@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import EventiList from '@/components/events/EventiList'
 import { getEventiApprovati } from '@/lib/queries/eventi'
 import { getCategorie } from '@/lib/queries/categorie'
@@ -18,10 +19,12 @@ export default async function EventiPage() {
   ])
 
   return (
-    <EventiList
-      eventi={eventi}
-      categorie={categorie}
-      comuni={comuni}
-    />
+    <Suspense>
+      <EventiList
+        eventi={eventi}
+        categorie={categorie}
+        comuni={comuni}
+      />
+    </Suspense>
   )
 }

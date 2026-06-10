@@ -21,3 +21,9 @@ export function formatPrezzo(min: number | null, max: number | null, gratuito: b
 export function cn(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(' ')
 }
+
+// Normalizza un testo per ricerche: minuscole, senza accenti, senza spazi esterni
+const COMBINING_MARKS = /[̀-ͯ]/g
+export function normalizzaTesto(s: string): string {
+  return s.normalize('NFD').replace(COMBINING_MARKS, '').toLowerCase().trim()
+}

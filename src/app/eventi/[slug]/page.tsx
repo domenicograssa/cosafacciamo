@@ -6,6 +6,7 @@ import { getEventoBySlug, getEventiCorrelati } from '@/lib/queries/eventi'
 import EventCard from '@/components/events/EventCard'
 import EventImagePlaceholder from '@/components/ui/EventImagePlaceholder'
 import { formatData, formatOra, formatPrezzo } from '@/lib/utils'
+import { immagineComune } from '@/data/comuni-immagini'
 
 export const revalidate = 3600
 
@@ -44,6 +45,7 @@ export default async function DettaglioEvento({ params }: Props) {
   const categoriaIds = evento.categorie.map(c => c.id)
   const correlati = await getEventiCorrelati(evento.id, categoriaIds)
   const prezzo = formatPrezzo(evento.prezzoMin, evento.prezzoMax, evento.gratuito)
+  const fotoCitta = immagineComune(evento.geoNodo.slug)
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -66,6 +68,8 @@ export default async function DettaglioEvento({ params }: Props) {
           <div className="relative aspect-video rounded-2xl overflow-hidden bg-gray-100">
             {evento.mediaAssetUrl ? (
               <Image src={evento.mediaAssetUrl} alt={evento.mediaAssetAlt ?? evento.titolo} fill className="object-cover" priority />
+            ) : fotoCitta ? (
+              <Image src={fotoCitta.url} alt={fotoCitta.alt} fill className="object-cover" priority />
             ) : (
               <EventImagePlaceholder
                 categoriaSlug={evento.categorie[0]?.slug}
@@ -152,6 +156,18 @@ export default async function DettaglioEvento({ params }: Props) {
               )}
             </div>
           )}
+
+          {/* Avviso di non responsabilità */}
+          <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl p-4">
+            <span className="text-xl shrink-0">⚠️</span>
+            <p className="text-sm text-amber-900 leading-relaxed">
+              <strong>Avviso:</strong> le informazioni sugli eventi sono fornite dagli organizzatori.{' '}
+              <em>che facciamo?</em> non è in alcun modo responsabile per eventuali errori, omissioni
+              o cambiamenti dovuti a fattori non prevedibili. Ti invitiamo a verificare eventuali
+              variazioni dell&apos;ultima ora visitando il sito ufficiale e i canali social
+              dell&apos;organizzatore, i cui riferimenti sono indicati in questa pagina.
+            </p>
+          </div>
 
           {evento.lat && evento.lng && (
             <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm">

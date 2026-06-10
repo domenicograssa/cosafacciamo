@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { GeoNodo } from '@/types'
+import ComuneCombobox from '@/components/ui/ComuneCombobox'
 
 interface SearchBarProps {
   comuni?: GeoNodo[]
@@ -30,16 +31,13 @@ export default function SearchBar({ comuni = [] }: SearchBarProps) {
         <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
         </svg>
-        <select
+        <ComuneCombobox
+          comuni={comuni}
           value={dove}
-          onChange={e => setDove(e.target.value)}
-          className="w-full text-sm text-gray-700 bg-transparent outline-none cursor-pointer"
-        >
-          <option value="">Dove vuoi andare?</option>
-          {comuni.map(c => (
-            <option key={c.id} value={c.slug}>{c.nome}</option>
-          ))}
-        </select>
+          onChange={setDove}
+          placeholder="Dove vuoi andare?"
+          bare
+        />
       </div>
 
       <div className="hidden sm:block w-px bg-gray-200 self-stretch" />
@@ -68,6 +66,7 @@ export default function SearchBar({ comuni = [] }: SearchBarProps) {
           type="text"
           value={cosa}
           onChange={e => setCosa(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') cerca() }}
           placeholder="Che cosa ti interessa?"
           className="w-full text-sm text-gray-700 bg-transparent outline-none placeholder-gray-400"
         />
