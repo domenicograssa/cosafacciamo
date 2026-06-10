@@ -19,7 +19,11 @@ function mapEvento(row: EventoConRelazioni): Evento {
     descrizioneBreve: row.descrizione_breve,
     descrizione: (row as Record<string, unknown>).descrizione as string | null ?? null,
     immagineCopertura: row.immagine_copertina,
-    mediaAssetUrl: null,   // popolato solo quando media_assets ha immagini autorizzate
+    // Mostra solo immagini caricate dagli organizzatori sul nostro storage
+    // (diritti dichiarati in fase di pubblicazione) — mai URL esterni non verificati
+    mediaAssetUrl: row.immagine_copertina?.includes('/storage/v1/object/public/eventi-immagini/')
+      ? row.immagine_copertina
+      : null,
     mediaAssetAlt: null,
     luogoNome: row.luogo_nome,
     indirizzo: row.indirizzo,

@@ -4,6 +4,11 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '4mb', // immagini eventi (già compresse lato client)
+    },
+  },
   images: {
     remotePatterns: [
       {
@@ -17,6 +22,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'upload.wikimedia.org',
+      },
+      {
+        protocol: 'https',
+        hostname: 'irtewoirgrberzlvsxso.supabase.co',
       },
     ],
   },

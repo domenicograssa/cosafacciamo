@@ -5,6 +5,26 @@ import Link from 'next/link'
 import type { Categoria, GeoNodo } from '@/types'
 import ComuneCombobox from '@/components/ui/ComuneCombobox'
 import { icona } from '@/components/ui/CategoryChip'
+import { pubblicaEvento } from '@/app/actions/pubblica'
+
+// Ridimensiona e comprime l'immagine lato client (max 1600px, JPEG) per non appesantire il sito
+async function comprimiImmagine(file: File, maxLato = 1600, qualita = 0.82): Promise<Blob> {
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const el = new window.Image()
+    el.onload = () => { URL.revokeObjectURL(url); resolve(el) }
+    el.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Immagine non leggibile')) }
+    el.src = url
+  })
+  const scala = Math.min(1, maxLato / Math.max(img.width, img.height))
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.round(img.width * scala)
+  canvas.height = Math.round(img.height * scala)
+  canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height)
+  return await new Promise<Blob>((resolve, reject) =>
+    canvas.toBlob(b => (b ? resolve(b) : reject(new Error('Compressione fallita'))), 'image/jpeg', qualita)
+  )
+}
 
 type Step = 'organizzatore' | 'evento' | 'consenso' | 'anteprima' | 'inviato'
 
@@ -96,6 +116,10 @@ interface PubblicaFormProps {
 
 export default function PubblicaForm({ comuni, categorie }: PubblicaFormProps) {
   const [step, setStep] = useState<Step>('organizzatore')
+  const [immagine, setImmagine] = useState<File | null>(null)
+  const [anteprimaImg, setAnteprimaImg] = useState<string | null>(null)
+  const [invioInCorso, setInvioInCorso] = useState(false)
+  const [erroreInvio, setErroreInvio] = useState<string | null>(null)
   const [form, setForm] = useState<FormData>({
     nome: '', cognome: '', emailOrg: '', telefonoOrg: '',
     denominazione: '', comuneOrgId: '', sitoWeb: '',
@@ -125,7 +149,50 @@ export default function PubblicaForm({ comuni, categorie }: PubblicaFormProps) {
   const canProceedStep2 = form.titolo && form.descrizione && form.comuneId && form.dataInizio && form.oraInizio && form.categorieSelezionate.length > 0
   const canProceedConsenso = form.accettaTermini && form.accettaPrivacy && form.accettaDiritti
 
-  const handleSubmit = () => setStep('inviato')
+  const selezionaImmagine = (file: File | null) => {
+    setErroreInvio(null)
+    if (!file) { setImmagine(null); setAnteprimaImg(null); return }
+    if (!file.type.startsWith('image/')) { setErroreInvio('Il file selezionato non è un\'immagine.'); return }
+    if (file.size > 10 * 1024 * 1024) { setErroreInvio('L\'immagine è troppo grande (massimo 10 MB).'); return }
+    setImmagine(file)
+    setAnteprimaImg(URL.createObjectURL(file))
+  }
+
+  const handleSubmit = async () => {
+    setInvioInCorso(true)
+    setErroreInvio(null)
+    try {
+      const fd = new window.FormData()
+      const campi: (keyof FormData)[] = [
+        'nome', 'cognome', 'emailOrg', 'telefonoOrg', 'denominazione', 'comuneOrgId', 'sitoWeb',
+        'titolo', 'descrizione', 'comuneId', 'luogoNome', 'indirizzo',
+        'dataInizio', 'oraInizio', 'dataFine', 'oraFine',
+        'prezzoMin', 'prezzoMax', 'urlBiglietti', 'sitoUfficiale', 'emailContatto', 'telefonoContatto',
+      ]
+      campi.forEach(k => fd.append(k, String(form[k] ?? '')))
+      fd.append('categorie', form.categorieSelezionate.join(','))
+      fd.append('gratuito', String(form.gratuito))
+      fd.append('accettaTermini', String(form.accettaTermini))
+      fd.append('accettaPrivacy', String(form.accettaPrivacy))
+      fd.append('accettaDiritti', String(form.accettaDiritti))
+
+      if (immagine) {
+        const blob = await comprimiImmagine(immagine)
+        fd.append('immagine', blob, 'evento.jpg')
+      }
+
+      const esito = await pubblicaEvento(fd)
+      if (esito.ok) {
+        setStep('inviato')
+      } else {
+        setErroreInvio(esito.errore ?? 'Errore durante l\'invio. Riprova.')
+      }
+    } catch {
+      setErroreInvio('Errore nella preparazione dei dati. Riprova.')
+    } finally {
+      setInvioInCorso(false)
+    }
+  }
 
   if (step === 'inviato') {
     return (
@@ -133,8 +200,8 @@ export default function PubblicaForm({ comuni, categorie }: PubblicaFormProps) {
         <div className="text-6xl mb-6">🎉</div>
         <h1 className="text-2xl font-extrabold text-gray-900">Evento inviato!</h1>
         <p className="text-gray-600 mt-3 leading-relaxed">
-          Il tuo evento è stato inviato e verrà revisionato dal nostro team entro 24 ore.
-          Riceverai una notifica via email quando sarà approvato e visibile sul portale.
+          Grazie! Il tuo evento è stato ricevuto e sarà pubblicato il più presto possibile,
+          dopo una rapida verifica da parte nostra.
         </p>
         <div className="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-2xl text-sm text-amber-800">
           <strong>Stato:</strong> In revisione 🔍
@@ -170,7 +237,7 @@ export default function PubblicaForm({ comuni, categorie }: PubblicaFormProps) {
         </Link>
         <h1 className="text-2xl font-extrabold text-gray-900">Pubblica il tuo evento</h1>
         <p className="text-gray-500 text-sm mt-1">
-          Il tuo evento sarà visibile dopo la revisione del nostro team (entro 24 ore). La pubblicazione è gratuita.
+          Il tuo evento sarà pubblicato il più presto possibile, dopo una rapida verifica. La pubblicazione è gratuita.
         </p>
       </div>
 
@@ -305,6 +372,38 @@ export default function PubblicaForm({ comuni, categorie }: PubblicaFormProps) {
               rows={4}
               className={`${inputClass} resize-none`}
             />
+          </Field>
+
+          {/* Immagine evento */}
+          <Field label="Immagine dell'evento">
+            {anteprimaImg ? (
+              <div className="relative rounded-xl overflow-hidden border border-gray-200">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={anteprimaImg} alt="Anteprima immagine evento" className="w-full aspect-video object-cover" />
+                <button
+                  type="button"
+                  onClick={() => selezionaImmagine(null)}
+                  className="absolute top-2 right-2 bg-white/90 hover:bg-white text-gray-700 text-xs font-semibold px-3 py-1.5 rounded-full shadow"
+                >
+                  ✕ Rimuovi
+                </button>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 hover:border-amber-400 rounded-xl py-8 cursor-pointer transition-colors">
+                <span className="text-3xl">🖼️</span>
+                <span className="text-sm font-semibold text-gray-700">Carica un&apos;immagine</span>
+                <span className="text-xs text-gray-500">JPG, PNG o WebP — verrà ottimizzata automaticamente</span>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={e => selezionaImmagine(e.target.files?.[0] ?? null)}
+                />
+              </label>
+            )}
+            <p className="text-xs text-gray-500 mt-1.5">
+              Carica solo immagini di cui sei titolare o per cui disponi dei diritti di pubblicazione.
+            </p>
           </Field>
 
           {/* Categorie */}
@@ -594,26 +693,42 @@ export default function PubblicaForm({ comuni, categorie }: PubblicaFormProps) {
               <p className="text-xs text-green-700">✓ Diritti e autorizzazioni sui contenuti</p>
             </div>
 
+            {anteprimaImg && (
+              <div className="rounded-xl overflow-hidden border border-gray-200">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={anteprimaImg} alt="Immagine dell'evento" className="w-full aspect-video object-cover" />
+              </div>
+            )}
+
             <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-xl p-4">
               <span className="text-xl">ℹ️</span>
               <p className="text-sm text-blue-800">
-                Dopo l&apos;invio il tuo evento sarà <strong>in revisione</strong>. Il team approverà entro 24 ore.
-                Riceverai una email di conferma a <strong>{form.emailOrg}</strong>.
+                Dopo l&apos;invio il tuo evento sarà <strong>in revisione</strong> e verrà
+                pubblicato il più presto possibile.
               </p>
             </div>
+
+            {erroreInvio && (
+              <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl p-4">
+                <span className="text-xl">⚠️</span>
+                <p className="text-sm text-red-700">{erroreInvio}</p>
+              </div>
+            )}
 
             <div className="flex gap-3">
               <button
                 onClick={() => setStep('consenso')}
-                className="flex-1 border-2 border-gray-200 text-gray-700 font-semibold py-3 rounded-xl hover:border-gray-300 transition-colors"
+                disabled={invioInCorso}
+                className="flex-1 border-2 border-gray-200 text-gray-700 font-semibold py-3 rounded-xl hover:border-gray-300 transition-colors disabled:opacity-50"
               >
                 ← Modifica
               </button>
               <button
                 onClick={handleSubmit}
-                className="flex-1 bg-amber-400 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition-colors"
+                disabled={invioInCorso}
+                className="flex-1 bg-amber-400 hover:bg-amber-500 disabled:bg-gray-300 text-white font-bold py-3 rounded-xl transition-colors"
               >
-                Invia per approvazione ✓
+                {invioInCorso ? 'Invio in corso…' : 'Invia per approvazione ✓'}
               </button>
             </div>
           </div>
