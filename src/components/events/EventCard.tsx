@@ -96,10 +96,10 @@ export default function EventCard({ evento, compact = false }: EventCardProps) {
         {/* Badge data */}
         <div className="absolute bottom-3 left-3 z-10 bg-white/95 backdrop-blur-sm rounded-xl px-2.5 py-1.5 text-center shadow-sm min-w-[44px]">
           <p className="text-base font-extrabold text-gray-900 leading-none">
-            {new Date(evento.dataInizio).getDate()}
+            {formatData(evento.dataInizio, { day: 'numeric' })}
           </p>
           <p className="text-[10px] font-bold uppercase text-amber-600 leading-none mt-0.5">
-            {new Date(evento.dataInizio).toLocaleDateString('it-IT', { month: 'short' }).replace('.', '')}
+            {formatData(evento.dataInizio, { month: 'short' }).replace('.', '')}
           </p>
         </div>
 

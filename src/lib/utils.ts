@@ -1,13 +1,17 @@
+// Fuso orario di riferimento del portale: senza questo, il server (UTC) mostrerebbe orari sbagliati
+const TZ = 'Europe/Rome'
+
 export function formatData(dateStr: string, opzioni?: Intl.DateTimeFormatOptions): string {
   const data = new Date(dateStr)
-  return data.toLocaleDateString('it-IT', opzioni ?? {
-    weekday: 'short', day: 'numeric', month: 'short',
+  return data.toLocaleDateString('it-IT', {
+    ...(opzioni ?? { weekday: 'short', day: 'numeric', month: 'short' }),
+    timeZone: TZ,
   })
 }
 
 export function formatOra(dateStr: string): string {
   return new Date(dateStr).toLocaleTimeString('it-IT', {
-    hour: '2-digit', minute: '2-digit',
+    hour: '2-digit', minute: '2-digit', timeZone: TZ,
   })
 }
 
