@@ -15,7 +15,7 @@ export default function TerminiCondizioni() {
       <p>
         Il portale <strong>che facciamo?</strong> (di seguito «il Portale») è gestito da:<br />
         <strong>Domenico Grassa</strong><br />
-        Via Roma n. 53, 91014 Castellammare del Golfo (TP)<br />
+        Via Roma n. 53, 91014 Castellammare del Golfo (TP); c.f. GRSDNC83H20G273G<br />
         Email: <a href="mailto:domenicograssa@gmail.com">domenicograssa@gmail.com</a>
       </p>
 

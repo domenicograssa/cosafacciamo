@@ -31,9 +31,8 @@ export default function Contatti() {
       <article className="prose prose-gray max-w-none mt-10">
         <h2>Gestore del portale</h2>
         <p>
-          Il Gestore del portale è: <strong>Domenico Grassa</strong><br />
-          Via Roma n. 53<br />
-          91014 Castellammare del Golfo (TP)
+          <strong>Domenico Grassa</strong><br />
+          Via Roma n. 53, 91014 Castellammare del Golfo (TP); c.f. GRSDNC83H20G273G
         </p>
 
         <h2>Email</h2>
