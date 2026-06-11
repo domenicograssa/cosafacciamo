@@ -85,7 +85,10 @@ export async function inviaMessaggio(fd: FormData): Promise<EsitoMessaggio> {
       url_pagina: urlPagina || null,
       ip_address: ip,
     })
-    if (error) return { ok: false, errore: 'Errore nell\'invio del messaggio. Riprova tra qualche istante.' }
+    if (error) {
+      console.error('inviaMessaggio insert:', error)
+      return { ok: false, errore: `Errore nell'invio del messaggio: ${error.message ?? 'errore database'}` }
+    }
 
     await notificaGestore({ nome, email, tipo, oggetto, messaggio })
     revalidatePath('/admin/messaggi')
