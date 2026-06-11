@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Props) {
   const evento = await getEventoBySlug(slug)
   if (!evento) return {}
   return {
-    title: `${evento.titolo} — che facciamo?`,
+    title: `${evento.titolo} — moesco`,
     description: evento.descrizioneBreve ?? undefined,
   }
 }
@@ -176,7 +176,7 @@ export default async function DettaglioEvento({ params }: Props) {
             <span className="text-xl shrink-0">⚠️</span>
             <p className="text-sm text-amber-900 leading-relaxed">
               <strong>Avviso:</strong> le informazioni sugli eventi sono fornite dagli organizzatori.{' '}
-              <em>che facciamo?</em> non è in alcun modo responsabile per eventuali errori, omissioni
+              <em>moesco</em> non è in alcun modo responsabile per eventuali errori, omissioni
               o cambiamenti dovuti a fattori non prevedibili. Ti invitiamo a verificare eventuali
               variazioni dell&apos;ultima ora visitando il sito ufficiale e i canali social
               dell&apos;organizzatore, i cui riferimenti sono indicati in questa pagina.

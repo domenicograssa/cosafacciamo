@@ -6,7 +6,7 @@ import { COMUNE_IMMAGINI } from '@/data/comuni-immagini'
 export const revalidate = 3600
 
 export const metadata = {
-  title: 'Località — che facciamo?',
+  title: 'Località — moesco',
   description: 'Esplora eventi e attività nei 25 comuni della provincia di Trapani.',
 }
 

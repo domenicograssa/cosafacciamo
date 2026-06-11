@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import ModuloContatti from '@/components/contatti/ModuloContatti'
 
 export const metadata: Metadata = {
-  title: 'Contatti — che facciamo?',
-  description: 'Contatta il gestore del portale che facciamo? per messaggi e segnalazioni',
+  title: 'Contatti — moesco',
+  description: 'Contatta il gestore del portale moesco per messaggi e segnalazioni',
 }
 
 export default function Contatti() {
@@ -13,7 +13,7 @@ export default function Contatti() {
         <h1>Contatti</h1>
 
         <p>
-          Per qualsiasi comunicazione relativa al portale <strong>che facciamo?</strong> —
+          Per qualsiasi comunicazione relativa al portale <strong>moesco</strong> —
           segnalazioni, richieste di informazioni o esercizio dei diritti in materia di
           privacy — puoi usare il modulo qui sotto oppure scriverci direttamente.
         </p>

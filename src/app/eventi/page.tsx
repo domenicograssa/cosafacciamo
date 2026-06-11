@@ -4,7 +4,7 @@ import { getCategorie } from '@/lib/queries/categorie'
 import { getComuni } from '@/lib/queries/geo'
 
 export const metadata = {
-  title: 'Eventi — che facciamo?',
+  title: 'Eventi — moesco',
   description: 'Tutti gli eventi ad Alcamo, Castellammare del Golfo, San Vito Lo Capo e dintorni.',
 }
 

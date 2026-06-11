@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Condizioni per gli Organizzatori — che facciamo?',
-  description: 'Condizioni specifiche per gli organizzatori che pubblicano eventi sul portale che facciamo?',
+  title: 'Condizioni per gli Organizzatori — moesco',
+  description: 'Condizioni specifiche per gli organizzatori che pubblicano eventi sul portale moesco',
 }
 
 export default function CondizioniOrganizzatori() {
@@ -13,7 +13,7 @@ export default function CondizioniOrganizzatori() {
 
       <p>
         Le presenti Condizioni disciplinano il rapporto tra il Gestore del portale{' '}
-        <strong>che facciamo?</strong> e i soggetti (di seguito «Organizzatori») che si registrano
+        <strong>moesco</strong> e i soggetti (di seguito «Organizzatori») che si registrano
         per pubblicare eventi, attività o esperienze. Si applicano congiuntamente ai{' '}
         <a href="/termini-e-condizioni">Termini e Condizioni generali</a> e all'
         <a href="/privacy-policy">Informativa Privacy</a>.

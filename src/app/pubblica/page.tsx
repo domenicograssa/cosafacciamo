@@ -3,8 +3,8 @@ import { getComuni } from '@/lib/queries/geo'
 import { getCategorie } from '@/lib/queries/categorie'
 
 export const metadata = {
-  title: 'Pubblica il tuo evento — che facciamo?',
-  description: 'Pubblica gratuitamente il tuo evento o la tua attività sul portale che facciamo?',
+  title: 'Pubblica il tuo evento — moesco',
+  description: 'Pubblica gratuitamente il tuo evento o la tua attività sul portale moesco',
 }
 
 export default async function PubblicaPage({

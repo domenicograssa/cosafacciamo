@@ -26,7 +26,7 @@ export function AzioniMessaggio({ messaggioId, stato, email, oggetto }: {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <a
-        href={`mailto:${email}?subject=${encodeURIComponent(`Re: ${oggetto || 'il tuo messaggio su che facciamo?'}`)}`}
+        href={`mailto:${email}?subject=${encodeURIComponent(`Re: ${oggetto || 'il tuo messaggio su moesco'}`)}`}
         className="bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold px-4 py-2 rounded-xl text-xs border border-amber-200 transition-colors"
       >
         ✉️ Rispondi

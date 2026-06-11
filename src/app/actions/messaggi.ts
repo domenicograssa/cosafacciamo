@@ -29,7 +29,7 @@ async function notificaGestore(dati: {
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from: 'che facciamo? <onboarding@resend.dev>',
+        from: 'moesco <onboarding@resend.dev>',
         to: [destinatario],
         reply_to: dati.email,
         subject: `Nuovo messaggio dal sito: ${dati.oggetto || dati.tipo}`,

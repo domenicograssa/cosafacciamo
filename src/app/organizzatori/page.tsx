@@ -1,8 +1,8 @@
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Per organizzatori — che facciamo?',
-  description: 'Pubblica gratuitamente i tuoi eventi sul portale che facciamo? e raggiungi il pubblico della provincia di Trapani.',
+  title: 'Per organizzatori — moesco',
+  description: 'Pubblica gratuitamente i tuoi eventi sul portale moesco e raggiungi il pubblico della provincia di Trapani.',
 }
 
 const PASSI = [
@@ -40,7 +40,7 @@ export default function OrganizzatoriPage() {
         </h1>
         <p className="text-gray-600 mt-4 leading-relaxed">
           Associazioni, enti, pro loco, attività commerciali e organizzatori:
-          pubblicare su <strong>che facciamo?</strong> è <strong>gratuito</strong>.
+          pubblicare su <strong>moesco</strong> è <strong>gratuito</strong>.
           Puoi proporre <strong>eventi</strong> con una data precisa oppure{' '}
           <strong>esperienze</strong> continuative — snorkeling, corsi di cucina,
           giri in barca, escursioni — e raggiungere chi cerca cosa fare nei 25 comuni del territorio.

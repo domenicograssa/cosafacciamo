@@ -3,7 +3,7 @@ import AdminSidebar from '@/components/admin/AdminSidebar'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: 'Admin — cosafacciamo',
+  title: 'Admin — moesco',
 }
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

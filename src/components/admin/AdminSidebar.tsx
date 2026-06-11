@@ -29,9 +29,9 @@ export default function AdminSidebar() {
       <div className="px-5 py-5 border-b border-gray-700">
         <Link href="/" className="flex items-center gap-2">
           <div className="w-7 h-7 bg-amber-400 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-xs">c</span>
+            <span className="text-white font-bold text-xs">m</span>
           </div>
-          <span className="text-white font-bold text-sm">cosafacciamo</span>
+          <span className="text-white font-bold text-sm">moesco</span>
         </Link>
         <p className="text-gray-500 text-xs mt-1 ml-9">Pannello Admin</p>
       </div>

@@ -67,7 +67,7 @@ async function notificaGestore(dati: {
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from: 'che facciamo? <onboarding@resend.dev>',
+        from: 'moesco <onboarding@resend.dev>',
         to: [destinatario],
         subject: `Nuovo evento in revisione: ${dati.titolo}`,
         html: `

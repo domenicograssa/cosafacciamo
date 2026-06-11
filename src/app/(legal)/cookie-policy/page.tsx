@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Cookie Policy — che facciamo?',
-  description: 'Informativa sull\'uso dei cookie sul portale che facciamo?',
+  title: 'Cookie Policy — moesco',
+  description: 'Informativa sull\'uso dei cookie sul portale moesco',
 }
 
 export default function CookiePolicy() {
@@ -13,7 +13,7 @@ export default function CookiePolicy() {
 
       <p>
         Il presente documento descrive le modalità di utilizzo dei cookie e di tecnologie simili
-        sul portale <strong>che facciamo?</strong> (di seguito «il Portale»), ai sensi dell'art. 122
+        sul portale <strong>moesco</strong> (di seguito «il Portale»), ai sensi dell'art. 122
         del D.Lgs. 196/2003 e delle Linee Guida del Garante per la protezione dei dati personali.
       </p>
 

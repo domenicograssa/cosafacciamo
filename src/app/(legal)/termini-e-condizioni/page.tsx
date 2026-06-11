@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Termini e Condizioni — che facciamo?',
-  description: 'Termini e condizioni di utilizzo del portale che facciamo?',
+  title: 'Termini e Condizioni — moesco',
+  description: 'Termini e condizioni di utilizzo del portale moesco',
 }
 
 export default function TerminiCondizioni() {
@@ -13,7 +13,7 @@ export default function TerminiCondizioni() {
 
       <h2>1. Il Gestore</h2>
       <p>
-        Il portale <strong>che facciamo?</strong> (di seguito «il Portale») è gestito da:<br />
+        Il portale <strong>moesco</strong> (di seguito «il Portale») è gestito da:<br />
         <strong>Domenico Grassa</strong><br />
         Via Roma n. 53, 91014 Castellammare del Golfo (TP); c.f. GRSDNC83H20G273G<br />
         Email: <a href="mailto:domenicograssa@gmail.com">domenicograssa@gmail.com</a>
@@ -83,7 +83,7 @@ export default function TerminiCondizioni() {
 
       <h2>7. Proprietà intellettuale</h2>
       <p>
-        Il codice sorgente, il design, il logo, il nome «che facciamo?» e gli altri elementi
+        Il codice sorgente, il design, il logo, il nome «moesco» e gli altri elementi
         grafici del Portale sono di proprietà del Gestore o dei rispettivi titolari e sono
         protetti dalla normativa sul diritto d'autore.
       </p>

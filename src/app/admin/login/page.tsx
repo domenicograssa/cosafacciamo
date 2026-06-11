@@ -43,7 +43,7 @@ export default function AdminLogin() {
             <span className="text-white font-extrabold text-xl">c</span>
           </div>
           <h1 className="text-xl font-extrabold text-white">Pannello Admin</h1>
-          <p className="text-gray-400 text-sm mt-1">cosafacciamo</p>
+          <p className="text-gray-400 text-sm mt-1">moesco</p>
         </div>
 
         {/* Form */}
@@ -57,7 +57,7 @@ export default function AdminLogin() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
-              placeholder="admin@cosafacciamo.it"
+              placeholder="admin@moesco.it"
               className="w-full bg-gray-700 text-white text-sm rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-amber-400 placeholder-gray-500"
             />
           </div>

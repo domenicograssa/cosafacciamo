@@ -6,7 +6,7 @@ import { getComuni } from '@/lib/queries/geo'
 export const revalidate = 3600
 
 export const metadata = {
-  title: 'Esperienze — che facciamo?',
+  title: 'Esperienze — moesco',
   description: 'Snorkeling, corsi di cucina, giri in barca, escursioni: le esperienze da vivere nella provincia di Trapani.',
 }
 
