@@ -9,6 +9,7 @@ const NAV = [
   { href: '/admin/eventi',       label: 'Eventi',        icon: '🗓️' },
   { href: '/admin/attivita',     label: 'Attività',      icon: '🤿' },
   { href: '/admin/organizzatori',label: 'Organizzatori', icon: '👤' },
+  { href: '/admin/messaggi',     label: 'Messaggi',      icon: '✉️' },
 ]
 
 export default function AdminSidebar() {

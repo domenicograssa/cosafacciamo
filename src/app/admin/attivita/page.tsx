@@ -23,6 +23,7 @@ const LABEL: Record<string, string> = {
 
 interface RigaAttivita {
   id: string
+  slug: string
   titolo: string
   stato: string
   quando: string | null
@@ -43,7 +44,7 @@ export default async function AdminAttivitaPage({
   const sb = await createAdminClient()
   const { data, error } = await sb
     .from('attivita')
-    .select('id, titolo, stato, quando, durata, created_at, geo_nodi(nome), organizzatori(nome, email)')
+    .select('id, slug, titolo, stato, quando, durata, created_at, geo_nodi(nome), organizzatori(nome, email)')
     .order('created_at', { ascending: false })
     .limit(300)
 
@@ -82,7 +83,9 @@ export default async function AdminAttivitaPage({
               <li key={a.id} className="flex flex-col sm:flex-row sm:items-center gap-3 px-5 py-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="font-semibold text-sm text-gray-900 truncate">{a.titolo}</p>
+                    <Link href={`/admin/attivita/${a.slug}`} className="font-semibold text-sm text-gray-900 truncate hover:text-amber-600">
+                      {a.titolo}
+                    </Link>
                     <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full shrink-0 ${BADGE[a.stato] ?? ''}`}>
                       {LABEL[a.stato] ?? a.stato}
                     </span>
@@ -98,7 +101,15 @@ export default async function AdminAttivitaPage({
                     </p>
                   )}
                 </div>
-                <AzioniAttivita attivitaId={a.id} stato={a.stato} />
+                <div className="flex items-center gap-3 shrink-0">
+                  <Link
+                    href={`/admin/attivita/${a.slug}`}
+                    className="text-xs text-amber-600 font-semibold hover:underline"
+                  >
+                    {a.stato === 'bozza' ? 'Anteprima →' : 'Dettaglio →'}
+                  </Link>
+                  <AzioniAttivita attivitaId={a.id} stato={a.stato} />
+                </div>
               </li>
             ))}
           </ul>

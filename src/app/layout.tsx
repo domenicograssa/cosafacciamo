@@ -32,7 +32,7 @@ export default function RootLayout({
               </nav>
             </div>
             <p className="mt-4 text-xs text-center text-gray-400">
-              © 2026 che facciamo? — Gestito da Avv. Domenico Grassa, Foro di Trapani
+              © 2026 che facciamo? — Gestito da Domenico Grassa
             </p>
           </div>
         </footer>

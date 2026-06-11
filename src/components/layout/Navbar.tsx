@@ -28,6 +28,7 @@ export default function Navbar() {
             <Link href="/eventi" className="hover:text-gray-900 transition-colors">Eventi</Link>
             <Link href="/localita" className="hover:text-gray-900 transition-colors">Località</Link>
             <Link href="/organizzatori" className="hover:text-gray-900 transition-colors">Per organizzatori</Link>
+            <Link href="/contatti" className="hover:text-gray-900 transition-colors">Contatti</Link>
           </nav>
 
           {/* Actions */}
@@ -65,6 +66,7 @@ export default function Navbar() {
             <Link href="/eventi" className="px-2 py-1 hover:text-gray-900" onClick={() => setMenuOpen(false)}>Eventi</Link>
             <Link href="/localita" className="px-2 py-1 hover:text-gray-900" onClick={() => setMenuOpen(false)}>Località</Link>
             <Link href="/organizzatori" className="px-2 py-1 hover:text-gray-900" onClick={() => setMenuOpen(false)}>Per organizzatori</Link>
+            <Link href="/contatti" className="px-2 py-1 hover:text-gray-900" onClick={() => setMenuOpen(false)}>Contatti</Link>
             <Link href="/pubblica" className="mt-2 text-center bg-amber-400 text-white font-semibold px-4 py-2 rounded-full" onClick={() => setMenuOpen(false)}>Pubblica evento</Link>
           </nav>
         )}

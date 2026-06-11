@@ -11,6 +11,7 @@ export default async function AdminDashboard() {
     { count: rifiutati },
     { count: attivitaBozza },
     { count: orgInAttesa },
+    { count: messaggiNuovi },
     { data: daRevisionare },
     { data: attivitaDaPubblicare },
   ] = await Promise.all([
@@ -19,6 +20,7 @@ export default async function AdminDashboard() {
     sb.from('eventi').select('id', { count: 'exact', head: true }).eq('stato', 'rifiutato'),
     sb.from('attivita').select('id', { count: 'exact', head: true }).eq('stato', 'bozza'),
     sb.from('organizzatori').select('id', { count: 'exact', head: true }).eq('stato', 'in_attesa'),
+    sb.from('messaggi').select('id', { count: 'exact', head: true }).eq('stato', 'nuovo'),
     sb.from('eventi')
       .select('id, slug, titolo, data_inizio, created_at, geo_nodi(nome), organizzatori(nome)')
       .eq('stato', 'in_revisione')
@@ -46,6 +48,9 @@ export default async function AdminDashboard() {
           {new Date().toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Rome' })}
           {(orgInAttesa ?? 0) > 0 && (
             <> · <Link href="/admin/organizzatori" className="text-amber-600 font-semibold hover:underline">{orgInAttesa} organizzator{orgInAttesa === 1 ? 'e' : 'i'} in attesa</Link></>
+          )}
+          {(messaggiNuovi ?? 0) > 0 && (
+            <> · <Link href="/admin/messaggi?stato=nuovo" className="text-amber-600 font-semibold hover:underline">{messaggiNuovi} {messaggiNuovi === 1 ? 'nuovo messaggio' : 'nuovi messaggi'}</Link></>
           )}
         </p>
       </div>
@@ -113,14 +118,16 @@ export default async function AdminDashboard() {
           ) : (
             <ul className="divide-y divide-gray-50">
               {attivitaDaPubblicare.map(a => (
-                <li key={a.id} className="flex items-start gap-4 px-5 py-4">
-                  <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-xl shrink-0">🤿</div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm text-gray-900 truncate">{a.titolo}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{(a.geo_nodi as unknown as { nome: string } | null)?.nome}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">da: {(a.organizzatori as unknown as { nome: string } | null)?.nome ?? '—'}</p>
-                  </div>
-                  <Link href="/admin/attivita" className="text-xs text-amber-600 font-semibold hover:underline shrink-0 mt-1">Gestisci →</Link>
+                <li key={a.id}>
+                  <Link href={`/admin/attivita/${a.slug}`} className="flex items-start gap-4 px-5 py-4 hover:bg-gray-50 transition-colors">
+                    <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-xl shrink-0">🤿</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm text-gray-900 truncate">{a.titolo}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{(a.geo_nodi as unknown as { nome: string } | null)?.nome}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">da: {(a.organizzatori as unknown as { nome: string } | null)?.nome ?? '—'}</p>
+                    </div>
+                    <span className="text-gray-300 shrink-0 mt-1">›</span>
+                  </Link>
                 </li>
               ))}
             </ul>
