@@ -147,6 +147,21 @@ export async function getEventiHome(limit = 10): Promise<Evento[]> {
 
   const risultato = (futuri ?? []).map(r => mapEvento(flattenCategorie(r as Record<string, unknown>)))
 
+  // Ordina: 1) eventi che iniziano oggi, 2) eventi in corso (iniziati prima ma non
+  // ancora finiti, es. mostre — quelli che finiscono prima in cima), 3) prossimi giorni
+  const gruppo = (e: Evento) => {
+    const giorno = new Date(e.dataInizio).toLocaleDateString('sv-SE', { timeZone: 'Europe/Rome' })
+    if (giorno === oggi) return 0
+    if (giorno < oggi) return 1
+    return 2
+  }
+  risultato.sort((a, b) => {
+    const ga = gruppo(a), gb = gruppo(b)
+    if (ga !== gb) return ga - gb
+    if (ga === 1) return new Date(a.dataFine ?? a.dataInizio).getTime() - new Date(b.dataFine ?? b.dataInizio).getTime()
+    return new Date(a.dataInizio).getTime() - new Date(b.dataInizio).getTime()
+  })
+
   // 2) Se resta spazio, accoda gli eventi passati (i più recenti per primi)
   const spazio = limit - risultato.length
   if (spazio > 0) {

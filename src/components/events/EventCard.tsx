@@ -16,6 +16,13 @@ export default function EventCard({ evento, compact = false }: EventCardProps) {
   const prezzo = formatPrezzo(evento.prezzoMin, evento.prezzoMax, evento.gratuito)
   const categoria = evento.categorie[0]
 
+  // Evento "in corso": iniziato in passato ma con data di fine non ancora passata
+  // (es. mostre che durano settimane) — mostriamo "fino al" invece della data vecchia
+  const adesso = Date.now()
+  const inCorso = !!evento.dataFine &&
+    new Date(evento.dataInizio).getTime() < adesso &&
+    new Date(evento.dataFine).getTime() >= adesso
+
   // Priorità immagine: 1) immagine autorizzata dell'evento, 2) foto della città, 3) placeholder categoria
   const immagineAutorizzata = evento.mediaAssetUrl ?? null
   const fotoCitta = immagineComune(evento.geoNodo.slug)
@@ -38,8 +45,10 @@ export default function EventCard({ evento, compact = false }: EventCardProps) {
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-amber-600">
-            {formatData(evento.dataInizio)} · {formatOra(evento.dataInizio)}
+          <p className={`text-xs font-semibold ${inCorso ? 'text-green-600' : 'text-amber-600'}`}>
+            {inCorso
+              ? `In corso · fino al ${formatData(evento.dataFine!)}`
+              : `${formatData(evento.dataInizio)} · ${formatOra(evento.dataInizio)}`}
           </p>
           <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-amber-600 transition-colors">{evento.titolo}</p>
           <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
@@ -95,12 +104,26 @@ export default function EventCard({ evento, compact = false }: EventCardProps) {
 
         {/* Badge data */}
         <div className="absolute bottom-3 left-3 z-10 bg-white/95 backdrop-blur-sm rounded-xl px-2.5 py-1.5 text-center shadow-sm min-w-[44px]">
-          <p className="text-base font-extrabold text-gray-900 leading-none">
-            {formatData(evento.dataInizio, { day: 'numeric' })}
-          </p>
-          <p className="text-[10px] font-bold uppercase text-amber-600 leading-none mt-0.5">
-            {formatData(evento.dataInizio, { month: 'short' }).replace('.', '')}
-          </p>
+          {inCorso ? (
+            <>
+              <p className="text-[9px] font-bold uppercase text-green-600 leading-none">fino al</p>
+              <p className="text-base font-extrabold text-gray-900 leading-none mt-0.5">
+                {formatData(evento.dataFine!, { day: 'numeric' })}
+              </p>
+              <p className="text-[10px] font-bold uppercase text-green-600 leading-none mt-0.5">
+                {formatData(evento.dataFine!, { month: 'short' }).replace('.', '')}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-base font-extrabold text-gray-900 leading-none">
+                {formatData(evento.dataInizio, { day: 'numeric' })}
+              </p>
+              <p className="text-[10px] font-bold uppercase text-amber-600 leading-none mt-0.5">
+                {formatData(evento.dataInizio, { month: 'short' }).replace('.', '')}
+              </p>
+            </>
+          )}
         </div>
 
         {/* Preferiti */}
@@ -121,7 +144,11 @@ export default function EventCard({ evento, compact = false }: EventCardProps) {
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          <span>{formatData(evento.dataInizio)} · {formatOra(evento.dataInizio)}</span>
+          <span className={inCorso ? 'text-green-600' : undefined}>
+            {inCorso
+              ? `In corso · fino al ${formatData(evento.dataFine!)}`
+              : `${formatData(evento.dataInizio)} · ${formatOra(evento.dataInizio)}`}
+          </span>
         </div>
 
         <h3 className="font-bold text-gray-900 text-sm leading-tight group-hover:text-amber-600 transition-colors line-clamp-2">
