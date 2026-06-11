@@ -45,20 +45,44 @@ export default function OrganizzatoriPage() {
           <strong>esperienze</strong> continuative — snorkeling, corsi di cucina,
           giri in barca, escursioni — e raggiungere chi cerca cosa fare nei 25 comuni del territorio.
         </p>
-        <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+      </div>
+
+      {/* Cosa vuoi pubblicare? */}
+      <div className="mt-12 max-w-3xl mx-auto">
+        <h2 className="text-xl font-bold text-gray-900 text-center">Cosa vuoi pubblicare?</h2>
+        <div className="mt-6 grid sm:grid-cols-2 gap-5">
           <Link
             href="/pubblica"
-            className="bg-amber-400 hover:bg-amber-500 text-white font-bold px-8 py-3.5 rounded-xl transition-colors"
+            className="group bg-white rounded-2xl border-2 border-gray-200 hover:border-amber-400 shadow-sm p-6 text-center transition-colors"
           >
-            Pubblica il tuo evento →
+            <span className="text-4xl">🎉</span>
+            <h3 className="font-extrabold text-gray-900 mt-3 text-lg">Un evento</h3>
+            <p className="text-sm text-gray-600 mt-2 leading-relaxed">
+              Ha una data precisa: sagra, concerto, festa patronale, mostra, spettacolo, presentazione.
+            </p>
+            <span className="inline-block mt-4 bg-amber-400 group-hover:bg-amber-500 text-white font-bold px-6 py-2.5 rounded-xl transition-colors">
+              Pubblica un evento →
+            </span>
           </Link>
           <Link
-            href="/condizioni-organizzatori"
-            className="border-2 border-gray-200 text-gray-700 font-semibold px-8 py-3.5 rounded-xl hover:border-gray-300 transition-colors"
+            href="/pubblica?tipo=esperienza"
+            className="group bg-white rounded-2xl border-2 border-gray-200 hover:border-amber-400 shadow-sm p-6 text-center transition-colors"
           >
-            Leggi le condizioni
+            <span className="text-4xl">🤿</span>
+            <h3 className="font-extrabold text-gray-900 mt-3 text-lg">Un&apos;attività / esperienza</h3>
+            <p className="text-sm text-gray-600 mt-2 leading-relaxed">
+              Si ripete nel tempo: snorkeling, giro in barca, escursione, corso di cucina, degustazione.
+            </p>
+            <span className="inline-block mt-4 bg-amber-400 group-hover:bg-amber-500 text-white font-bold px-6 py-2.5 rounded-xl transition-colors">
+              Pubblica un&apos;attività →
+            </span>
           </Link>
         </div>
+        <p className="text-center mt-4">
+          <Link href="/condizioni-organizzatori" className="text-sm text-gray-500 underline hover:text-gray-700">
+            Leggi le condizioni per gli organizzatori
+          </Link>
+        </p>
       </div>
 
       {/* Come funziona */}
@@ -109,13 +133,21 @@ export default function OrganizzatoriPage() {
       {/* CTA finale */}
       <div className="mt-16 bg-gray-900 rounded-3xl px-8 py-12 text-center">
         <h2 className="text-2xl font-extrabold text-white">Pronto a pubblicare?</h2>
-        <p className="text-gray-300 mt-2">Bastano pochi minuti. Il tuo evento sarà online entro 24 ore.</p>
-        <Link
-          href="/pubblica"
-          className="inline-block mt-6 bg-amber-400 hover:bg-amber-500 text-white font-bold px-8 py-3.5 rounded-xl transition-colors"
-        >
-          Pubblica il tuo evento →
-        </Link>
+        <p className="text-gray-300 mt-2">Bastano pochi minuti. Il tuo evento o la tua attività sarà online entro 24 ore.</p>
+        <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+          <Link
+            href="/pubblica"
+            className="bg-amber-400 hover:bg-amber-500 text-white font-bold px-8 py-3.5 rounded-xl transition-colors"
+          >
+            Pubblica un evento →
+          </Link>
+          <Link
+            href="/pubblica?tipo=esperienza"
+            className="border-2 border-amber-400 text-amber-400 hover:bg-amber-400 hover:text-white font-bold px-8 py-3.5 rounded-xl transition-colors"
+          >
+            Pubblica un&apos;attività →
+          </Link>
+        </div>
       </div>
     </div>
   )

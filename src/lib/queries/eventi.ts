@@ -124,6 +124,51 @@ export async function getEventiApprovati(opzioni?: {
   return (data ?? []).map(r => mapEvento(flattenCategorie(r as Record<string, unknown>)))
 }
 
+// Eventi per la homepage: prima quelli di oggi e in corso, poi i prossimi giorni
+// in ordine di data; gli eventi già passati finiscono in coda (solo se c'è spazio).
+export async function getEventiHome(limit = 10): Promise<Evento[]> {
+  const sb = createClient()
+
+  // Inizio della giornata corrente in Europe/Rome (il server gira in UTC)
+  const oggi = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Rome' }) // YYYY-MM-DD
+  const inizioOggi = `${oggi}T00:00:00`
+
+  // 1) Eventi non ancora conclusi: iniziano oggi o in futuro, oppure sono in corso
+  //    (data_fine non ancora passata). Ordinati dal più vicino nel tempo.
+  const { data: futuri, error: errFuturi } = await sb
+    .from('eventi')
+    .select(EVENTO_SELECT)
+    .eq('stato', 'approvato')
+    .or(`data_inizio.gte.${inizioOggi},data_fine.gte.${inizioOggi}`)
+    .order('data_inizio', { ascending: true })
+    .limit(limit)
+
+  if (errFuturi) { console.error('getEventiHome (futuri):', errFuturi); return [] }
+
+  const risultato = (futuri ?? []).map(r => mapEvento(flattenCategorie(r as Record<string, unknown>)))
+
+  // 2) Se resta spazio, accoda gli eventi passati (i più recenti per primi)
+  const spazio = limit - risultato.length
+  if (spazio > 0) {
+    const { data: passati, error: errPassati } = await sb
+      .from('eventi')
+      .select(EVENTO_SELECT)
+      .eq('stato', 'approvato')
+      .lt('data_inizio', inizioOggi)
+      .or(`data_fine.lt.${inizioOggi},data_fine.is.null`)
+      .order('data_inizio', { ascending: false })
+      .limit(spazio)
+
+    if (errPassati) {
+      console.error('getEventiHome (passati):', errPassati)
+    } else {
+      risultato.push(...(passati ?? []).map(r => mapEvento(flattenCategorie(r as Record<string, unknown>))))
+    }
+  }
+
+  return risultato
+}
+
 export async function getEventoBySlug(slug: string): Promise<Evento | null> {
   const sb = createClient()
 

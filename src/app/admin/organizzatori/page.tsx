@@ -1,9 +1,9 @@
-'use client'
+import Link from 'next/link'
+import { createAdminClient } from '@/lib/supabase/server'
+import { formatData } from '@/lib/utils'
+import { AzioniOrganizzatore } from '@/components/admin/AzioniRevisione'
 
-import { useState } from 'react'
-import { ORGANIZZATORI_MOCK, type Organizzatore } from '@/data/mock-admin'
-
-const STATI_ORG: { key: Organizzatore['stato'] | 'tutti'; label: string }[] = [
+const STATI = [
   { key: 'tutti',     label: 'Tutti' },
   { key: 'in_attesa', label: 'In attesa' },
   { key: 'approvato', label: 'Approvati' },
@@ -12,196 +12,95 @@ const STATI_ORG: { key: Organizzatore['stato'] | 'tutti'; label: string }[] = [
 ]
 
 const BADGE: Record<string, string> = {
-  approvato:  'bg-green-100 text-green-700',
-  in_attesa:  'bg-amber-100 text-amber-700',
-  sospeso:    'bg-orange-100 text-orange-700',
-  rifiutato:  'bg-red-100 text-red-700',
+  approvato: 'bg-green-100 text-green-700',
+  in_attesa: 'bg-amber-100 text-amber-700',
+  sospeso:   'bg-orange-100 text-orange-700',
+  rifiutato: 'bg-red-100 text-red-700',
 }
 
 const LABEL: Record<string, string> = {
-  approvato:  'Approvato',
-  in_attesa:  'In attesa',
-  sospeso:    'Sospeso',
-  rifiutato:  'Rifiutato',
+  approvato: 'Approvato',
+  in_attesa: 'In attesa',
+  sospeso:   'Sospeso',
+  rifiutato: 'Rifiutato',
 }
 
-export default function AdminOrganizzatoriPage() {
-  const [filtro, setFiltro] = useState<Organizzatore['stato'] | 'tutti'>('tutti')
-  const [stati, setStati] = useState<Record<string, Organizzatore['stato']>>(
-    Object.fromEntries(ORGANIZZATORI_MOCK.map(o => [o.id, o.stato]))
-  )
-  const [orgSelezionato, setOrgSelezionato] = useState<Organizzatore | null>(null)
-  const [azione, setAzione] = useState<'approva' | 'rifiuta' | 'sospendi' | null>(null)
+interface RigaOrganizzatore {
+  id: string
+  nome: string
+  email: string | null
+  telefono: string | null
+  sito_web: string | null
+  stato: string
+  created_at: string
+}
 
-  const lista = ORGANIZZATORI_MOCK.filter(o =>
-    filtro === 'tutti' || stati[o.id] === filtro
-  )
+export default async function AdminOrganizzatoriPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ stato?: string }>
+}) {
+  const { stato } = await searchParams
+  const filtro = stato && STATI.some(s => s.key === stato) ? stato : 'tutti'
 
-  const eseguiAzione = (id: string) => {
-    if (azione === 'approva') setStati(s => ({ ...s, [id]: 'approvato' }))
-    if (azione === 'rifiuta') setStati(s => ({ ...s, [id]: 'rifiutato' }))
-    if (azione === 'sospendi') setStati(s => ({ ...s, [id]: 'sospeso' }))
-    setOrgSelezionato(null)
-    setAzione(null)
-  }
+  const sb = await createAdminClient()
+  const { data, error } = await sb
+    .from('organizzatori')
+    .select('id, nome, email, telefono, sito_web, stato, created_at')
+    .order('created_at', { ascending: false })
+    .limit(300)
 
-  const countPerStato = (s: Organizzatore['stato'] | 'tutti') =>
-    s === 'tutti'
-      ? ORGANIZZATORI_MOCK.length
-      : ORGANIZZATORI_MOCK.filter(o => stati[o.id] === s).length
+  if (error) console.error('AdminOrganizzatoriPage:', error)
+  const organizzatori = (data ?? []) as RigaOrganizzatore[]
+
+  const filtrati = filtro === 'tutti' ? organizzatori : organizzatori.filter(o => o.stato === filtro)
+  const count = (s: string) => s === 'tutti' ? organizzatori.length : organizzatori.filter(o => o.stato === s).length
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-extrabold text-gray-900">Gestione organizzatori</h1>
+      <h1 className="text-2xl font-extrabold text-gray-900">Organizzatori</h1>
 
-      {/* Tab */}
+      {/* Tab stati */}
       <div className="flex gap-2 overflow-x-auto pb-1">
-        {STATI_ORG.map(s => (
-          <button
+        {STATI.map(s => (
+          <Link
             key={s.key}
-            onClick={() => setFiltro(s.key)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-colors border-2 ${
-              filtro === s.key
-                ? 'bg-gray-900 text-white border-transparent'
-                : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+            href={s.key === 'tutti' ? '/admin/organizzatori' : `/admin/organizzatori?stato=${s.key}`}
+            className={`shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
+              filtro === s.key ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
-            {s.label}
-            <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${filtro === s.key ? 'bg-white/20' : 'bg-gray-100 text-gray-600'}`}>
-              {countPerStato(s.key)}
-            </span>
-          </button>
+            {s.label} <span className="opacity-60">({count(s.key)})</span>
+          </Link>
         ))}
       </div>
 
-      {/* Griglia organizzatori */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {lista.map(org => {
-          const statoAttuale = stati[org.id]
-          return (
-            <div key={org.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
-
-              {/* Header */}
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-600 text-lg shrink-0">
-                    {org.nome.charAt(0)}
+      {/* Lista */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        {filtrati.length === 0 ? (
+          <div className="px-5 py-12 text-center text-gray-400 text-sm">Nessun organizzatore in questa categoria.</div>
+        ) : (
+          <ul className="divide-y divide-gray-50">
+            {filtrati.map(o => (
+              <li key={o.id} className="flex flex-col sm:flex-row sm:items-center gap-3 px-5 py-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-sm text-gray-900 truncate">{o.nome}</p>
+                    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full shrink-0 ${BADGE[o.stato] ?? ''}`}>
+                      {LABEL[o.stato] ?? o.stato}
+                    </span>
                   </div>
-                  <div className="min-w-0">
-                    <p className="font-bold text-gray-900 text-sm leading-tight truncate">{org.nome}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{org.email}</p>
-                  </div>
-                </div>
-                <span className={`text-xs font-semibold px-2 py-1 rounded-full shrink-0 ${BADGE[statoAttuale]}`}>
-                  {LABEL[statoAttuale]}
-                </span>
-              </div>
-
-              {/* Info */}
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div>
-                  <p className="text-gray-400 font-semibold uppercase tracking-wide">Registrato</p>
-                  <p className="text-gray-700 mt-0.5">
-                    {new Date(org.createdAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  <p className="text-xs text-gray-500 mt-0.5 break-words">
+                    {[o.email, o.telefono, o.sito_web].filter(Boolean).join(' · ') || '—'}
                   </p>
+                  <p className="text-xs text-gray-400 mt-0.5">Registrato il {formatData(o.created_at)}</p>
                 </div>
-                <div>
-                  <p className="text-gray-400 font-semibold uppercase tracking-wide">Eventi</p>
-                  <p className="text-gray-700 mt-0.5">{org.eventiCount} pubblicati</p>
-                </div>
-                {org.telefono && (
-                  <div className="col-span-2">
-                    <p className="text-gray-400 font-semibold uppercase tracking-wide">Telefono</p>
-                    <p className="text-gray-700 mt-0.5">{org.telefono}</p>
-                  </div>
-                )}
-                {org.sitoWeb && (
-                  <div className="col-span-2">
-                    <a href={org.sitoWeb} target="_blank" rel="noopener noreferrer" className="text-amber-600 hover:underline truncate block">
-                      {org.sitoWeb.replace('https://', '')}
-                    </a>
-                  </div>
-                )}
-              </div>
-
-              {/* Azioni */}
-              <div className="flex gap-2">
-                {statoAttuale === 'in_attesa' && (
-                  <>
-                    <button
-                      onClick={() => { setOrgSelezionato(org); setAzione('approva') }}
-                      className="flex-1 bg-green-500 hover:bg-green-600 text-white text-xs font-bold py-2 rounded-xl transition-colors"
-                    >
-                      ✅ Approva
-                    </button>
-                    <button
-                      onClick={() => { setOrgSelezionato(org); setAzione('rifiuta') }}
-                      className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold py-2 rounded-xl border border-red-200 transition-colors"
-                    >
-                      ❌ Rifiuta
-                    </button>
-                  </>
-                )}
-                {statoAttuale === 'approvato' && (
-                  <button
-                    onClick={() => { setOrgSelezionato(org); setAzione('sospendi') }}
-                    className="flex-1 bg-orange-50 hover:bg-orange-100 text-orange-600 text-xs font-bold py-2 rounded-xl border border-orange-200 transition-colors"
-                  >
-                    ⏸ Sospendi
-                  </button>
-                )}
-                {(statoAttuale === 'sospeso' || statoAttuale === 'rifiutato') && (
-                  <button
-                    onClick={() => { setStati(s => ({ ...s, [org.id]: 'approvato' })) }}
-                    className="flex-1 bg-green-50 hover:bg-green-100 text-green-700 text-xs font-bold py-2 rounded-xl border border-green-200 transition-colors"
-                  >
-                    ↩ Riattiva
-                  </button>
-                )}
-              </div>
-            </div>
-          )
-        })}
+                <AzioniOrganizzatore organizzatoreId={o.id} stato={o.stato} />
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
-
-      {/* Dialog conferma */}
-      {orgSelezionato && azione && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40" onClick={() => { setOrgSelezionato(null); setAzione(null) }} />
-          <div className="relative bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4 space-y-4">
-            <h3 className="font-bold text-gray-900 text-lg">
-              {azione === 'approva' ? '✅ Approva organizzatore' :
-               azione === 'rifiuta' ? '❌ Rifiuta organizzatore' :
-               '⏸ Sospendi organizzatore'}
-            </h3>
-            <p className="text-sm text-gray-600">
-              {azione === 'approva'
-                ? `Vuoi approvare "${orgSelezionato.nome}"? Potrà pubblicare eventi sul portale.`
-                : azione === 'rifiuta'
-                ? `Vuoi rifiutare "${orgSelezionato.nome}"? Non potrà pubblicare eventi.`
-                : `Vuoi sospendere "${orgSelezionato.nome}"? I suoi eventi non saranno più visibili.`}
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => { setOrgSelezionato(null); setAzione(null) }}
-                className="flex-1 border-2 border-gray-200 text-gray-700 font-semibold py-2.5 rounded-xl hover:bg-gray-50 text-sm transition-colors"
-              >
-                Annulla
-              </button>
-              <button
-                onClick={() => eseguiAzione(orgSelezionato.id)}
-                className={`flex-1 font-bold py-2.5 rounded-xl text-sm text-white transition-colors ${
-                  azione === 'approva' ? 'bg-green-500 hover:bg-green-600' :
-                  azione === 'rifiuta' ? 'bg-red-500 hover:bg-red-600' :
-                  'bg-orange-500 hover:bg-orange-600'
-                }`}
-              >
-                Conferma
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

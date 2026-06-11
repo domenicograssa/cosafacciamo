@@ -118,9 +118,10 @@ function CheckboxConsent({
 interface PubblicaFormProps {
   comuni: GeoNodo[]
   categorie: Categoria[]
+  tipoIniziale?: 'evento' | 'esperienza'
 }
 
-export default function PubblicaForm({ comuni, categorie }: PubblicaFormProps) {
+export default function PubblicaForm({ comuni, categorie, tipoIniziale = 'evento' }: PubblicaFormProps) {
   const [step, setStep] = useState<Step>('organizzatore')
   const [immagine, setImmagine] = useState<File | null>(null)
   const [anteprimaImg, setAnteprimaImg] = useState<string | null>(null)
@@ -129,7 +130,7 @@ export default function PubblicaForm({ comuni, categorie }: PubblicaFormProps) {
   const [form, setForm] = useState<FormData>({
     nome: '', cognome: '', emailOrg: '', telefonoOrg: '',
     denominazione: '', comuneOrgId: '', sitoWeb: '',
-    tipo: 'evento', quando: '', durata: '', livello: '',
+    tipo: tipoIniziale, quando: '', durata: '', livello: '',
     titolo: '', descrizione: '', categorieSelezionate: [], comuneId: '',
     luogoNome: '', indirizzo: '', dataInizio: '', oraInizio: '',
     dataFine: '', oraFine: '', gratuito: false, prezzoMin: '', prezzoMax: '',

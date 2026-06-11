@@ -1,16 +1,25 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 
 const NAV = [
   { href: '/admin',              label: 'Dashboard',     icon: '📊' },
   { href: '/admin/eventi',       label: 'Eventi',        icon: '🗓️' },
+  { href: '/admin/attivita',     label: 'Attività',      icon: '🤿' },
   { href: '/admin/organizzatori',label: 'Organizzatori', icon: '👤' },
 ]
 
 export default function AdminSidebar() {
   const path = usePathname()
+  const router = useRouter()
+
+  const logout = async () => {
+    await createClient().auth.signOut()
+    router.push('/admin/login')
+    router.refresh()
+  }
 
   return (
     <aside className="w-56 shrink-0 bg-gray-900 min-h-screen flex flex-col">
@@ -60,6 +69,15 @@ export default function AdminSidebar() {
           </svg>
           Vai al portale
         </Link>
+        <button
+          onClick={logout}
+          className="mt-3 flex items-center gap-2 text-xs text-gray-500 hover:text-red-400 transition-colors"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          Esci
+        </button>
       </div>
     </aside>
   )
