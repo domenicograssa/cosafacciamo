@@ -31,9 +31,8 @@ export default function Contatti() {
       <article className="prose prose-gray max-w-none mt-10">
         <h2>Gestore del portale</h2>
         <p>
-          <strong>Avv. Domenico Grassa</strong><br />
-          Foro di Trapani<br />
-          Studio: Via Roma n. 53<br />
+          Il Gestore del portale è: <strong>Domenico Grassa</strong><br />
+          Via Roma n. 53<br />
           91014 Castellammare del Golfo (TP)
         </p>
 

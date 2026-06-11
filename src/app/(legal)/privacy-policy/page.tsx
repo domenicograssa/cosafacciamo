@@ -14,9 +14,8 @@ export default function PrivacyPolicy() {
       <h2>1. Titolare del trattamento</h2>
       <p>
         Il titolare del trattamento dei dati personali è:<br />
-        <strong>Avv. Domenico Grassa</strong><br />
-        Foro di Trapani<br />
-        Studio: Via Roma n. 53, 91014 Castellammare del Golfo (TP)<br />
+        <strong>Domenico Grassa</strong><br />
+        Via Roma n. 53, 91014 Castellammare del Golfo (TP)<br />
         Email: <a href="mailto:domenicograssa@gmail.com">domenicograssa@gmail.com</a>
       </p>
 

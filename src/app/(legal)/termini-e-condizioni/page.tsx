@@ -14,8 +14,8 @@ export default function TerminiCondizioni() {
       <h2>1. Il Gestore</h2>
       <p>
         Il portale <strong>che facciamo?</strong> (di seguito «il Portale») è gestito da:<br />
-        <strong>Avv. Domenico Grassa</strong><br />
-        Foro di Trapani — Studio: Via Roma n. 53, 91014 Castellammare del Golfo (TP)<br />
+        <strong>Domenico Grassa</strong><br />
+        Via Roma n. 53, 91014 Castellammare del Golfo (TP)<br />
         Email: <a href="mailto:domenicograssa@gmail.com">domenicograssa@gmail.com</a>
       </p>
 
