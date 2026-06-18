@@ -1,9 +1,21 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createAdminClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
+
+// Verifica che chi chiama sia l'admin (utente loggato con email admin).
+// Le server action devono proteggere se stesse indipendentemente dal middleware.
+async function richiedeAdmin() {
+  const sb = await createClient()
+  const { data: { user } } = await sb.auth.getUser()
+  const adminEmail = process.env.ADMIN_EMAIL
+  if (!user) throw new Error('Non autorizzato: effettua il login.')
+  if (adminEmail && user.email !== adminEmail) throw new Error('Non autorizzato: accesso riservato all\'admin.')
+  return user
+}
 
 export async function approvaEvento(eventoId: string) {
+  await richiedeAdmin()
   const sb = await createAdminClient()
 
   const { error } = await sb
@@ -17,9 +29,6 @@ export async function approvaEvento(eventoId: string) {
 
   if (error) throw new Error(`Errore approvazione: ${error.message}`)
 
-  // Notifica all'organizzatore (da implementare con Edge Function)
-  // await inviaNotificaOrganizzatore(eventoId, 'evento_approvato')
-
   revalidatePath('/admin/eventi')
   revalidatePath('/admin')
   revalidatePath('/eventi')
@@ -27,6 +36,7 @@ export async function approvaEvento(eventoId: string) {
 }
 
 export async function rifiutaEvento(eventoId: string, nota: string) {
+  await richiedeAdmin()
   if (!nota.trim()) throw new Error('La nota è obbligatoria per il rifiuto.')
 
   const sb = await createAdminClient()
@@ -47,6 +57,7 @@ export async function rifiutaEvento(eventoId: string, nota: string) {
 }
 
 export async function sospendiEvento(eventoId: string) {
+  await richiedeAdmin()
   const sb = await createAdminClient()
 
   const { error } = await sb
@@ -78,6 +89,7 @@ export async function pubblicaEventoDaForm(formData: {
   prezzoMax?: number
   urlBiglietti?: string
 }) {
+  await richiedeAdmin()
   const sb = await createAdminClient()
 
   const { data: evento, error: erroreEvento } = await sb
@@ -104,7 +116,6 @@ export async function pubblicaEventoDaForm(formData: {
 
   if (erroreEvento || !evento) throw new Error(`Errore creazione evento: ${erroreEvento?.message}`)
 
-  // Inserisci categorie
   if (formData.categorieIds.length > 0) {
     const { error: erroreCategorie } = await sb
       .from('eventi_categorie')

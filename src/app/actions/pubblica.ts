@@ -7,6 +7,11 @@ import { createAdminClient } from '@/lib/supabase/server'
 const VERSIONE_DOCUMENTI = '1.0'
 const MAX_IMMAGINE_BYTES = 2 * 1024 * 1024 // 2 MB dopo compressione client
 
+// Escape HTML per prevenire XSS nelle email di notifica
+function esc(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
 function slugify(testo: string): string {
   return testo
     .normalize('NFD')
@@ -72,9 +77,9 @@ async function notificaGestore(dati: {
         subject: `Nuovo evento in revisione: ${dati.titolo}`,
         html: `
           <h2>Nuovo evento da revisionare</h2>
-          <p><strong>${dati.titolo}</strong> — data inizio: ${dati.dataInizio}</p>
-          <p>Inviato da: ${dati.nomeReferente} (${dati.emailOrg})</p>
-          ${dati.immagineUrl ? `<p><img src="${dati.immagineUrl}" width="400" alt="Immagine evento" /></p>` : '<p>Nessuna immagine caricata.</p>'}
+          <p><strong>${esc(dati.titolo)}</strong> — data inizio: ${esc(dati.dataInizio)}</p>
+          <p>Inviato da: ${esc(dati.nomeReferente)} (${esc(dati.emailOrg)})</p>
+          ${dati.immagineUrl ? `<p><img src="${esc(dati.immagineUrl)}" width="400" alt="Immagine evento" /></p>` : '<p>Nessuna immagine caricata.</p>'}
           <p><a href="https://cosafacciamo.vercel.app/admin/eventi">Apri il pannello di amministrazione</a></p>
         `,
       }),

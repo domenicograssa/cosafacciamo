@@ -7,6 +7,11 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 const TIPI_VALIDI = ['messaggio', 'segnalazione', 'richiesta_gdpr', 'collaborazione']
 const MAX_MESSAGGIO = 4000
 
+// Escape HTML per prevenire XSS nelle email
+function esc(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
 export interface EsitoMessaggio {
   ok: boolean
   errore?: string
@@ -35,10 +40,10 @@ async function notificaGestore(dati: {
         subject: `Nuovo messaggio dal sito: ${dati.oggetto || dati.tipo}`,
         html: `
           <h2>Nuovo messaggio dal modulo contatti</h2>
-          <p><strong>Da:</strong> ${dati.nome} (${dati.email})</p>
-          <p><strong>Tipo:</strong> ${dati.tipo}</p>
-          ${dati.oggetto ? `<p><strong>Oggetto:</strong> ${dati.oggetto}</p>` : ''}
-          <p style="white-space:pre-line;border-left:3px solid #f59e0b;padding-left:12px;">${dati.messaggio}</p>
+          <p><strong>Da:</strong> ${esc(dati.nome)} (${esc(dati.email)})</p>
+          <p><strong>Tipo:</strong> ${esc(dati.tipo)}</p>
+          ${dati.oggetto ? `<p><strong>Oggetto:</strong> ${esc(dati.oggetto)}</p>` : ''}
+          <p style="white-space:pre-line;border-left:3px solid #f59e0b;padding-left:12px;">${esc(dati.messaggio)}</p>
           <p><a href="https://cosafacciamo.vercel.app/admin/messaggi">Apri il pannello messaggi</a></p>
         `,
       }),
@@ -104,10 +109,12 @@ export async function aggiornaStatoMessaggio(
   nuovoStato: 'nuovo' | 'letto' | 'archiviato'
 ): Promise<EsitoMessaggio> {
   try {
-    // Auth check: le server action vanno protette anche fuori dal middleware
+    // Auth check admin: solo l'admin può modificare lo stato dei messaggi
     const sbAuth = await createClient()
     const { data: { user } } = await sbAuth.auth.getUser()
+    const adminEmail = process.env.ADMIN_EMAIL
     if (!user) return { ok: false, errore: 'Non autorizzato: effettua il login.' }
+    if (adminEmail && user.email !== adminEmail) return { ok: false, errore: 'Non autorizzato.' }
 
     const sb = await createAdminClient()
     const { error } = await sb

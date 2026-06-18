@@ -19,26 +19,36 @@ function buildSupabase(request: NextRequest, response: NextResponse) {
   )
 }
 
+function isAdmin(email: string | undefined): boolean {
+  const adminEmail = process.env.ADMIN_EMAIL
+  if (!adminEmail) return true // fallback: se non configurato, qualsiasi utente loggato
+  return email === adminEmail
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const response = NextResponse.next()
 
-  // ── Proteggi /admin (tranne /admin/login) ─────────────────────────────────
-  if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
+  // Pagine admin pubbliche (non richiedono login)
+  const adminPubbliche = ['/admin/login', '/admin/recupera-password', '/admin/nuova-password']
+
+  // ── Proteggi /admin (tranne le pagine pubbliche) ──────────────────────────
+  if (pathname.startsWith('/admin') && !adminPubbliche.includes(pathname)) {
     const supabase = buildSupabase(request, response)
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
+
+    if (!user || !isAdmin(user.email)) {
       const loginUrl = new URL('/admin/login', request.url)
       loginUrl.searchParams.set('redirect', pathname)
       return NextResponse.redirect(loginUrl)
     }
   }
 
-  // Se già loggato e va su /admin/login, manda all'admin
-  if (pathname === '/admin/login') {
+  // Se già loggato come admin e va su /admin/login o recupera-password, manda all'admin
+  if (pathname === '/admin/login' || pathname === '/admin/recupera-password') {
     const supabase = buildSupabase(request, response)
     const { data: { user } } = await supabase.auth.getUser()
-    if (user) return NextResponse.redirect(new URL('/admin', request.url))
+    if (user && isAdmin(user.email)) return NextResponse.redirect(new URL('/admin', request.url))
   }
 
   // ── Proteggi /dashboard ───────────────────────────────────────────────────

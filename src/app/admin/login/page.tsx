@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
-export default function AdminLogin() {
+function AdminLoginForm() {
   const router = useRouter()
   const params = useSearchParams()
   const redirect = params.get('redirect') ?? '/admin'
@@ -91,12 +91,27 @@ export default function AdminLogin() {
           </button>
         </form>
 
-        <p className="text-center text-xs text-gray-600">
-          <Link href="/" className="text-gray-500 hover:text-gray-300 transition-colors">
-            ← Torna al portale
-          </Link>
-        </p>
+        <div className="text-center space-y-2">
+          <p className="text-xs">
+            <Link href="/admin/recupera-password" className="text-amber-500 hover:text-amber-400 transition-colors">
+              Hai dimenticato la password?
+            </Link>
+          </p>
+          <p className="text-xs">
+            <Link href="/" className="text-gray-500 hover:text-gray-300 transition-colors">
+              ← Torna al portale
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
+  )
+}
+
+export default function AdminLogin() {
+  return (
+    <Suspense>
+      <AdminLoginForm />
+    </Suspense>
   )
 }

@@ -1,9 +1,20 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createAdminClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
+
+// Verifica che chi chiama sia l'admin (utente loggato con email admin).
+async function richiedeAdmin() {
+  const sb = await createClient()
+  const { data: { user } } = await sb.auth.getUser()
+  const adminEmail = process.env.ADMIN_EMAIL
+  if (!user) throw new Error('Non autorizzato: effettua il login.')
+  if (adminEmail && user.email !== adminEmail) throw new Error('Non autorizzato: accesso riservato all\'admin.')
+  return user
+}
 
 export async function approvaOrganizzatore(organizzatoreId: string) {
+  await richiedeAdmin()
   const sb = await createAdminClient()
 
   const { error } = await sb
@@ -21,6 +32,7 @@ export async function approvaOrganizzatore(organizzatoreId: string) {
 }
 
 export async function rifiutaOrganizzatore(organizzatoreId: string) {
+  await richiedeAdmin()
   const sb = await createAdminClient()
 
   const { error } = await sb
@@ -34,6 +46,7 @@ export async function rifiutaOrganizzatore(organizzatoreId: string) {
 }
 
 export async function sospendiOrganizzatore(organizzatoreId: string) {
+  await richiedeAdmin()
   const sb = await createAdminClient()
 
   const { error } = await sb
@@ -62,6 +75,7 @@ export async function registraOrganizzatore(data: {
   telefono?: string
   sitoWeb?: string
 }) {
+  await richiedeAdmin()
   const sb = await createAdminClient()
 
   const { data: org, error } = await sb
