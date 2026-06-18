@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import LogoMoesco from '@/components/layout/LogoMoesco'
 
-export default function Accedi() {
+function AccediForm() {
   const router = useRouter()
   const params = useSearchParams()
   const redirect = params.get('redirect') ?? '/dashboard'
@@ -111,5 +111,13 @@ export default function Accedi() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function Accedi() {
+  return (
+    <Suspense>
+      <AccediForm />
+    </Suspense>
   )
 }
