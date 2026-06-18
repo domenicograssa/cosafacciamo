@@ -5,8 +5,11 @@ import { createClient } from '@supabase/supabase-js'
 import { getEventoBySlug, getEventiCorrelati } from '@/lib/queries/eventi'
 import EventCard from '@/components/events/EventCard'
 import EventImagePlaceholder from '@/components/ui/EventImagePlaceholder'
+import ShareButtons from '@/components/events/ShareButtons'
 import { formatData, formatOra, formatPrezzo } from '@/lib/utils'
 import { immagineComune } from '@/data/comuni-immagini'
+
+const SITE_URL = 'https://cosafacciamo.vercel.app'
 
 export const revalidate = 3600
 
@@ -46,6 +49,7 @@ export default async function DettaglioEvento({ params }: Props) {
   const correlati = await getEventiCorrelati(evento.id, categoriaIds)
   const prezzo = formatPrezzo(evento.prezzoMin, evento.prezzoMax, evento.gratuito)
   const fotoCitta = immagineComune(evento.geoNodo.slug)
+  const paginaUrl = `${SITE_URL}/eventi/${slug}`
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -248,6 +252,8 @@ export default async function DettaglioEvento({ params }: Props) {
               </div>
             </div>
           </div>
+
+          <ShareButtons titolo={evento.titolo} url={paginaUrl} />
         </div>
       </div>
 

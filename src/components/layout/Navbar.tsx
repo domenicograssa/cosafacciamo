@@ -1,11 +1,20 @@
 'use client'
 
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import LogoMoesco from './LogoMoesco'
 
+const SITE_URL = 'https://cosafacciamo.vercel.app'
+
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const pathname = usePathname()
+
+  const handleTranslate = () => {
+    const url = `${SITE_URL}${pathname}`
+    window.open(`https://translate.google.com/translate?sl=it&tl=en&u=${encodeURIComponent(url)}`, '_blank')
+  }
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
@@ -29,6 +38,15 @@ export default function Navbar() {
 
           {/* Actions */}
           <div className="flex items-center gap-3">
+            {/* Traduzione EN */}
+            <button
+              onClick={handleTranslate}
+              className="hidden sm:flex items-center gap-1 text-xs font-semibold text-gray-500 hover:text-gray-900 border border-gray-200 hover:border-gray-400 rounded-full px-2.5 py-1 transition-colors"
+              aria-label="Translate to English"
+              title="Translate to English"
+            >
+              🇬🇧 EN
+            </button>
             <Link href="/eventi" className="p-2 text-gray-500 hover:text-gray-900 transition-colors" aria-label="Cerca eventi">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -39,6 +57,9 @@ export default function Navbar() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
             </button>
+            <Link href="/accedi" className="hidden sm:block text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors">
+              Accedi
+            </Link>
             <Link href="/pubblica" className="hidden sm:block bg-amber-400 hover:bg-amber-500 text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors">
               Pubblica evento
             </Link>
@@ -63,7 +84,11 @@ export default function Navbar() {
             <Link href="/localita" className="px-2 py-1 hover:text-gray-900" onClick={() => setMenuOpen(false)}>Località</Link>
             <Link href="/organizzatori" className="px-2 py-1 hover:text-gray-900" onClick={() => setMenuOpen(false)}>Per organizzatori</Link>
             <Link href="/contatti" className="px-2 py-1 hover:text-gray-900" onClick={() => setMenuOpen(false)}>Contatti</Link>
+            <Link href="/accedi" className="px-2 py-1 hover:text-gray-900" onClick={() => setMenuOpen(false)}>Accedi / Dashboard</Link>
             <Link href="/pubblica" className="mt-2 text-center bg-amber-400 text-white font-semibold px-4 py-2 rounded-full" onClick={() => setMenuOpen(false)}>Pubblica evento</Link>
+            <button onClick={() => { handleTranslate(); setMenuOpen(false) }} className="px-2 py-1 text-sm font-medium text-gray-600 hover:text-gray-900 text-left">
+              🇬🇧 Versione in inglese
+            </button>
           </nav>
         )}
       </div>
