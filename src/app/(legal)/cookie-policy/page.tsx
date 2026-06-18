@@ -9,7 +9,7 @@ export default function CookiePolicy() {
   return (
     <article className="prose prose-gray max-w-none">
       <h1>Cookie Policy</h1>
-      <p className="text-sm text-gray-500">Versione 1.0 — in vigore dal {new Date().toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+      <p className="text-sm text-gray-500">Versione 1.1 — in vigore dal 18 giugno 2026</p>
 
       <p>
         Il presente documento descrive le modalità di utilizzo dei cookie e di tecnologie simili
@@ -55,46 +55,11 @@ export default function CookiePolicy() {
         </tbody>
       </table>
 
-      <h3>2.2 Cookie analitici (previo consenso)</h3>
+      <h3>2.2 Cookie analitici</h3>
       <p>
-        Previo consenso esplicito dell'utente, il Portale utilizza Google Analytics 4 per
-        analizzare il traffico e migliorare il servizio. Google Analytics raccoglie dati
-        aggregati e anonimi sull'utilizzo del sito.
-      </p>
-      <table>
-        <thead>
-          <tr>
-            <th>Cookie</th>
-            <th>Fornitore</th>
-            <th>Scopo</th>
-            <th>Durata</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>_ga</td>
-            <td>Google LLC</td>
-            <td>Distingue gli utenti univoci</td>
-            <td>2 anni</td>
-          </tr>
-          <tr>
-            <td>_ga_*</td>
-            <td>Google LLC</td>
-            <td>Mantiene lo stato della sessione</td>
-            <td>2 anni</td>
-          </tr>
-        </tbody>
-      </table>
-      <p>
-        Per informazioni su come Google tratta i dati raccolti tramite Google Analytics, si rimanda
-        alla{' '}
-        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">
-          Privacy Policy di Google
-        </a>{' '}
-        e alla pagina{' '}
-        <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer">
-          opt-out di Google Analytics
-        </a>.
+        Il Portale non utilizza attualmente cookie analitici. Il banner cookie include la possibilità
+        di prestare o negare il consenso all'eventuale attivazione futura di strumenti di analisi
+        del traffico. In caso di attivazione, la presente Cookie Policy sarà aggiornata.
       </p>
 
       <h2>3. Cookie di terze parti</h2>
@@ -112,11 +77,7 @@ export default function CookiePolicy() {
         <li><strong>tramite le impostazioni del browser</strong>: ogni browser consente di eliminare,
         bloccare o ricevere notifiche per i cookie. Le istruzioni sono disponibili nella guida
         del browser utilizzato (Chrome, Firefox, Safari, Edge, ecc.);</li>
-        <li><strong>tramite Google Analytics opt-out</strong>:{' '}
-          <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer">
-            tools.google.com/dlpage/gaoptout
-          </a>.
-        </li>
+        <li><strong>tramite il link nel footer</strong> del Portale («Gestisci preferenze cookie») per modificare la scelta in qualsiasi momento.</li>
       </ul>
       <p>
         La disabilitazione dei soli cookie tecnici potrebbe compromettere alcune funzionalità

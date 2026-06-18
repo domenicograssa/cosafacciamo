@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
+import CookieBanner, { RiapriCookieBanner } from "@/components/ui/CookieBanner";
 
 export const metadata: Metadata = {
   title: "moesco — Scopri eventi e attività vicino a te",
@@ -24,18 +25,20 @@ export default function RootLayout({
                 <span className="text-amber-500">moesco</span> — Scopri. Partecipa. Vivi il territorio.
               </p>
               <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2">
-                <a href="/privacy-policy"        className="hover:text-amber-600 transition-colors">Privacy Policy</a>
-                <a href="/cookie-policy"         className="hover:text-amber-600 transition-colors">Cookie Policy</a>
-                <a href="/termini-e-condizioni"  className="hover:text-amber-600 transition-colors">Termini e Condizioni</a>
+                <a href="/privacy-policy"           className="hover:text-amber-600 transition-colors">Privacy Policy</a>
+                <a href="/cookie-policy"            className="hover:text-amber-600 transition-colors">Cookie Policy</a>
+                <a href="/termini-e-condizioni"     className="hover:text-amber-600 transition-colors">Termini e Condizioni</a>
                 <a href="/condizioni-organizzatori" className="hover:text-amber-600 transition-colors">Condizioni Organizzatori</a>
-                <a href="/contatti"              className="hover:text-amber-600 transition-colors">Contatti</a>
+                <a href="/contatti"                 className="hover:text-amber-600 transition-colors">Contatti</a>
+                <RiapriCookieBanner />
               </nav>
             </div>
             <p className="mt-4 text-xs text-center text-gray-400">
-              © 2026 moesco — Gestito da Domenico Grassa
+              © 2026 moesco — Gestito da Domenico Grassa, Via Roma n. 53, 91014 Castellammare del Golfo (TP)
             </p>
           </div>
         </footer>
+        <CookieBanner />
       </body>
     </html>
   );

@@ -9,7 +9,7 @@ export default function PrivacyPolicy() {
   return (
     <article className="prose prose-gray max-w-none">
       <h1>Privacy Policy</h1>
-      <p className="text-sm text-gray-500">Versione 1.0 — in vigore dal {new Date().toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+      <p className="text-sm text-gray-500">Versione 1.1 — in vigore dal 18 giugno 2026</p>
 
       <h2>1. Titolare del trattamento</h2>
       <p>
@@ -45,17 +45,16 @@ export default function PrivacyPolicy() {
 
       <h3>2.3 Cookie e tecnologie di tracciamento</h3>
       <p>
-        Il portale utilizza cookie tecnici necessari al funzionamento e, previo consenso, cookie analitici
-        tramite Google Analytics. Per informazioni dettagliate si rimanda alla{' '}
+        Il portale utilizza cookie tecnici necessari al funzionamento. Non sono attualmente utilizzati
+        cookie analitici o di profilazione. Per informazioni dettagliate si rimanda alla{' '}
         <a href="/cookie-policy">Cookie Policy</a>.
       </p>
 
       <h2>3. Finalità e base giuridica del trattamento</h2>
       <p>I dati personali sono trattati per le seguenti finalità:</p>
       <ul>
-        <li><strong>Erogazione del servizio</strong> (base giuridica: esecuzione del contratto — art. 6, par. 1, lett. b GDPR): gestione della registrazione degli organizzatori, pubblicazione degli eventi, risposta a richieste.</li>
+        <li><strong>Erogazione del servizio</strong> (base giuridica: esecuzione del contratto — art. 6, par. 1, lett. b GDPR): gestione della registrazione degli organizzatori, pubblicazione degli eventi, risposta a richieste, invio di comunicazioni transazionali via email.</li>
         <li><strong>Adempimento di obblighi legali</strong> (base giuridica: obbligo legale — art. 6, par. 1, lett. c GDPR): conservazione dei log di consenso ai sensi della normativa vigente.</li>
-        <li><strong>Analisi statistica aggregata</strong> (base giuridica: consenso — art. 6, par. 1, lett. a GDPR): analisi del traffico tramite Google Analytics, previa acquisizione del consenso.</li>
       </ul>
 
       <h2>4. Modalità del trattamento</h2>
@@ -78,14 +77,14 @@ export default function PrivacyPolicy() {
       <h2>6. Comunicazione dei dati a terzi</h2>
       <p>I dati personali non sono ceduti a terzi. Sono comunicati esclusivamente a:</p>
       <ul>
-        <li><strong>Supabase Inc.</strong> — in qualità di responsabile del trattamento, per la gestione del database (server UE).</li>
+        <li><strong>Supabase Inc.</strong> — in qualità di responsabile del trattamento, per la gestione del database e dell'autenticazione (server UE).</li>
         <li><strong>Vercel Inc.</strong> — in qualità di responsabile del trattamento, per l'hosting del portale.</li>
-        <li><strong>Google LLC</strong> — in qualità di responsabile del trattamento, per il servizio Google Analytics (previo consenso).</li>
+        <li><strong>Resend Inc.</strong> — in qualità di responsabile del trattamento, per l'invio di email transazionali (conferme di registrazione, notifiche agli organizzatori).</li>
       </ul>
 
       <h2>7. Trasferimento dei dati extra-UE</h2>
       <p>
-        Alcuni fornitori del portale (Vercel, Google) possono trasferire dati al di fuori dello Spazio
+        Alcuni fornitori del portale (Vercel, Resend) possono trasferire dati al di fuori dello Spazio
         Economico Europeo. Tali trasferimenti avvengono nel rispetto delle garanzie previste dal GDPR
         (clausole contrattuali standard approvate dalla Commissione europea).
       </p>
