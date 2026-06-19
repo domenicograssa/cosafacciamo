@@ -28,6 +28,7 @@ const LABEL: Record<string, string> = {
 interface RigaOrganizzatore {
   id: string
   nome: string
+  slug: string
   email: string | null
   telefono: string | null
   sito_web: string | null
@@ -46,7 +47,7 @@ export default async function AdminOrganizzatoriPage({
   const sb = await createAdminClient()
   const { data, error } = await sb
     .from('organizzatori')
-    .select('id, nome, email, telefono, sito_web, stato, created_at')
+    .select('id, nome, slug, email, telefono, sito_web, stato, created_at')
     .order('created_at', { ascending: false })
     .limit(300)
 
@@ -85,7 +86,12 @@ export default async function AdminOrganizzatoriPage({
               <li key={o.id} className="flex flex-col sm:flex-row sm:items-center gap-3 px-5 py-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="font-semibold text-sm text-gray-900 truncate">{o.nome}</p>
+                    <Link
+                      href={`/admin/organizzatori/${o.slug}`}
+                      className="font-semibold text-sm text-gray-900 hover:text-amber-600 truncate"
+                    >
+                      {o.nome}
+                    </Link>
                     <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full shrink-0 ${BADGE[o.stato] ?? ''}`}>
                       {LABEL[o.stato] ?? o.stato}
                     </span>
@@ -95,7 +101,15 @@ export default async function AdminOrganizzatoriPage({
                   </p>
                   <p className="text-xs text-gray-400 mt-0.5">Registrato il {formatData(o.created_at)}</p>
                 </div>
-                <AzioniOrganizzatore organizzatoreId={o.id} stato={o.stato} />
+                <div className="flex items-center gap-3">
+                  <Link
+                    href={`/admin/organizzatori/${o.slug}`}
+                    className="text-xs text-amber-600 hover:underline shrink-0"
+                  >
+                    Scheda →
+                  </Link>
+                  <AzioniOrganizzatore organizzatoreId={o.id} stato={o.stato} />
+                </div>
               </li>
             ))}
           </ul>

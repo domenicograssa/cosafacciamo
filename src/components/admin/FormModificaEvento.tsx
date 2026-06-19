@@ -17,27 +17,29 @@ interface Evento {
   prezzo_min: number | null
   prezzo_max: number | null
   url_biglietti: string | null
-  sito_ufficiale: string | null
-  email_contatto: string | null
-  telefono_contatto: string | null
+  geo_nodo_id: string | null
+  immagine_copertina: string | null
+  [key: string]: unknown
 }
 
-// Converte ISO → "YYYY-MM-DD" e "HH:MM" per i campi input
-function toDateInput(iso: string | null) {
-  if (!iso) return ''
-  return iso.slice(0, 10)
-}
-function toTimeInput(iso: string | null) {
-  if (!iso) return ''
-  return iso.slice(11, 16)
-}
+interface Comune { id: string; nome: string }
+interface Categoria { id: string; nome: string; icona: string | null }
+
+function toDateInput(iso: string | null) { return iso ? iso.slice(0, 10) : '' }
+function toTimeInput(iso: string | null) { return iso ? iso.slice(11, 16) : '' }
 
 export default function FormModificaEvento({
   evento,
   slugEvento,
+  comuni,
+  categorie,
+  categorieSelezionate,
 }: {
   evento: Evento
   slugEvento: string
+  comuni: Comune[]
+  categorie: Categoria[]
+  categorieSelezionate: string[]
 }) {
   const router = useRouter()
   const [saving, setSaving] = useState(false)
@@ -49,6 +51,8 @@ export default function FormModificaEvento({
   const [descrizioneBreve, setDescrizioneBreve] = useState(evento.descrizione_breve ?? '')
   const [luogoNome, setLuogoNome] = useState(evento.luogo_nome ?? '')
   const [indirizzo, setIndirizzo] = useState(evento.indirizzo ?? '')
+  const [geoNodoId, setGeoNodoId] = useState(evento.geo_nodo_id ?? '')
+  const [immagine, setImmagine] = useState(evento.immagine_copertina ?? '')
   const [dataInizio, setDataInizio] = useState(toDateInput(evento.data_inizio))
   const [oraInizio, setOraInizio] = useState(toTimeInput(evento.data_inizio))
   const [dataFine, setDataFine] = useState(toDateInput(evento.data_fine))
@@ -56,10 +60,17 @@ export default function FormModificaEvento({
   const [gratuito, setGratuito] = useState(evento.gratuito)
   const [prezzoMin, setPrezzoMin] = useState(evento.prezzo_min?.toString() ?? '')
   const [prezzoMax, setPrezzoMax] = useState(evento.prezzo_max?.toString() ?? '')
-  const [urlBiglietti, setUrlBiglietti] = useState(evento.url_biglietti ?? '')
-  const [sitoUfficiale, setSitoUfficiale] = useState(evento.sito_ufficiale ?? '')
-  const [emailContatto, setEmailContatto] = useState(evento.email_contatto ?? '')
-  const [telefonoContatto, setTelefonoContatto] = useState(evento.telefono_contatto ?? '')
+  const [urlBiglietti, setUrlBiglietti] = useState((evento.url_biglietti as string) ?? '')
+  const [sitoUfficiale, setSitoUfficiale] = useState((evento.sito_ufficiale as string | null) ?? '')
+  const [emailContatto, setEmailContatto] = useState((evento.email_contatto as string | null) ?? '')
+  const [telefonoContatto, setTelefonoContatto] = useState((evento.telefono_contatto as string | null) ?? '')
+  const [catSelezionate, setCatSelezionate] = useState<string[]>(categorieSelezionate)
+
+  const toggleCategoria = (id: string) => {
+    setCatSelezionate(prev =>
+      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+    )
+  }
 
   const isoRoma = (data: string, ora: string) => {
     if (!data || !ora) return ''
@@ -90,6 +101,9 @@ export default function FormModificaEvento({
       sito_ufficiale: sitoUfficiale || undefined,
       email_contatto: emailContatto || undefined,
       telefono_contatto: telefonoContatto || undefined,
+      geo_nodo_id: geoNodoId || undefined,
+      immagine_copertina: immagine,
+      categorie_ids: catSelezionate,
     })
 
     setSaving(false)
@@ -107,11 +121,13 @@ export default function FormModificaEvento({
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
 
+      {/* Titolo */}
       <div>
         <label className={labelCls}>Titolo *</label>
         <input type="text" value={titolo} onChange={e => setTitolo(e.target.value)} required className={inputCls} />
       </div>
 
+      {/* Descrizione breve */}
       <div>
         <label className={labelCls}>Descrizione breve (max 280 caratteri)</label>
         <textarea value={descrizioneBreve} onChange={e => setDescrizioneBreve(e.target.value)}
@@ -119,12 +135,14 @@ export default function FormModificaEvento({
         <p className="text-xs text-gray-400 mt-0.5">{descrizioneBreve.length}/280</p>
       </div>
 
+      {/* Descrizione completa */}
       <div>
         <label className={labelCls}>Descrizione completa *</label>
         <textarea value={descrizione} onChange={e => setDescrizione(e.target.value)}
           required rows={6} className={inputCls + ' resize-y'} />
       </div>
 
+      {/* Luogo */}
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
           <label className={labelCls}>Luogo / Nome sede</label>
@@ -136,6 +154,18 @@ export default function FormModificaEvento({
         </div>
       </div>
 
+      {/* Comune */}
+      <div>
+        <label className={labelCls}>Comune</label>
+        <select value={geoNodoId} onChange={e => setGeoNodoId(e.target.value)} className={inputCls + ' bg-white'}>
+          <option value="">— Seleziona comune —</option>
+          {comuni.map(c => (
+            <option key={c.id} value={c.id}>{c.nome}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Date */}
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
           <label className={labelCls}>Data inizio *</label>
@@ -158,6 +188,7 @@ export default function FormModificaEvento({
         </div>
       </div>
 
+      {/* Prezzo */}
       <div>
         <label className="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" checked={gratuito} onChange={e => setGratuito(e.target.checked)}
@@ -181,6 +212,56 @@ export default function FormModificaEvento({
         </div>
       )}
 
+      {/* Categorie */}
+      {categorie.length > 0 && (
+        <div>
+          <label className={labelCls}>Categorie</label>
+          <div className="flex flex-wrap gap-2 mt-1.5">
+            {categorie.map(cat => (
+              <label
+                key={cat.id}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm cursor-pointer border transition-colors ${
+                  catSelezionate.includes(cat.id)
+                    ? 'bg-amber-400 border-amber-400 text-white font-semibold'
+                    : 'bg-white border-gray-200 text-gray-700 hover:border-amber-300'
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={catSelezionate.includes(cat.id)}
+                  onChange={() => toggleCategoria(cat.id)}
+                  className="sr-only"
+                />
+                {cat.icona && <span>{cat.icona}</span>}
+                {cat.nome}
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Immagine */}
+      <div>
+        <label className={labelCls}>URL immagine di copertina</label>
+        <input
+          type="url"
+          value={immagine}
+          onChange={e => setImmagine(e.target.value)}
+          placeholder="https://…"
+          className={inputCls}
+        />
+        {immagine && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={immagine}
+            alt="Anteprima"
+            className="mt-2 rounded-xl max-h-40 object-cover"
+            onError={ev => { (ev.target as HTMLImageElement).style.display = 'none' }}
+          />
+        )}
+      </div>
+
+      {/* Link e contatti */}
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
           <label className={labelCls}>URL biglietti</label>

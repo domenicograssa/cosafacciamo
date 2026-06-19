@@ -139,7 +139,7 @@ BEGIN
     '1° Raduno Bandistico di Misiliscemi - Ass. Banda Musicale "G. Verdi". Molo Uccello Pio, Salinagrande.',
     'Molo Uccello Pio – Salinagrande',
     '2026-07-05T21:15:00+02:00',
-    NULL, true, 'approvato', now()
+    true, 'approvato', now()
   ) ON CONFLICT (slug) DO NOTHING;
 
   INSERT INTO eventi (organizzatore_id, geo_nodo_id, titolo, slug, descrizione, descrizione_breve,
@@ -151,7 +151,7 @@ BEGIN
     'Barrio de tango Misilese al Baglio Sanacore di Guarrato.',
     'Baglio Sanacore – Guarrato',
     '2026-08-05T21:15:00+02:00',
-    NULL, true, 'approvato', now()
+    true, 'approvato', now()
   ) ON CONFLICT (slug) DO NOTHING;
 
   INSERT INTO eventi (organizzatore_id, geo_nodo_id, titolo, slug, descrizione, descrizione_breve,
@@ -163,7 +163,7 @@ BEGIN
     'Regata delle contrade, villaggio del gusto e artigianato locale - Proloco di Misiliscemi. Dalle ore 18.',
     'Marausa Lido',
     '2026-08-08T18:00:00+02:00',
-    NULL, true, 'approvato', now()
+    true, 'approvato', now()
   ) ON CONFLICT (slug) DO NOTHING;
 
   INSERT INTO eventi (organizzatore_id, geo_nodo_id, titolo, slug, descrizione, descrizione_breve,
@@ -175,7 +175,7 @@ BEGIN
     'Meteore Music Festival - Spiaggia Marausa Lido. Dalle ore 16.',
     'Spiaggia Marausa Lido',
     '2026-08-10T16:00:00+02:00',
-    NULL, true, 'approvato', now()
+    true, 'approvato', now()
   ) ON CONFLICT (slug) DO NOTHING;
 
   INSERT INTO eventi (organizzatore_id, geo_nodo_id, titolo, slug, descrizione, descrizione_breve,
@@ -187,7 +187,7 @@ BEGIN
     'Recital di chitarra con Mauro Di Domenico - da Morricone a Pino Daniele. Villa Immacolatella, Pietretagliate.',
     'Villa Immacolatella – Pietretagliate',
     '2026-08-21T21:15:00+02:00',
-    NULL, true, 'approvato', now()
+    true, 'approvato', now()
   ) ON CONFLICT (slug) DO NOTHING;
 
   INSERT INTO eventi (organizzatore_id, geo_nodo_id, titolo, slug, descrizione, descrizione_breve,
@@ -199,7 +199,7 @@ BEGIN
     'Talenti in dono: l''arte si fa comunità - Comunità Parrocchiale Palma Salinagrande.',
     'Campetto Parrocchiale – Palma',
     '2026-08-22T21:15:00+02:00',
-    NULL, true, 'approvato', now()
+    true, 'approvato', now()
   ) ON CONFLICT (slug) DO NOTHING;
 
   INSERT INTO eventi (organizzatore_id, geo_nodo_id, titolo, slug, descrizione, descrizione_breve,
@@ -211,7 +211,7 @@ BEGIN
     'Giornata della legalità, della giustizia e della memoria Giudice Alberto Giacomelli - Casa Comunale Salinagrande.',
     'Casa Comunale – Salinagrande',
     '2026-09-14T10:00:00+02:00',
-    NULL, true, 'approvato', now()
+    true, 'approvato', now()
   ) ON CONFLICT (slug) DO NOTHING;
 
   -- ── LE SAGRE ───────────────────────────────────────────────
@@ -253,7 +253,7 @@ BEGIN
     'GiovedìnJazz - C''era una volta lo Swing. Mauro Carpi, Tony Terrasi, Antonella Parnasso, Felice Cavazza, Giacomo Bertuglia.',
     'Baglio Elena – Pietretagliate',
     '2026-07-02T21:15:00+02:00',
-    NULL, true, 'approvato', now()
+    true, 'approvato', now()
   ) ON CONFLICT (slug) DO NOTHING;
 
   INSERT INTO eventi (organizzatore_id, geo_nodo_id, titolo, slug, descrizione, descrizione_breve,
@@ -265,7 +265,7 @@ BEGIN
     'GiovedìnJazz - Fly me to the Monk. Nicola Grizzaffi, Flavio Gannuscio, Calogero Bongiovi, Vincenzo Capuano.',
     'Baglio Elena – Pietretagliate',
     '2026-07-09T21:15:00+02:00',
-    NULL, true, 'approvato', now()
+    true, 'approvato', now()
   ) ON CONFLICT (slug) DO NOTHING;
 
   INSERT INTO eventi (organizzatore_id, geo_nodo_id, titolo, slug, descrizione, descrizione_breve,
@@ -277,7 +277,7 @@ BEGIN
     'GiovedìnJazz - Chet, tributo a Chet Baker. Alberto Anguzza, Salvo Casano, Peppe Pipitone, Salvatore Bonafede.',
     'Baglio Elena – Pietretagliate',
     '2026-07-16T21:15:00+02:00',
-    NULL, true, 'approvato', now()
+    true, 'approvato', now()
   ) ON CONFLICT (slug) DO NOTHING;
 
   INSERT INTO eventi (organizzatore_id, geo_nodo_id, titolo, slug, descrizione, descrizione_breve,
@@ -289,7 +289,7 @@ BEGIN
     'GiovedìnJazz - Dusud trio. Anita Vitale, Rita Collura, Sergio Calì.',
     'Baglio Elena – Pietretagliate',
     '2026-07-30T21:15:00+02:00',
-    NULL, true, 'approvato', now()
+    true, 'approvato', now()
   ) ON CONFLICT (slug) DO NOTHING;
 
   -- ── RASSEGNA TEATRALE "RADICI DI PIETRA E SALE" ────────────
@@ -303,7 +303,7 @@ BEGIN
     'Rassegna Teatrale "Radici di Pietra e Sale" - Tonino di Bella duo, Marco Manera. Spettacolo di cabaret.',
     'Molo Uccello Pio – Salinagrande',
     '2026-07-11T21:15:00+02:00',
-    NULL, true, 'approvato', now()
+    true, 'approvato', now()
   ) ON CONFLICT (slug) DO NOTHING;
 
   INSERT INTO eventi (organizzatore_id, geo_nodo_id, titolo, slug, descrizione, descrizione_breve,
@@ -315,7 +315,7 @@ BEGIN
     'Rassegna Teatrale "Radici di Pietra e Sale" - Isola Nura, Canta e cunta. Regia di Enzo Caputo.',
     'Baglio Sanacore – Guarrato',
     '2026-07-18T21:15:00+02:00',
-    NULL, true, 'approvato', now()
+    true, 'approvato', now()
   ) ON CONFLICT (slug) DO NOTHING;
 
   INSERT INTO eventi (organizzatore_id, geo_nodo_id, titolo, slug, descrizione, descrizione_breve,
@@ -327,7 +327,7 @@ BEGIN
     'Rassegna Teatrale "Radici di Pietra e Sale" - Pi un pezzo di terreno, commedia di Maurizio Rallo. Compagnia Teatrale Smile.',
     'Marausa Lido',
     '2026-08-29T21:15:00+02:00',
-    NULL, true, 'approvato', now()
+    true, 'approvato', now()
   ) ON CONFLICT (slug) DO NOTHING;
 
 END $$;

@@ -241,6 +241,65 @@ export async function modificaEvento(
     sito_ufficiale?: string
     email_contatto?: string
     telefono_contatto?: string
+    geo_nodo_id?: string
+    immagine_copertina?: string
+    categorie_ids?: string[]
+  }
+): Promise<{ ok: boolean; errore?: string }> {
+  try {
+    await richiedeLogin()
+    const sb = await createAdminClient()
+
+    const aggiornamento: Record<string, unknown> = {
+      titolo: dati.titolo.trim(),
+      descrizione: dati.descrizione.trim(),
+      descrizione_breve: dati.descrizione_breve.trim().slice(0, 280),
+      luogo_nome: dati.luogo_nome?.trim() || null,
+      indirizzo: dati.indirizzo?.trim() || null,
+      data_inizio: dati.data_inizio,
+      data_fine: dati.data_fine || null,
+      gratuito: dati.gratuito,
+      prezzo_min: dati.gratuito ? null : (dati.prezzo_min ?? null),
+      prezzo_max: dati.gratuito ? null : (dati.prezzo_max ?? null),
+      url_biglietti: dati.url_biglietti?.trim() || null,
+      sito_ufficiale: dati.sito_ufficiale?.trim() || null,
+      email_contatto: dati.email_contatto?.trim() || null,
+      telefono_contatto: dati.telefono_contatto?.trim() || null,
+    }
+    if (dati.geo_nodo_id) aggiornamento.geo_nodo_id = dati.geo_nodo_id
+    if (dati.immagine_copertina !== undefined) {
+      aggiornamento.immagine_copertina = dati.immagine_copertina?.trim() || null
+    }
+
+    const { error } = await sb.from('eventi').update(aggiornamento).eq('id', eventoId)
+    if (error) return { ok: false, errore: error.message }
+
+    // Aggiorna categorie se fornite
+    if (dati.categorie_ids !== undefined) {
+      await sb.from('eventi_categorie').delete().eq('evento_id', eventoId)
+      if (dati.categorie_ids.length > 0) {
+        await sb.from('eventi_categorie').insert(
+          dati.categorie_ids.map(catId => ({ evento_id: eventoId, categoria_id: catId }))
+        )
+      }
+    }
+
+    ricaricaPagine()
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, errore: e instanceof Error ? e.message : 'Errore imprevisto' }
+  }
+}
+
+export async function modificaOrganizzatore(
+  organizzatoreId: string,
+  dati: {
+    nome: string
+    email: string
+    telefono?: string
+    sito_web?: string
+    descrizione?: string
+    note_interne?: string
   }
 ): Promise<{ ok: boolean; errore?: string }> {
   try {
@@ -248,28 +307,21 @@ export async function modificaEvento(
     const sb = await createAdminClient()
 
     const { error } = await sb
-      .from('eventi')
+      .from('organizzatori')
       .update({
-        titolo: dati.titolo.trim(),
-        descrizione: dati.descrizione.trim(),
-        descrizione_breve: dati.descrizione_breve.trim().slice(0, 280),
-        luogo_nome: dati.luogo_nome?.trim() || null,
-        indirizzo: dati.indirizzo?.trim() || null,
-        data_inizio: dati.data_inizio,
-        data_fine: dati.data_fine || null,
-        gratuito: dati.gratuito,
-        prezzo_min: dati.gratuito ? null : (dati.prezzo_min ?? null),
-        prezzo_max: dati.gratuito ? null : (dati.prezzo_max ?? null),
-        url_biglietti: dati.url_biglietti?.trim() || null,
-        sito_ufficiale: dati.sito_ufficiale?.trim() || null,
-        email_contatto: dati.email_contatto?.trim() || null,
-        telefono_contatto: dati.telefono_contatto?.trim() || null,
+        nome: dati.nome.trim(),
+        email: dati.email.trim(),
+        telefono: dati.telefono?.trim() || null,
+        sito_web: dati.sito_web?.trim() || null,
+        descrizione: dati.descrizione?.trim() || null,
+        note_interne: dati.note_interne?.trim() || null,
       })
-      .eq('id', eventoId)
+      .eq('id', organizzatoreId)
 
     if (error) return { ok: false, errore: error.message }
 
-    ricaricaPagine()
+    revalidatePath('/admin/organizzatori')
+    revalidatePath('/organizzatori')
     return { ok: true }
   } catch (e) {
     return { ok: false, errore: e instanceof Error ? e.message : 'Errore imprevisto' }

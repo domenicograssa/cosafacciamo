@@ -1,6 +1,6 @@
 -- ============================================================
 -- MOESCO — Row Level Security (RLS) policies
--- Esegui nel SQL Editor di Supabase (una volta sola)
+-- Sicuro da rieseguire: DROP IF EXISTS prima di ogni CREATE
 -- ============================================================
 
 -- ── 1. Abilita RLS su tutte le tabelle pubbliche ─────────────
@@ -11,11 +11,12 @@ ALTER TABLE messaggi          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE legal_acceptances ENABLE ROW LEVEL SECURITY;
 ALTER TABLE eventi_categorie  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE attivita_categorie ENABLE ROW LEVEL SECURITY;
+ALTER TABLE geo_nodi          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE categorie         ENABLE ROW LEVEL SECURITY;
 
--- ── 2. Tabelle di sola lettura pubblica ──────────────────────
--- geo_nodi, categorie: chiunque può leggere, nessuno può modificare via client
-ALTER TABLE geo_nodi   ENABLE ROW LEVEL SECURITY;
-ALTER TABLE categorie  ENABLE ROW LEVEL SECURITY;
+-- ── 2. GEO_NODI e CATEGORIE: lettura pubblica ────────────────
+DROP POLICY IF EXISTS "geo_nodi: lettura pubblica"    ON geo_nodi;
+DROP POLICY IF EXISTS "categorie: lettura pubblica"   ON categorie;
 
 CREATE POLICY "geo_nodi: lettura pubblica"
   ON geo_nodi FOR SELECT USING (true);
@@ -24,54 +25,42 @@ CREATE POLICY "categorie: lettura pubblica"
   ON categorie FOR SELECT USING (true);
 
 -- ── 3. EVENTI ────────────────────────────────────────────────
--- Lettura pubblica: solo eventi approvati
+DROP POLICY IF EXISTS "eventi: lettura pubblica approvati" ON eventi;
+
 CREATE POLICY "eventi: lettura pubblica approvati"
   ON eventi FOR SELECT
   USING (stato = 'approvato');
 
--- Nessun client (anon o autenticato) può inserire/modificare/cancellare eventi
--- direttamente. Solo il service role (server actions) può farlo.
--- (Con RLS abilitata e nessuna policy INSERT/UPDATE/DELETE, il default è DENY)
-
 -- ── 4. ATTIVITA ──────────────────────────────────────────────
+DROP POLICY IF EXISTS "attivita: lettura pubblica pubblicato" ON attivita;
+
 CREATE POLICY "attivita: lettura pubblica pubblicato"
   ON attivita FOR SELECT
   USING (stato = 'pubblicato');
 
 -- ── 5. ORGANIZZATORI ─────────────────────────────────────────
--- Lettura pubblica: solo organizzatori approvati (per pagine /organizzatori)
+DROP POLICY IF EXISTS "organizzatori: lettura pubblica approvati" ON organizzatori;
+
 CREATE POLICY "organizzatori: lettura pubblica approvati"
   ON organizzatori FOR SELECT
   USING (stato = 'approvato');
 
--- ── 6. MESSAGGI ──────────────────────────────────────────────
--- Nessuna policy di SELECT pubblica: i messaggi sono visibili solo via service role
--- (nessuna policy = accesso negato via client anon/autenticato)
+-- ── 6. EVENTI_CATEGORIE e ATTIVITA_CATEGORIE ─────────────────
+DROP POLICY IF EXISTS "eventi_categorie: lettura pubblica"    ON eventi_categorie;
+DROP POLICY IF EXISTS "attivita_categorie: lettura pubblica"  ON attivita_categorie;
 
--- ── 7. LEGAL_ACCEPTANCES ─────────────────────────────────────
--- Nessuna policy di SELECT pubblica: solo service role
-
--- ── 8. EVENTI_CATEGORIE e ATTIVITA_CATEGORIE ─────────────────
--- Lettura pubblica OK (non contengono dati sensibili)
 CREATE POLICY "eventi_categorie: lettura pubblica"
   ON eventi_categorie FOR SELECT USING (true);
 
 CREATE POLICY "attivita_categorie: lettura pubblica"
   ON attivita_categorie FOR SELECT USING (true);
 
--- ── 9. Storage bucket sicuro ─────────────────────────────────
--- Assicurati che il bucket 'eventi-immagini' sia PUBLIC (lettura)
--- ma che solo il service role possa caricare file.
--- Esegui nel dashboard Supabase → Storage → Policies:
---
---   INSERT: solo service_role (già così se non hai aggiunto policy)
---   SELECT: public (per mostrare le immagini)
---
--- Non servono comandi SQL aggiuntivi se non hai ancora modificato le policy Storage.
+-- ── 7. MESSAGGI e LEGAL_ACCEPTANCES ──────────────────────────
+-- Nessuna policy SELECT: visibili solo via service role (default DENY)
 
 -- ============================================================
--- VERIFICA: dopo aver eseguito, testa con:
--- SELECT * FROM eventi;          -- deve restituire solo approvati
--- SELECT * FROM messaggi;        -- deve restituire 0 righe (via anon)
--- SELECT * FROM organizzatori;   -- deve restituire solo approvati
+-- VERIFICA dopo l'esecuzione:
+-- SELECT * FROM eventi;          -- solo approvati
+-- SELECT * FROM messaggi;        -- 0 righe (via anon)
+-- SELECT * FROM organizzatori;   -- solo approvati
 -- ============================================================
