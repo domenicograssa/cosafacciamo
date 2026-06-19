@@ -6,6 +6,7 @@ import Image from 'next/image'
 import SearchBar from '@/components/ui/SearchBar'
 import CategoryChip from '@/components/ui/CategoryChip'
 import EventCard from '@/components/events/EventCard'
+import { useLang } from '@/lib/i18n/LanguageContext'
 import type { Evento, Categoria, GeoNodo } from '@/types'
 
 const HERO_SLIDES = [
@@ -46,6 +47,7 @@ interface Props {
 }
 
 export default function HomepageClient({ eventiOggi, categorie, comuni }: Props) {
+  const { t, lang } = useLang()
   const [categoriaAttiva, setCategoriaAttiva] = useState<string | null>(null)
   const [slideIdx, setSlideIdx] = useState(0)
 
@@ -107,10 +109,12 @@ export default function HomepageClient({ eventiOggi, categorie, comuni }: Props)
         {/* content */}
         <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 w-full py-14 text-center">
           <h1 className="text-4xl sm:text-5xl font-extrabold text-white leading-tight">
-            che facciamo <span className="text-amber-400">oggi?</span>
+            {t.home.hero.includes('?')
+              ? <>{t.home.hero.split('?')[0]}<span className="text-amber-400">?</span></>
+              : t.home.hero}
           </h1>
           <p className="mt-3 text-white/80 text-lg">
-            Eventi, esperienze e attività nei posti che ami.
+            {t.home.subtitle}
           </p>
 
           <div className="mt-6">
@@ -157,13 +161,13 @@ export default function HomepageClient({ eventiOggi, categorie, comuni }: Props)
             <h2 className="text-xl font-bold text-gray-900">
               {categoriaAttiva
                 ? categorie.find(c => c.slug === categoriaAttiva)?.nome
-                : 'In evidenza oggi'}
+                : t.home.upcoming}
             </h2>
             <Link href="/eventi" className="flex items-center gap-1.5 text-sm text-amber-600 font-semibold hover:underline">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              Vedi calendario
+              {t.home.seeAll}
             </Link>
           </div>
           {inEvidenza.length > 0 ? (
@@ -173,9 +177,9 @@ export default function HomepageClient({ eventiOggi, categorie, comuni }: Props)
           ) : (
             <div className="py-12 text-center text-gray-400">
               <p className="text-4xl mb-3">📭</p>
-              <p className="text-sm">Nessun evento in programma per questa categoria.</p>
+              <p className="text-sm">{t.home.noEvents}</p>
               <button onClick={() => setCategoriaAttiva(null)} className="mt-3 text-sm text-amber-600 font-semibold hover:underline">
-                Mostra tutti gli eventi
+                {t.home.cta}
               </button>
             </div>
           )}
@@ -184,7 +188,7 @@ export default function HomepageClient({ eventiOggi, categorie, comuni }: Props)
         {/* ─── PROSSIMI + GRATUITI ──────────────────────────────────────── */}
         <div className="grid lg:grid-cols-3 gap-10">
           <div className="lg:col-span-2">
-            <h2 className="text-xl font-bold text-gray-900 mb-5">Prossimi eventi</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-5">{t.home.upcoming}</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {eventiOggi.slice(0, 6).map(evento => <EventCard key={evento.id} evento={evento} />)}
             </div>
@@ -192,15 +196,15 @@ export default function HomepageClient({ eventiOggi, categorie, comuni }: Props)
 
           <div>
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-bold text-gray-900">Gratuiti</h2>
-              <Link href="/eventi?gratuiti=true" className="text-sm text-amber-600 font-semibold hover:underline">Vedi tutti</Link>
+              <h2 className="text-xl font-bold text-gray-900">{t.event.free}</h2>
+              <Link href="/eventi?gratuiti=true" className="text-sm text-amber-600 font-semibold hover:underline">{t.home.seeAll}</Link>
             </div>
             {gratuiti.length > 0 ? (
               <div className="space-y-4">
                 {gratuiti.map(evento => <EventCard key={evento.id} evento={evento} compact />)}
               </div>
             ) : (
-              <p className="text-sm text-gray-400">Nessun evento gratuito in programma.</p>
+              <p className="text-sm text-gray-400">{t.home.noEvents}</p>
             )}
           </div>
         </div>
@@ -208,9 +212,9 @@ export default function HomepageClient({ eventiOggi, categorie, comuni }: Props)
         {/* ─── CTA ──────────────────────────────────────────────────────── */}
         <section className="grid sm:grid-cols-3 gap-4">
           {[
-            { icon: '📣', titolo: 'Pubblica il tuo evento', testo: 'Raggiungi migliaia di persone in pochi semplici passaggi.' },
-            { icon: '🔔', titolo: 'Sempre aggiornato',      testo: 'Ogni giorno nuovi eventi e attività selezionati.' },
-            { icon: '📍', titolo: 'Ovunque tu sia',         testo: 'Cerca vicino a te e scopri cosa fare intorno.' },
+            { icon: '📣', titolo: t.publish.title,    testo: t.publish.subtitle },
+            { icon: '🔔', titolo: lang === 'en' ? 'Always up to date'   : 'Sempre aggiornato',  testo: lang === 'en' ? 'New events and activities selected every day.' : 'Ogni giorno nuovi eventi e attività selezionati.' },
+            { icon: '📍', titolo: lang === 'en' ? 'Wherever you are'    : 'Ovunque tu sia',     testo: lang === 'en' ? 'Search near you and discover what to do around.' : 'Cerca vicino a te e scopri cosa fare intorno.' },
           ].map(item => (
             <div key={item.titolo} className="flex items-start gap-4 bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
               <span className="text-3xl shrink-0">{item.icon}</span>

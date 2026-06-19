@@ -188,14 +188,14 @@ export function useCookieConsent() {
 }
 
 // Componente per riaprire il banner (usato nel footer)
-export function RiapriCookieBanner() {
+export function RiapriCookieBanner({ label = 'Gestisci preferenze cookie' }: { label?: string }) {
   const apri = () => {
     localStorage.removeItem('moesco_cookie_consent')
     window.location.reload()
   }
   return (
     <button onClick={apri} className="hover:text-amber-600 transition-colors">
-      Gestisci preferenze cookie
+      {label}
     </button>
   )
 }

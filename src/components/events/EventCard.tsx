@@ -6,6 +6,7 @@ import { Evento } from '@/types'
 import { formatData, formatOra, formatPrezzo } from '@/lib/utils'
 import EventImagePlaceholder from '@/components/ui/EventImagePlaceholder'
 import { immagineComune } from '@/data/comuni-immagini'
+import { useLang } from '@/lib/i18n/LanguageContext'
 
 interface EventCardProps {
   evento: Evento
@@ -13,6 +14,7 @@ interface EventCardProps {
 }
 
 export default function EventCard({ evento, compact = false }: EventCardProps) {
+  const { t } = useLang()
   const prezzo = formatPrezzo(evento.prezzoMin, evento.prezzoMax, evento.gratuito)
   const categoria = evento.categorie[0]
 
@@ -47,7 +49,7 @@ export default function EventCard({ evento, compact = false }: EventCardProps) {
         <div className="flex-1 min-w-0">
           <p className={`text-xs font-semibold ${inCorso ? 'text-green-600' : 'text-amber-600'}`}>
             {inCorso
-              ? `In corso · fino al ${formatData(evento.dataFine!)}`
+              ? `${t.card.ongoing} · ${t.card.until} ${formatData(evento.dataFine!)}`
               : `${formatData(evento.dataInizio)} · ${formatOra(evento.dataInizio)}`}
           </p>
           <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-amber-600 transition-colors">{evento.titolo}</p>
@@ -106,7 +108,7 @@ export default function EventCard({ evento, compact = false }: EventCardProps) {
         <div className="absolute bottom-3 left-3 z-10 bg-white/95 backdrop-blur-sm rounded-xl px-2.5 py-1.5 text-center shadow-sm min-w-[44px]">
           {inCorso ? (
             <>
-              <p className="text-[9px] font-bold uppercase text-green-600 leading-none">fino al</p>
+              <p className="text-[9px] font-bold uppercase text-green-600 leading-none">{t.card.until}</p>
               <p className="text-base font-extrabold text-gray-900 leading-none mt-0.5">
                 {formatData(evento.dataFine!, { day: 'numeric' })}
               </p>
@@ -130,7 +132,7 @@ export default function EventCard({ evento, compact = false }: EventCardProps) {
         <button
           className="absolute top-3 right-3 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-colors z-10"
           onClick={(e) => { e.preventDefault() }}
-          aria-label="Aggiungi ai preferiti"
+          aria-label={t.card.addFavorite}
         >
           <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -146,7 +148,7 @@ export default function EventCard({ evento, compact = false }: EventCardProps) {
           </svg>
           <span className={inCorso ? 'text-green-600' : undefined}>
             {inCorso
-              ? `In corso · fino al ${formatData(evento.dataFine!)}`
+              ? `${t.card.ongoing} · ${t.card.until} ${formatData(evento.dataFine!)}`
               : `${formatData(evento.dataInizio)} · ${formatOra(evento.dataInizio)}`}
           </span>
         </div>

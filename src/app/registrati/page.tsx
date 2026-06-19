@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import LogoMoesco from '@/components/layout/LogoMoesco'
+import { completaRegistrazione } from '@/app/actions/registrazione'
 
 function slugify(testo: string): string {
   return testo
@@ -58,21 +59,18 @@ export default function Registrati() {
       return
     }
 
-    // 2. Crea il profilo organizzatore collegato all'utente auth
-    const slug = slugify(nome) + '-' + Math.random().toString(36).slice(2, 6)
-    const { error: orgError } = await sb.from('organizzatori').insert({
-      auth_user_id: authData.user.id,
+    // 2. Crea profilo organizzatore + invia email via server action
+    const esito = await completaRegistrazione({
+      authUserId: authData.user.id,
       nome,
-      slug,
       email,
-      telefono: telefono || null,
-      sito_web: sitoWeb || null,
-      descrizione: descrizione || null,
-      stato: 'in_attesa',  // l'admin approverà l'account
+      telefono: telefono || undefined,
+      sitoWeb: sitoWeb || undefined,
+      descrizione: descrizione || undefined,
     })
 
-    if (orgError) {
-      setErrore('Profilo registrato ma si è verificato un errore tecnico. Contattaci.')
+    if (!esito.ok) {
+      setErrore(esito.errore ?? 'Errore nella creazione del profilo. Contattaci.')
       setLoading(false)
       return
     }

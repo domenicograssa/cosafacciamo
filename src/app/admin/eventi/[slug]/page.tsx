@@ -156,7 +156,15 @@ export default async function AdminEventoDettaglio({
 
       {/* Azioni */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <h2 className="font-bold text-gray-900 mb-4">Azioni</h2>
+        <div className="flex items-center justify-between mb-4 gap-4">
+          <h2 className="font-bold text-gray-900">Azioni</h2>
+          <Link
+            href={`/admin/eventi/${slug}/modifica`}
+            className="text-xs font-semibold text-amber-600 border border-amber-200 hover:bg-amber-50 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            ✏️ Modifica evento
+          </Link>
+        </div>
         <AzioniEvento eventoId={evento.id} stato={evento.stato} />
         <p className="text-xs text-gray-400 mt-4">
           Approvando, l&apos;evento diventa subito visibile sul sito e l&apos;organizzatore in attesa viene approvato automaticamente.
