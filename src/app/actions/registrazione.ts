@@ -82,7 +82,7 @@ export async function completaRegistrazione(dati: {
         descrizione: dati.descrizione || null,
         stato: 'in_attesa',
       })
-      if (orgError) return { ok: false, errore: 'Errore nella creazione del profilo. Contattaci.' }
+      if (orgError) return { ok: false, errore: `DB: ${orgError.message}` }
     }
 
     // ── Email di benvenuto all'organizzatore ──────────────────
