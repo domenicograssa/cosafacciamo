@@ -1,7 +1,140 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+
+// Recupera l'organizzatore associato all'utente loggato (o lancia errore)
+async function richiedeOrganizzatore() {
+  const sb = await createClient()
+  const { data: { user } } = await sb.auth.getUser()
+  if (!user) throw new Error('Non autorizzato: effettua il login.')
+
+  const { data: org } = await sb
+    .from('organizzatori')
+    .select('id')
+    .eq('auth_user_id', user.id)
+    .single()
+
+  if (!org) throw new Error('Profilo organizzatore non trovato.')
+  return { sb, org }
+}
+
+export async function modificaEventoOrganizzatore(
+  eventoId: string,
+  dati: {
+    titolo: string
+    descrizione: string
+    descrizione_breve: string
+    luogo_nome?: string
+    indirizzo?: string
+    data_inizio: string
+    data_fine?: string
+    gratuito: boolean
+    prezzo_min?: number | null
+    prezzo_max?: number | null
+    url_biglietti?: string
+    sito_ufficiale?: string
+    email_contatto?: string
+    telefono_contatto?: string
+    geo_nodo_id?: string
+    immagine_copertina?: string
+    categorie_ids?: string[]
+  }
+): Promise<{ ok: boolean; errore?: string }> {
+  try {
+    const { sb, org } = await richiedeOrganizzatore()
+
+    // Verifica che l'evento appartenga a questo organizzatore
+    const { data: ev } = await sb
+      .from('eventi')
+      .select('id, stato')
+      .eq('id', eventoId)
+      .eq('organizzatore_id', org.id)
+      .single()
+
+    if (!ev) return { ok: false, errore: 'Evento non trovato o non di tua proprietà.' }
+
+    const sbAdmin = await createAdminClient()
+
+    const aggiornamento: Record<string, unknown> = {
+      titolo: dati.titolo.trim(),
+      descrizione: dati.descrizione.trim(),
+      descrizione_breve: dati.descrizione_breve.trim().slice(0, 280),
+      luogo_nome: dati.luogo_nome?.trim() || null,
+      indirizzo: dati.indirizzo?.trim() || null,
+      data_inizio: dati.data_inizio,
+      data_fine: dati.data_fine || null,
+      gratuito: dati.gratuito,
+      prezzo_min: dati.gratuito ? null : (dati.prezzo_min ?? null),
+      prezzo_max: dati.gratuito ? null : (dati.prezzo_max ?? null),
+      url_biglietti: dati.url_biglietti?.trim() || null,
+      sito_ufficiale: dati.sito_ufficiale?.trim() || null,
+      email_contatto: dati.email_contatto?.trim() || null,
+      telefono_contatto: dati.telefono_contatto?.trim() || null,
+    }
+    if (dati.geo_nodo_id) aggiornamento.geo_nodo_id = dati.geo_nodo_id
+    if (dati.immagine_copertina !== undefined) {
+      aggiornamento.immagine_copertina = dati.immagine_copertina?.trim() || null
+    }
+    // Se l'evento era approvato, torna in revisione dopo la modifica
+    if (ev.stato === 'approvato') aggiornamento.stato = 'in_revisione'
+
+    const { error } = await sbAdmin.from('eventi').update(aggiornamento).eq('id', eventoId)
+    if (error) return { ok: false, errore: error.message }
+
+    if (dati.categorie_ids !== undefined) {
+      await sbAdmin.from('eventi_categorie').delete().eq('evento_id', eventoId)
+      if (dati.categorie_ids.length > 0) {
+        await sbAdmin.from('eventi_categorie').insert(
+          dati.categorie_ids.map(catId => ({ evento_id: eventoId, categoria_id: catId }))
+        )
+      }
+    }
+
+    revalidatePath('/dashboard/miei-eventi')
+    revalidatePath('/')
+    revalidatePath('/eventi')
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, errore: e instanceof Error ? e.message : 'Errore imprevisto' }
+  }
+}
+
+export async function eliminaEventoOrganizzatore(
+  eventoId: string
+): Promise<{ ok: boolean; errore?: string }> {
+  try {
+    const { sb, org } = await richiedeOrganizzatore()
+
+    // Verifica che l'evento appartenga a questo organizzatore
+    const { data: ev } = await sb
+      .from('eventi')
+      .select('id')
+      .eq('id', eventoId)
+      .eq('organizzatore_id', org.id)
+      .single()
+
+    if (!ev) return { ok: false, errore: 'Evento non trovato o non di tua proprietà.' }
+
+    const sbAdmin = await createAdminClient()
+
+    // Elimina prima le categorie collegate
+    await sbAdmin.from('eventi_categorie').delete().eq('evento_id', eventoId)
+
+    const { error } = await sbAdmin.from('eventi').delete().eq('id', eventoId)
+    if (error) return { ok: false, errore: error.message }
+
+    revalidatePath('/dashboard/miei-eventi')
+    revalidatePath('/')
+    revalidatePath('/eventi')
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, errore: e instanceof Error ? e.message : 'Errore imprevisto' }
+  }
+}
+
+void redirect // usato indirettamente
 
 // Verifica che chi chiama sia l'admin (utente loggato con email admin).
 // Le server action devono proteggere se stesse indipendentemente dal middleware.

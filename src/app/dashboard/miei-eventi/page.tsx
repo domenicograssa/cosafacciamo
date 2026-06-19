@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { formatData, formatOra } from '@/lib/utils'
+import EliminaEventoBtn from '@/components/dashboard/EliminaEventoBtn'
 
 export default async function MieiEventi() {
   const sb = await createClient()
@@ -72,15 +73,26 @@ export default async function MieiEventi() {
                       </p>
                     )}
                   </div>
-                  {ev.stato === 'approvato' && (
+
+                  {/* Azioni */}
+                  <div className="flex items-center gap-3 shrink-0 flex-wrap justify-end">
+                    {ev.stato === 'approvato' && (
+                      <Link
+                        href={`/eventi/${ev.slug}`}
+                        target="_blank"
+                        className="text-xs text-amber-600 font-semibold hover:underline"
+                      >
+                        Vedi →
+                      </Link>
+                    )}
                     <Link
-                      href={`/eventi/${ev.slug}`}
-                      target="_blank"
-                      className="text-xs text-amber-600 font-semibold hover:underline shrink-0"
+                      href={`/dashboard/miei-eventi/${ev.slug}/modifica`}
+                      className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold px-3 py-1.5 rounded-lg transition-colors"
                     >
-                      Vedi →
+                      ✏️ Modifica
                     </Link>
-                  )}
+                    <EliminaEventoBtn eventoId={ev.id} titolo={ev.titolo} />
+                  </div>
                 </div>
               </li>
             ))}
