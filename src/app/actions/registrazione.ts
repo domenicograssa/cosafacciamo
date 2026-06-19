@@ -45,6 +45,9 @@ export async function completaRegistrazione(dati: {
   try {
     const sb = await createAdminClient()
 
+    // Conferma automaticamente l'email (bypassa il flusso di verifica Supabase)
+    await sb.auth.admin.updateUser(dati.authUserId, { email_confirm: true })
+
     // Cerca se esiste già un organizzatore con questa email (es. aveva già pubblicato un evento)
     const { data: esistente } = await sb
       .from('organizzatori')
