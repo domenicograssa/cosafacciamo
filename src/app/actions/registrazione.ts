@@ -45,21 +45,41 @@ export async function completaRegistrazione(dati: {
   try {
     const sb = await createAdminClient()
 
-    // Crea il profilo organizzatore
-    const slug = slugify(dati.nome) + '-' + Math.random().toString(36).slice(2, 6)
-    const { error: orgError } = await sb.from('organizzatori').insert({
-      auth_user_id: dati.authUserId,
-      nome: dati.nome,
-      slug,
-      email: dati.email,
-      telefono: dati.telefono || null,
-      sito_web: dati.sitoWeb || null,
-      descrizione: dati.descrizione || null,
-      stato: 'in_attesa',
-    })
+    // Cerca se esiste già un organizzatore con questa email (es. aveva già pubblicato un evento)
+    const { data: esistente } = await sb
+      .from('organizzatori')
+      .select('id')
+      .eq('email', dati.email)
+      .maybeSingle()
 
-    if (orgError) {
-      return { ok: false, errore: 'Errore nella creazione del profilo. Contattaci.' }
+    if (esistente) {
+      // Collega l'account auth all'organizzatore già esistente
+      const { error: updErr } = await sb
+        .from('organizzatori')
+        .update({
+          auth_user_id: dati.authUserId,
+          nome: dati.nome,
+          telefono: dati.telefono || null,
+          sito_web: dati.sitoWeb || null,
+          descrizione: dati.descrizione || null,
+          stato: 'in_attesa',
+        })
+        .eq('id', esistente.id)
+      if (updErr) return { ok: false, errore: 'Errore nell\'aggiornamento del profilo. Contattaci.' }
+    } else {
+      // Crea nuovo profilo organizzatore
+      const slug = slugify(dati.nome) + '-' + Math.random().toString(36).slice(2, 6)
+      const { error: orgError } = await sb.from('organizzatori').insert({
+        auth_user_id: dati.authUserId,
+        nome: dati.nome,
+        slug,
+        email: dati.email,
+        telefono: dati.telefono || null,
+        sito_web: dati.sitoWeb || null,
+        descrizione: dati.descrizione || null,
+        stato: 'in_attesa',
+      })
+      if (orgError) return { ok: false, errore: 'Errore nella creazione del profilo. Contattaci.' }
     }
 
     // ── Email di benvenuto all'organizzatore ──────────────────
@@ -82,7 +102,7 @@ export async function completaRegistrazione(dati: {
             <li>Raggiungere migliaia di turisti e residenti del territorio</li>
           </ul>
           <div style="margin:24px 0;">
-            <a href="https://cosafacciamo.vercel.app/dashboard"
+            <a href="https://www.moesco.it/dashboard"
                style="background:#FFAD05;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:bold;display:inline-block;">
               Vai alla tua dashboard →
             </a>
@@ -114,7 +134,7 @@ export async function completaRegistrazione(dati: {
         ${dati.telefono ? `<p><strong>Telefono:</strong> ${esc(dati.telefono)}</p>` : ''}
         ${dati.sitoWeb ? `<p><strong>Sito web:</strong> ${esc(dati.sitoWeb)}</p>` : ''}
         ${dati.descrizione ? `<p><strong>Descrizione:</strong> ${esc(dati.descrizione)}</p>` : ''}
-        <p><a href="https://cosafacciamo.vercel.app/admin/organizzatori">Apri il pannello organizzatori →</a></p>
+        <p><a href="https://www.moesco.it/admin/organizzatori">Apri il pannello organizzatori →</a></p>
         `
       )
     }

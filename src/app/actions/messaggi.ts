@@ -34,7 +34,7 @@ async function notificaGestore(dati: {
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from: 'moesco <onboarding@resend.dev>',
+        from: process.env.RESEND_FROM_EMAIL ?? 'moesco <onboarding@resend.dev>',
         to: [destinatario],
         reply_to: dati.email,
         subject: `Nuovo messaggio dal sito: ${dati.oggetto || dati.tipo}`,
@@ -44,7 +44,7 @@ async function notificaGestore(dati: {
           <p><strong>Tipo:</strong> ${esc(dati.tipo)}</p>
           ${dati.oggetto ? `<p><strong>Oggetto:</strong> ${esc(dati.oggetto)}</p>` : ''}
           <p style="white-space:pre-line;border-left:3px solid #f59e0b;padding-left:12px;">${esc(dati.messaggio)}</p>
-          <p><a href="https://cosafacciamo.vercel.app/admin/messaggi">Apri il pannello messaggi</a></p>
+          <p><a href="https://www.moesco.it/admin/messaggi">Apri il pannello messaggi</a></p>
         `,
       }),
     })

@@ -72,7 +72,7 @@ async function notificaGestore(dati: {
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from: 'moesco <onboarding@resend.dev>',
+        from: process.env.RESEND_FROM_EMAIL ?? 'moesco <onboarding@resend.dev>',
         to: [destinatario],
         subject: `Nuovo evento in revisione: ${dati.titolo}`,
         html: `
@@ -80,7 +80,7 @@ async function notificaGestore(dati: {
           <p><strong>${esc(dati.titolo)}</strong> — data inizio: ${esc(dati.dataInizio)}</p>
           <p>Inviato da: ${esc(dati.nomeReferente)} (${esc(dati.emailOrg)})</p>
           ${dati.immagineUrl ? `<p><img src="${esc(dati.immagineUrl)}" width="400" alt="Immagine evento" /></p>` : '<p>Nessuna immagine caricata.</p>'}
-          <p><a href="https://cosafacciamo.vercel.app/admin/eventi">Apri il pannello di amministrazione</a></p>
+          <p><a href="https://www.moesco.it/admin/eventi">Apri il pannello di amministrazione</a></p>
         `,
       }),
     })
