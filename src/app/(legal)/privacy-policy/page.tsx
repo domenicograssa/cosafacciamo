@@ -9,7 +9,7 @@ export default function PrivacyPolicy() {
   return (
     <article className="prose prose-gray max-w-none">
       <h1>Privacy Policy</h1>
-      <p className="text-sm text-gray-500">Versione 1.1 — in vigore dal 18 giugno 2026</p>
+      <p className="text-sm text-gray-500">Versione 1.2 — in vigore dal 20 giugno 2026</p>
 
       <h2>1. Titolare del trattamento</h2>
       <p>
@@ -34,9 +34,11 @@ export default function PrivacyPolicy() {
 
       <h3>2.2 Dati forniti volontariamente dagli utenti</h3>
       <p>
-        Il portale raccoglie i seguenti dati forniti volontariamente dagli organizzatori che si registrano:
-        nome, cognome, indirizzo email, numero di telefono, comune di riferimento, denominazione
-        dell'organizzazione (se applicabile).
+        Il portale raccoglie i seguenti dati forniti volontariamente dagli organizzatori che si registrano
+        o che pubblicano eventi: nome, cognome o denominazione dell'organizzazione, indirizzo email,
+        numero di telefono (facoltativo), sito web (facoltativo), comune di riferimento.
+        Gli organizzatori possono inoltre caricare immagini degli eventi; tali immagini sono archiviate
+        su Supabase Storage e possono essere visibili pubblicamente sul portale.
       </p>
       <p>
         I visitatori che utilizzano il portale senza registrarsi non forniscono dati personali al titolare,

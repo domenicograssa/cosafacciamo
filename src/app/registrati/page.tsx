@@ -88,10 +88,16 @@ export default function Registrati() {
           </div>
           <h1 className="text-xl font-extrabold text-gray-900">Registrazione completata!</h1>
           <p className="text-gray-600 text-sm leading-relaxed">
-            Controlla la tua email per confermare l&apos;indirizzo.
+            Ti abbiamo inviato un&apos;email di conferma. Clicca il link al suo interno per attivare l&apos;account.
             Una volta confermato, il tuo profilo verrà esaminato dall&apos;amministratore.
             Ti avviseremo via email quando potrai iniziare a pubblicare.
           </p>
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-left space-y-1">
+            <p className="text-xs font-semibold text-amber-800">📧 Non trovi l&apos;email?</p>
+            <p className="text-xs text-amber-700 leading-relaxed">
+              L&apos;email arriva dal mittente <span className="font-mono font-semibold">noreply@mail.app.supabase.io</span> — il sistema di autenticazione che utilizziamo. Controlla la cartella <strong>spam</strong> o <strong>posta indesiderata</strong> se non la vedi in arrivo.
+            </p>
+          </div>
           <Link href="/" className="inline-block mt-4 text-amber-600 font-semibold hover:underline text-sm">
             Torna al portale →
           </Link>
