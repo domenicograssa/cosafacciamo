@@ -404,11 +404,56 @@ export async function togglePubblicazioneDiretta(
   try {
     await richiedeLogin()
     const sb = await createAdminClient()
+
+    const { data: org } = await sb
+      .from('organizzatori')
+      .select('nome, email')
+      .eq('id', organizzatoreId)
+      .single()
+
     const { error } = await sb
       .from('organizzatori')
       .update({ pubblicazione_diretta: valore })
       .eq('id', organizzatoreId)
+
     if (error) return { ok: false, errore: error.message }
+
+    // Email all'organizzatore solo quando viene promosso a "fidato"
+    if (valore && org?.email) {
+      await inviaEmail(
+        org.email,
+        'Il tuo profilo moesco è stato aggiornato: pubblica senza attese! 🚀',
+        `
+        <div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#1B2653;">
+          <div style="background:#FFAD05;padding:24px 32px;border-radius:12px 12px 0 0;">
+            <h1 style="margin:0;color:#fff;font-size:22px;">Profilo aggiornato! 🚀</h1>
+          </div>
+          <div style="background:#fff;padding:32px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px;">
+            <p>Ciao <strong>${esc(org.nome)}</strong>,</p>
+            <p>il tuo profilo organizzatore su <strong>moesco</strong> ha ricevuto un upgrade!</p>
+            <div style="background:#f0fdf4;border-left:4px solid #22c55e;padding:12px 16px;border-radius:0 8px 8px 0;margin:16px 0;">
+              <p style="margin:0;font-weight:bold;color:#15803d;">
+                Da ora puoi pubblicare eventi e attività direttamente, senza attendere l'approvazione del webmaster.
+              </p>
+            </div>
+            <p>I tuoi contenuti saranno visibili sul portale non appena li pubblichi dalla tua dashboard.</p>
+            <div style="margin:24px 0;">
+              <a href="${siteUrl}/pubblica"
+                 style="background:#FFAD05;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:bold;display:inline-block;">
+                Pubblica subito →
+              </a>
+            </div>
+            <p style="font-size:13px;color:#6b7280;">
+              Grazie per la tua collaborazione con moesco. Continua a proporre eventi di qualità per il territorio!
+            </p>
+            <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;">
+            <p style="font-size:12px;color:#9ca3af;margin:0;">moesco — Scopri. Partecipa. Vivi il territorio.</p>
+          </div>
+        </div>
+        `
+      )
+    }
+
     revalidatePath('/admin/organizzatori')
     return { ok: true }
   } catch (e) {
