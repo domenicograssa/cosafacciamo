@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/server'
 import { formatData } from '@/lib/utils'
-import { AzioniOrganizzatore } from '@/components/admin/AzioniRevisione'
+import { AzioniOrganizzatore, TogglePubblicazioneDiretta } from '@/components/admin/AzioniRevisione'
 
 const STATI = [
   { key: 'tutti',     label: 'Tutti' },
@@ -34,6 +34,7 @@ interface RigaOrganizzatore {
   telefono: string | null
   sito_web: string | null
   stato: string
+  pubblicazione_diretta: boolean
   created_at: string
 }
 
@@ -48,7 +49,7 @@ export default async function AdminOrganizzatoriPage({
   const sb = await createAdminClient()
   const { data, error } = await sb
     .from('organizzatori')
-    .select('id, nome, slug, email, telefono, sito_web, stato, created_at')
+    .select('id, nome, slug, email, telefono, sito_web, stato, pubblicazione_diretta, created_at')
     .order('created_at', { ascending: false })
     .limit(300)
 
@@ -102,7 +103,11 @@ export default async function AdminOrganizzatoriPage({
                   </p>
                   <p className="text-xs text-gray-400 mt-0.5">Registrato il {formatData(o.created_at)}</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                  <TogglePubblicazioneDiretta
+                    organizzatoreId={o.id}
+                    valore={o.pubblicazione_diretta}
+                  />
                   <Link
                     href={`/admin/organizzatori/${o.slug}`}
                     className="text-xs text-amber-600 hover:underline shrink-0"

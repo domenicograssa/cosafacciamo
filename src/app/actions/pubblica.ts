@@ -115,11 +115,13 @@ export async function pubblicaEvento(fd: FormData): Promise<EsitoPubblicazione> 
 
     // ── Organizzatore: riusa per email, altrimenti crea in attesa ──
     let organizzatoreId: string
+    let pubblicazioneDiretta = false
     const { data: esistente } = await sb
-      .from('organizzatori').select('id').eq('email', emailOrg).maybeSingle()
+      .from('organizzatori').select('id, pubblicazione_diretta').eq('email', emailOrg).maybeSingle()
 
     if (esistente) {
       organizzatoreId = esistente.id
+      pubblicazioneDiretta = esistente.pubblicazione_diretta ?? false
     } else {
       const denominazione = campo('denominazione')
       const nomeOrg = denominazione || `${nome} ${cognome}`
@@ -188,7 +190,7 @@ export async function pubblicaEvento(fd: FormData): Promise<EsitoPubblicazione> 
           email_contatto: campo('emailContatto') || null,
           telefono_contatto: campo('telefonoContatto') || null,
           url_prenotazione: campo('urlBiglietti') || null,
-          stato: 'bozza', // in revisione: l'admin la pubblica
+          stato: pubblicazioneDiretta ? 'pubblicato' : 'bozza',
         }).select('id').single()
 
       let { data: att, error: errAtt } = await inserisciAttivita(slugAtt)
@@ -207,10 +209,12 @@ export async function pubblicaEvento(fd: FormData): Promise<EsitoPubblicazione> 
       }
 
       await registraConsensi(sb, organizzatoreId)
-      await notificaGestore({
-        titolo: `[Esperienza] ${titolo}`, slugEvento: slugAtt, emailOrg,
-        nomeReferente: `${nome} ${cognome}`, dataInizio: campo('quando') || 'permanente', immagineUrl,
-      })
+      if (!pubblicazioneDiretta) {
+        await notificaGestore({
+          titolo: `[Esperienza] ${titolo}`, slugEvento: slugAtt, emailOrg,
+          nomeReferente: `${nome} ${cognome}`, dataInizio: campo('quando') || 'permanente', immagineUrl,
+        })
+      }
       revalidatePath('/cosa-fare')
       return { ok: true }
     }
@@ -239,7 +243,8 @@ export async function pubblicaEvento(fd: FormData): Promise<EsitoPubblicazione> 
         sito_ufficiale: campo('sitoUfficiale') || null,
         email_contatto: campo('emailContatto') || null,
         telefono_contatto: campo('telefonoContatto') || null,
-        stato: 'in_revisione',
+        stato: pubblicazioneDiretta ? 'approvato' : 'in_revisione',
+        pubblicato_il: pubblicazioneDiretta ? new Date().toISOString() : null,
       }).select('id').single()
 
     let { data: evento, error: errEvento } = await inserisciEvento(slugEvento)
@@ -262,10 +267,13 @@ export async function pubblicaEvento(fd: FormData): Promise<EsitoPubblicazione> 
     await registraConsensi(sb, organizzatoreId)
 
     // ── Notifica email al gestore del portale (se configurata) ──
-    await notificaGestore({
-      titolo, slugEvento, emailOrg, nomeReferente: `${nome} ${cognome}`,
-      dataInizio, immagineUrl,
-    })
+    // Gli organizzatori fidati pubblicano direttamente: nessuna notifica di revisione
+    if (!pubblicazioneDiretta) {
+      await notificaGestore({
+        titolo, slugEvento, emailOrg, nomeReferente: `${nome} ${cognome}`,
+        dataInizio, immagineUrl,
+      })
+    }
 
     revalidatePath('/admin/eventi')
     revalidatePath('/admin')

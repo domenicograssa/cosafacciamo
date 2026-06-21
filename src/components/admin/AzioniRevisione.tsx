@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { aggiornaStatoEvento, aggiornaStatoAttivita, aggiornaStatoOrganizzatore } from '@/app/actions/admin'
+import { aggiornaStatoEvento, aggiornaStatoAttivita, aggiornaStatoOrganizzatore, togglePubblicazioneDiretta } from '@/app/actions/admin'
 
 // Bottoni Approva / Rifiuta per un evento (con nota facoltativa per il rifiuto)
 export function AzioniEvento({ eventoId, stato }: { eventoId: string; stato: string }) {
@@ -197,6 +197,58 @@ export function AzioniOrganizzatore({ organizzatoreId, stato }: { organizzatoreI
       )}
 
       {errore && <p className="text-xs text-red-600">{errore}</p>}
+    </div>
+  )
+}
+
+// Toggle "pubblica senza approvazione" per organizzatori fidati
+export function TogglePubblicazioneDiretta({
+  organizzatoreId,
+  valore,
+}: {
+  organizzatoreId: string
+  valore: boolean
+}) {
+  const router = useRouter()
+  const [pending, startTransition] = useTransition()
+  const [attuale, setAttuale] = useState(valore)
+  const [errore, setErrore] = useState<string | null>(null)
+
+  const cambia = () => {
+    const nuovoValore = !attuale
+    setAttuale(nuovoValore)
+    setErrore(null)
+    startTransition(async () => {
+      const res = await togglePubblicazioneDiretta(organizzatoreId, nuovoValore)
+      if (!res.ok) {
+        setAttuale(!nuovoValore) // ripristina
+        setErrore(res.errore ?? 'Errore')
+      } else {
+        router.refresh()
+      }
+    })
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <button
+        onClick={cambia}
+        disabled={pending}
+        title={attuale ? 'Pubblica direttamente (clicca per disattivare)' : 'Richiede approvazione (clicca per fidarti)'}
+        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none disabled:opacity-50 ${
+          attuale ? 'bg-green-500' : 'bg-gray-200'
+        }`}
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+            attuale ? 'translate-x-4' : 'translate-x-0.5'
+          }`}
+        />
+      </button>
+      <span className={`text-xs font-medium ${attuale ? 'text-green-700' : 'text-gray-400'}`}>
+        {attuale ? 'Fidato' : 'Revisione'}
+      </span>
+      {errore && <span className="text-xs text-red-600">{errore}</span>}
     </div>
   )
 }

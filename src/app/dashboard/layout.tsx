@@ -27,6 +27,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   if (!organizzatore) {
     // Auth senza profilo organizzatore (es. account admin atterrato qui)
+    const adminEmail = process.env.ADMIN_EMAIL
+    if (adminEmail && user!.email === adminEmail) {
+      redirect('/admin')
+    }
     redirect('/')
   }
 

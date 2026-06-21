@@ -376,7 +376,40 @@ export async function aggiornaStatoOrganizzatore(
       )
     }
 
+    // ── Recap email all'admin ─────────────────────────────────
+    const notificaEmail = process.env.NOTIFICA_EMAIL
+    if (notificaEmail && org) {
+      const etichetta = { approvato: 'approvato ✅', sospeso: 'sospeso ⏸', rifiutato: 'rifiutato ❌' }[nuovoStato]
+      await inviaEmail(
+        notificaEmail,
+        `Organizzatore ${etichetta}: ${org.nome}`,
+        `<div style="font-family:sans-serif;max-width:500px;color:#1B2653;">
+          <p>Hai ${etichetta} l'organizzatore <strong>${esc(org.nome)}</strong> (${esc(org.email ?? '')}).</p>
+          <p><a href="${siteUrl}/admin/organizzatori" style="color:#FFAD05;">Pannello organizzatori →</a></p>
+        </div>`
+      )
+    }
+
     ricaricaPagine()
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, errore: e instanceof Error ? e.message : 'Errore imprevisto' }
+  }
+}
+
+export async function togglePubblicazioneDiretta(
+  organizzatoreId: string,
+  valore: boolean
+): Promise<{ ok: boolean; errore?: string }> {
+  try {
+    await richiedeLogin()
+    const sb = await createAdminClient()
+    const { error } = await sb
+      .from('organizzatori')
+      .update({ pubblicazione_diretta: valore })
+      .eq('id', organizzatoreId)
+    if (error) return { ok: false, errore: error.message }
+    revalidatePath('/admin/organizzatori')
     return { ok: true }
   } catch (e) {
     return { ok: false, errore: e instanceof Error ? e.message : 'Errore imprevisto' }

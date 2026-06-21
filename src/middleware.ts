@@ -62,11 +62,14 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Se già loggato e va su /accedi, manda alla dashboard
+  // Se già loggato e va su /accedi, manda alla dashboard (o /admin se è l'admin)
   if (pathname === '/accedi') {
     const supabase = buildSupabase(request, response)
     const { data: { user } } = await supabase.auth.getUser()
-    if (user) return NextResponse.redirect(new URL('/dashboard', request.url))
+    if (user) {
+      const dest = isAdmin(user.email) ? '/admin' : '/dashboard'
+      return NextResponse.redirect(new URL(dest, request.url))
+    }
   }
 
   return response
