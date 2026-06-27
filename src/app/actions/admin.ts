@@ -40,7 +40,7 @@ function ricaricaPagine() {
   revalidatePath('/admin/organizzatori')
 }
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://cosafacciamo.vercel.app'
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.moesco.it'
 
 export async function aggiornaStatoEvento(
   eventoId: string,

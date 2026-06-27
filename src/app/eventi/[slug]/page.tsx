@@ -9,7 +9,7 @@ import ShareButtons from '@/components/events/ShareButtons'
 import { formatData, formatOra, formatPrezzo } from '@/lib/utils'
 import { immagineComune } from '@/data/comuni-immagini'
 
-const SITE_URL = 'https://cosafacciamo.vercel.app'
+const SITE_URL = 'https://www.moesco.it'
 
 export const revalidate = 3600
 
@@ -34,9 +34,27 @@ export async function generateMetadata({ params }: Props) {
   const { slug } = await params
   const evento = await getEventoBySlug(slug)
   if (!evento) return {}
+
+  const canonicalUrl = `${SITE_URL}/eventi/${slug}`
+  const ogImage = evento.mediaAssetUrl ?? null
+
   return {
-    title: `${evento.titolo} — moesco`,
-    description: evento.descrizioneBreve ?? undefined,
+    title: `${evento.titolo} — ${evento.geoNodo.nome}`,
+    description: evento.descrizioneBreve ?? `${evento.titolo} a ${evento.geoNodo.nome}. Scopri tutti i dettagli su moesco.`,
+    alternates: { canonical: canonicalUrl },
+    openGraph: {
+      title: `${evento.titolo} — ${evento.geoNodo.nome}`,
+      description: evento.descrizioneBreve ?? `${evento.titolo} a ${evento.geoNodo.nome}.`,
+      url: canonicalUrl,
+      type: 'article',
+      ...(ogImage ? { images: [{ url: ogImage, width: 1200, height: 630, alt: evento.titolo }] } : {}),
+    },
+    twitter: {
+      card: ogImage ? 'summary_large_image' : 'summary',
+      title: `${evento.titolo} — ${evento.geoNodo.nome}`,
+      description: evento.descrizioneBreve ?? undefined,
+      ...(ogImage ? { images: [ogImage] } : {}),
+    },
   }
 }
 
@@ -51,7 +69,63 @@ export default async function DettaglioEvento({ params }: Props) {
   const fotoCitta = immagineComune(evento.geoNodo.slug)
   const paginaUrl = `${SITE_URL}/eventi/${slug}`
 
+  // ── JSON-LD Schema.org Event ─────────────────────────────────────────────
+  const jsonLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: evento.titolo,
+    startDate: evento.dataInizio,
+    ...(evento.dataFine ? { endDate: evento.dataFine } : {}),
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    eventStatus: 'https://schema.org/EventScheduled',
+    location: {
+      '@type': 'Place',
+      name: evento.luogoNome ?? evento.geoNodo.nome,
+      ...(evento.indirizzo ? { address: evento.indirizzo } : {
+        address: {
+          '@type': 'PostalAddress',
+          addressLocality: evento.geoNodo.nome,
+          addressRegion: 'Sicilia',
+          addressCountry: 'IT',
+        },
+      }),
+    },
+    description: evento.descrizioneBreve ?? evento.titolo,
+    url: paginaUrl,
+    organizer: {
+      '@type': 'Organization',
+      name: evento.organizzatore.nome,
+      url: SITE_URL,
+    },
+    ...(evento.gratuito
+      ? {
+          offers: {
+            '@type': 'Offer',
+            price: '0',
+            priceCurrency: 'EUR',
+            availability: 'https://schema.org/InStock',
+          },
+        }
+      : evento.prezzoMin != null
+      ? {
+          offers: {
+            '@type': 'Offer',
+            price: String(evento.prezzoMin),
+            priceCurrency: 'EUR',
+            ...(evento.urlBiglietti || evento.urlPrenotazione
+              ? { url: evento.urlBiglietti ?? evento.urlPrenotazione }
+              : {}),
+          },
+        }
+      : {}),
+  }
+
   return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
       {/* Breadcrumb */}
@@ -287,6 +361,7 @@ export default async function DettaglioEvento({ params }: Props) {
         </section>
       )}
     </div>
+    </>
   )
 }
 

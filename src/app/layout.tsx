@@ -6,8 +6,24 @@ import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import FooterClient from "@/components/layout/FooterClient";
 
 export const metadata: Metadata = {
-  title: "moesco — Scopri eventi e attività vicino a te",
-  description: "Eventi, esperienze e attività ad Alcamo, Castellammare del Golfo, San Vito Lo Capo e dintorni.",
+  metadataBase: new URL('https://www.moesco.it'),
+  title: {
+    default: 'Moesco — Eventi, sagre e cose da fare in provincia di Trapani',
+    template: '%s | Moesco',
+  },
+  description: 'Scopri eventi, sagre, concerti, festival, teatro, mercatini e cose da fare in provincia di Trapani.',
+  openGraph: {
+    siteName: 'Moesco',
+    locale: 'it_IT',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

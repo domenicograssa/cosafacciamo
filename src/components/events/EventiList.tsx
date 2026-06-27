@@ -65,6 +65,39 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale, 
   const resetFiltri = () => setFiltri({ testo: '', categorie: [], comune: '', soloGratuiti: false, data: '' })
   const haFiltriAttivi = !!filtri.testo || filtri.categorie.length > 0 || !!filtri.comune || filtri.soloGratuiti || !!filtri.data
 
+  // ── Sezione "In evidenza": eventi in corso o che iniziano entro 7 giorni ────
+  const eventiInEvidenza = useMemo(() => {
+    if (haFiltriAttivi) return []
+    const oggi = new Date()
+    oggi.setHours(0, 0, 0, 0)
+    const tra7 = new Date(oggi)
+    tra7.setDate(tra7.getDate() + 7)
+
+    return eventi
+      .filter(e => {
+        const inizio = new Date(e.dataInizio)
+        const fine = e.dataFine ? new Date(e.dataFine) : null
+        const inCorso = inizio < oggi && fine && fine >= oggi
+        const prossimo = inizio >= oggi && inizio <= tra7
+        return inCorso || prossimo
+      })
+      .sort((a, b) => new Date(a.dataInizio).getTime() - new Date(b.dataInizio).getTime())
+  }, [eventi, haFiltriAttivi])
+
+  function badgePerEvento(e: Pick<Evento, 'dataInizio' | 'dataFine'>): string {
+    const oggi = new Date()
+    oggi.setHours(0, 0, 0, 0)
+    const inizio = new Date(e.dataInizio)
+    inizio.setHours(0, 0, 0, 0)
+    const fine = e.dataFine ? new Date(e.dataFine) : null
+
+    if (inizio < oggi && fine && fine >= oggi) return 'In corso'
+    const diffDays = Math.round((inizio.getTime() - oggi.getTime()) / 86400000)
+    if (diffDays === 0) return 'Oggi'
+    if (diffDays === 1) return 'Domani'
+    return `Tra ${diffDays} giorni`
+  }
+
   const PannelloFiltri = () => (
     <div className="space-y-6">
       {/* Comune */}
@@ -206,6 +239,30 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale, 
 
         {/* Griglia eventi */}
         <div className="flex-1 min-w-0">
+
+          {/* Sezione "In evidenza" — visibile solo senza filtri attivi */}
+          {eventiInEvidenza.length > 0 && (
+            <section className="mb-8">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-lg">🗓</span>
+                <h2 className="text-base font-bold text-gray-900">In evidenza questa settimana</h2>
+                <span className="text-xs font-semibold text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+                  {eventiInEvidenza.length}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+                {eventiInEvidenza.map(evento => (
+                  <EventCard
+                    key={evento.id}
+                    evento={evento}
+                    badgeEvidenza={badgePerEvento(evento)}
+                  />
+                ))}
+              </div>
+              <div className="mt-6 border-t border-gray-100" />
+            </section>
+          )}
+
           {eventiFiltrati.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
               {eventiFiltrati.map(evento => (

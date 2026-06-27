@@ -39,7 +39,19 @@ export async function generateMetadata({ params }: Props) {
   const { slug } = await params
   const nodo = await getGeoNodoBySlug(slug)
   if (!nodo) return {}
-  return { title: `${nodo.nome} — moesco`, description: `Scopri eventi e attività a ${nodo.nome}.` }
+  const canonicalUrl = `https://www.moesco.it/localita/${slug}`
+  const description = `Scopri eventi, sagre, concerti e cose da fare a ${nodo.nome}, in provincia di Trapani.`
+  return {
+    title: `Eventi a ${nodo.nome}`,
+    description,
+    alternates: { canonical: canonicalUrl },
+    openGraph: {
+      title: `Eventi a ${nodo.nome} — Moesco`,
+      description,
+      url: canonicalUrl,
+      type: 'website',
+    },
+  }
 }
 
 export default async function LocalitaPage({ params }: Props) {

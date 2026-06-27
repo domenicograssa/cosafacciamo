@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /accedi
+Disallow: /registrati
+Disallow: /pubblica
+Disallow: /api/
+
+Sitemap: https://www.moesco.it/sitemap.xml

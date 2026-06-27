@@ -11,9 +11,11 @@ import { useLang } from '@/lib/i18n/LanguageContext'
 interface EventCardProps {
   evento: Evento
   compact?: boolean
+  /** Etichetta "In evidenza" (es. "Oggi", "Domani", "Tra 3 giorni") */
+  badgeEvidenza?: string
 }
 
-export default function EventCard({ evento, compact = false }: EventCardProps) {
+export default function EventCard({ evento, compact = false, badgeEvidenza }: EventCardProps) {
   const { t } = useLang()
   const prezzo = formatPrezzo(evento.prezzoMin, evento.prezzoMax, evento.gratuito)
   const categoria = evento.categorie[0]
@@ -104,6 +106,13 @@ export default function EventCard({ evento, compact = false }: EventCardProps) {
           </span>
         )}
 
+        {/* Badge evidenza (Oggi / Domani / Tra N giorni) */}
+        {badgeEvidenza && (
+          <span className="absolute top-3 right-3 z-20 bg-amber-400 text-white text-[10px] font-extrabold uppercase tracking-wide px-2.5 py-1 rounded-full shadow-md">
+            {badgeEvidenza}
+          </span>
+        )}
+
         {/* Badge data */}
         <div className="absolute bottom-3 left-3 z-10 bg-white/95 backdrop-blur-sm rounded-xl px-2.5 py-1.5 text-center shadow-sm min-w-[44px]">
           {inCorso ? (
@@ -130,7 +139,7 @@ export default function EventCard({ evento, compact = false }: EventCardProps) {
 
         {/* Preferiti */}
         <button
-          className="absolute top-3 right-3 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-colors z-10"
+          className={`absolute ${badgeEvidenza ? 'bottom-3 right-3' : 'top-3 right-3'} w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-colors z-10`}
           onClick={(e) => { e.preventDefault() }}
           aria-label={t.card.addFavorite}
         >

@@ -112,7 +112,7 @@ export default function ModuloContatti() {
           <label htmlFor="ct-url" className="block text-sm font-semibold text-gray-700 mb-1.5">
             Link della pagina da segnalare
           </label>
-          <input id="ct-url" name="urlPagina" type="url" maxLength={500} className={inputCls} placeholder="https://cosafacciamo.vercel.app/eventi/…" />
+          <input id="ct-url" name="urlPagina" type="url" maxLength={500} className={inputCls} placeholder="https://www.moesco.it/eventi/…" />
         </div>
       )}
 
