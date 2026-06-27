@@ -265,7 +265,9 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale, 
 
           {eventiFiltrati.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
-              {eventiFiltrati.map(evento => (
+              {eventiFiltrati
+                .filter(e => !eventiInEvidenza.some(ev => ev.id === e.id))
+                .map(evento => (
                 <EventCard key={evento.id} evento={evento} />
               ))}
             </div>
