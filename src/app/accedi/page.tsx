@@ -41,7 +41,7 @@ function AccediForm() {
         {/* Logo */}
         <div className="text-center">
           <Link href="/" className="inline-block mb-4">
-            <LogoMoesco className="text-3xl" />
+            <LogoMoesco height={48} />
           </Link>
           <h1 className="text-xl font-extrabold text-gray-900">Accedi come organizzatore</h1>
           <p className="text-gray-500 text-sm mt-1">

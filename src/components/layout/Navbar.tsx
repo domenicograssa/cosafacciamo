@@ -17,7 +17,7 @@ export default function Navbar() {
 
           {/* Logo */}
           <Link href="/" className="flex flex-col justify-center shrink-0">
-            <LogoMoesco className="text-2xl" />
+            <LogoMoesco height={36} />
             <p className="hidden sm:block text-[10px] text-gray-500 leading-none mt-0.5">
               {t.footer.tagline}
             </p>

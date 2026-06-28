@@ -43,7 +43,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <header className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <LogoMoesco className="text-xl" />
+            <LogoMoesco height={28} />
             <span className="text-xs text-gray-400 hidden sm:block">Area organizzatore</span>
           </Link>
           <div className="flex items-center gap-3">
