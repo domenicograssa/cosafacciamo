@@ -89,14 +89,25 @@ export async function getEventiApprovati(opzioni?: {
   soloGratuiti?: boolean
   data?: string          // 'YYYY-MM-DD'
   limit?: number
+  includiPassati?: boolean // default false
 }): Promise<Evento[]> {
   const sb = createClient()
+
+  // Inizio della giornata corrente (Europe/Rome → UTC offset gestito lato DB)
+  const oggi = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Rome' })
+  const inizioOggi = `${oggi}T00:00:00`
 
   let query = sb
     .from('eventi')
     .select(EVENTO_SELECT)
     .eq('stato', 'approvato')
     .order('data_inizio', { ascending: true })
+
+  // Escludi eventi già conclusi, salvo richiesta esplicita
+  if (!opzioni?.includiPassati) {
+    // Mostra se: data_fine >= oggi  OPPURE  (data_fine null E data_inizio >= oggi)
+    query = query.or(`data_fine.gte.${inizioOggi},and(data_fine.is.null,data_inizio.gte.${inizioOggi})`)
+  }
 
   if (opzioni?.geoPath) {
     // Ottieni prima tutti gli id dei nodi sotto quel path
