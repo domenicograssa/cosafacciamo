@@ -1,9 +1,17 @@
 import type { Metadata } from "next";
+import { Nunito } from 'next/font/google'
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import CookieBanner from "@/components/ui/CookieBanner";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import FooterClient from "@/components/layout/FooterClient";
+
+const nunito = Nunito({
+  subsets: ['latin'],
+  weight: ['800'],
+  variable: '--font-nunito',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.moesco.it'),
@@ -35,7 +43,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="it" className="h-full">
+    <html lang="it" className={`h-full ${nunito.variable}`}>
       <body className="min-h-full flex flex-col bg-gray-50">
         <LanguageProvider>
           <Navbar />
