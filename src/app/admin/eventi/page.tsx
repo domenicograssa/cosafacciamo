@@ -1,7 +1,9 @@
 export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/server'
-import { formatData, formatOra } from '@/lib/utils'
+import { getComuni } from '@/lib/queries/geo'
+import { getCategorie } from '@/lib/queries/categorie'
+import FiltriEventiAdmin, { type RigaEventoAdmin } from '@/components/admin/FiltriEventiAdmin'
 
 const STATI = [
   { key: 'tutti',        label: 'Tutti' },
@@ -10,35 +12,6 @@ const STATI = [
   { key: 'rifiutato',    label: 'Rifiutati' },
   { key: 'sospeso',      label: 'Sospesi' },
 ]
-
-const BADGE: Record<string, string> = {
-  approvato:    'bg-green-100 text-green-700',
-  in_revisione: 'bg-amber-100 text-amber-700',
-  rifiutato:    'bg-red-100 text-red-700',
-  sospeso:      'bg-orange-100 text-orange-700',
-  bozza:        'bg-gray-100 text-gray-600',
-  scaduto:      'bg-gray-100 text-gray-400',
-}
-
-const LABEL: Record<string, string> = {
-  approvato:    'Approvato',
-  in_revisione: 'In revisione',
-  rifiutato:    'Rifiutato',
-  sospeso:      'Sospeso',
-  bozza:        'Bozza',
-  scaduto:      'Scaduto',
-}
-
-interface RigaEvento {
-  id: string
-  slug: string
-  titolo: string
-  stato: string
-  data_inizio: string
-  created_at: string
-  geo_nodi: { nome: string } | null
-  organizzatori: { nome: string } | null
-}
 
 export default async function AdminEventiPage({
   searchParams,
@@ -49,14 +22,27 @@ export default async function AdminEventiPage({
   const filtro = stato && STATI.some(s => s.key === stato) ? stato : 'tutti'
 
   const sb = await createAdminClient()
-  const { data, error } = await sb
-    .from('eventi')
-    .select('id, slug, titolo, stato, data_inizio, created_at, geo_nodi(nome), organizzatori(nome)')
-    .order('created_at', { ascending: false })
-    .limit(300)
+  const [{ data, error }, comuni, categorie] = await Promise.all([
+    sb
+      .from('eventi')
+      .select('id, slug, titolo, stato, data_inizio, created_at, geo_nodi(nome, slug), organizzatori(nome), categorie:eventi_categorie(categorie(nome, slug))')
+      .order('created_at', { ascending: false })
+      .limit(300),
+    getComuni(),
+    getCategorie(),
+  ])
 
   if (error) console.error('AdminEventiPage:', error)
-  const eventi = (data ?? []) as unknown as RigaEvento[]
+
+  // Appiattisce eventi_categorie → categorie e normalizza le relazioni singole
+  const eventi = ((data ?? []) as unknown as Array<Record<string, unknown>>).map(row => ({
+    ...row,
+    geo_nodi: row.geo_nodi ?? null,
+    organizzatori: row.organizzatori ?? null,
+    categorie: ((row.categorie as Array<{ categorie: { nome: string; slug: string } }>) ?? [])
+      .map(ec => ec.categorie)
+      .filter(Boolean),
+  })) as unknown as RigaEventoAdmin[]
 
   const filtrati = filtro === 'tutti' ? eventi : eventi.filter(e => e.stato === filtro)
   const count = (s: string) => s === 'tutti' ? eventi.length : eventi.filter(e => e.stato === s).length
@@ -80,34 +66,12 @@ export default async function AdminEventiPage({
         ))}
       </div>
 
-      {/* Lista */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        {filtrati.length === 0 ? (
-          <div className="px-5 py-12 text-center text-gray-400 text-sm">Nessun evento in questa categoria.</div>
-        ) : (
-          <ul className="divide-y divide-gray-50">
-            {filtrati.map(e => (
-              <li key={e.id}>
-                <Link href={`/admin/eventi/${e.slug}`} className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition-colors">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm text-gray-900 truncate">{e.titolo}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {e.geo_nodi?.nome ?? '—'} · {formatData(e.data_inizio)} {formatOra(e.data_inizio)}
-                      {e.organizzatori?.nome ? ` · da: ${e.organizzatori.nome}` : ''}
-                    </p>
-                  </div>
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${BADGE[e.stato] ?? 'bg-gray-100 text-gray-600'}`}>
-                    {LABEL[e.stato] ?? e.stato}
-                  </span>
-                  <span className="text-xs text-amber-600 font-semibold shrink-0">
-                    {e.stato === 'in_revisione' ? 'Revisiona →' : 'Dettaglio →'}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      {/* Ricerca + filtri città/categoria + lista */}
+      <FiltriEventiAdmin
+        eventi={filtrati}
+        comuni={comuni.map(c => ({ nome: c.nome, slug: c.slug }))}
+        categorie={categorie.map(c => ({ nome: c.nome, slug: c.slug }))}
+      />
     </div>
   )
 }
