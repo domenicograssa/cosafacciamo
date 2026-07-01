@@ -20,10 +20,13 @@ function mapEvento(row: EventoConRelazioni): Evento {
     descrizione: (row as Record<string, unknown>).descrizione as string | null ?? null,
     immagineCopertura: row.immagine_copertina,
     // Mostra solo immagini caricate dagli organizzatori sul nostro storage
-    // (diritti dichiarati in fase di pubblicazione) — mai URL esterni non verificati
-    mediaAssetUrl: row.immagine_copertina?.includes('/storage/v1/object/public/eventi-immagini/')
-      ? row.immagine_copertina
-      : null,
+    // (diritti dichiarati in fase di pubblicazione) oppure immagini redazionali
+    // verificate e committate in public/eventi/ — mai URL esterni non verificati
+    mediaAssetUrl:
+      row.immagine_copertina?.includes('/storage/v1/object/public/eventi-immagini/') ||
+      row.immagine_copertina?.startsWith('/eventi/')
+        ? row.immagine_copertina
+        : null,
     mediaAssetAlt: null,
     luogoNome: row.luogo_nome,
     indirizzo: row.indirizzo,
