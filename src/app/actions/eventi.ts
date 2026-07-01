@@ -80,7 +80,12 @@ export async function modificaEventoOrganizzatore(
     // Se l'evento era approvato, torna in revisione dopo la modifica
     if (ev.stato === 'approvato') aggiornamento.stato = 'in_revisione'
 
-    const { error } = await sbAdmin.from('eventi').update(aggiornamento).eq('id', eventoId)
+    const { data: eventoAgg, error } = await sbAdmin
+      .from('eventi')
+      .update(aggiornamento)
+      .eq('id', eventoId)
+      .select('slug, geo_nodi(slug)')
+      .single()
     if (error) return { ok: false, errore: error.message }
 
     if (dati.categorie_ids !== undefined) {
@@ -95,6 +100,12 @@ export async function modificaEventoOrganizzatore(
     revalidatePath('/dashboard/miei-eventi')
     revalidatePath('/')
     revalidatePath('/eventi')
+    // La pagina di dettaglio evento (e quella della località) usano ISR:
+    // vanno invalidate esplicitamente o la modifica non si vede per un'ora.
+    if (eventoAgg?.slug) revalidatePath(`/eventi/${eventoAgg.slug}`)
+    const geoNodo = eventoAgg?.geo_nodi as { slug: string } | { slug: string }[] | null
+    const geoSlug = Array.isArray(geoNodo) ? geoNodo[0]?.slug : geoNodo?.slug
+    if (geoSlug) revalidatePath(`/localita/${geoSlug}`)
     return { ok: true }
   } catch (e) {
     return { ok: false, errore: e instanceof Error ? e.message : 'Errore imprevisto' }

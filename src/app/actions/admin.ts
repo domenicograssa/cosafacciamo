@@ -30,7 +30,7 @@ async function richiedeLogin() {
   return user
 }
 
-function ricaricaPagine() {
+function ricaricaPagine(slug?: string, geoSlug?: string) {
   revalidatePath('/')
   revalidatePath('/eventi')
   revalidatePath('/cosa-fare')
@@ -38,6 +38,11 @@ function ricaricaPagine() {
   revalidatePath('/admin/eventi')
   revalidatePath('/admin/attivita')
   revalidatePath('/admin/organizzatori')
+  // Le pagine di dettaglio evento e località usano ISR (revalidate: 3600):
+  // senza invalidarle esplicitamente, le modifiche non compaiono sul sito
+  // per un'ora anche se la lista eventi è già aggiornata.
+  if (slug) revalidatePath(`/eventi/${slug}`)
+  if (geoSlug) revalidatePath(`/localita/${geoSlug}`)
 }
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.moesco.it'
@@ -62,7 +67,7 @@ export async function aggiornaStatoEvento(
       .from('eventi')
       .update(update)
       .eq('id', eventoId)
-      .select('organizzatore_id, titolo, slug')
+      .select('organizzatore_id, titolo, slug, geo_nodi(slug)')
       .single()
 
     if (error) return { ok: false, errore: error.message }
@@ -152,7 +157,9 @@ export async function aggiornaStatoEvento(
       }
     }
 
-    ricaricaPagine()
+    const geoNodo = evento?.geo_nodi as { slug: string } | { slug: string }[] | null
+    const geoSlug = Array.isArray(geoNodo) ? geoNodo[0]?.slug : geoNodo?.slug
+    ricaricaPagine(evento?.slug, geoSlug)
     return { ok: true }
   } catch (e) {
     return { ok: false, errore: e instanceof Error ? e.message : 'Errore imprevisto' }
@@ -271,7 +278,12 @@ export async function modificaEvento(
       aggiornamento.immagine_copertina = dati.immagine_copertina?.trim() || null
     }
 
-    const { error } = await sb.from('eventi').update(aggiornamento).eq('id', eventoId)
+    const { data: evento, error } = await sb
+      .from('eventi')
+      .update(aggiornamento)
+      .eq('id', eventoId)
+      .select('slug, geo_nodi(slug)')
+      .single()
     if (error) return { ok: false, errore: error.message }
 
     // Aggiorna categorie se fornite
@@ -284,7 +296,9 @@ export async function modificaEvento(
       }
     }
 
-    ricaricaPagine()
+    const geoNodo = evento?.geo_nodi as { slug: string } | { slug: string }[] | null
+    const geoSlug = Array.isArray(geoNodo) ? geoNodo[0]?.slug : geoNodo?.slug
+    ricaricaPagine(evento?.slug, geoSlug)
     return { ok: true }
   } catch (e) {
     return { ok: false, errore: e instanceof Error ? e.message : 'Errore imprevisto' }
