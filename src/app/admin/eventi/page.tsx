@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/server'
 import { getComuni } from '@/lib/queries/geo'
 import { getCategorie } from '@/lib/queries/categorie'
+import { risolviOrarioEvento } from '@/lib/utils'
 import FiltriEventiAdmin, { type RigaEventoAdmin } from '@/components/admin/FiltriEventiAdmin'
 
 const STATI = [
@@ -25,7 +26,7 @@ export default async function AdminEventiPage({
   const [{ data, error }, comuni, categorie] = await Promise.all([
     sb
       .from('eventi')
-      .select('id, slug, titolo, stato, data_inizio, created_at, geo_nodi(nome, slug), organizzatori(nome), categorie:eventi_categorie(categorie(nome, slug))')
+      .select('id, slug, titolo, stato, data_inizio, data_fine, ora_inizio, created_at, geo_nodi(nome, slug), organizzatori(nome), categorie:eventi_categorie(categorie(nome, slug))')
       .order('created_at', { ascending: false })
       .limit(300),
     getComuni(),
@@ -34,15 +35,26 @@ export default async function AdminEventiPage({
 
   if (error) console.error('AdminEventiPage:', error)
 
-  // Appiattisce eventi_categorie → categorie e normalizza le relazioni singole
-  const eventi = ((data ?? []) as unknown as Array<Record<string, unknown>>).map(row => ({
-    ...row,
-    geo_nodi: row.geo_nodi ?? null,
-    organizzatori: row.organizzatori ?? null,
-    categorie: ((row.categorie as Array<{ categorie: { nome: string; slug: string } }>) ?? [])
-      .map(ec => ec.categorie)
-      .filter(Boolean),
-  })) as unknown as RigaEventoAdmin[]
+  // Appiattisce eventi_categorie → categorie e normalizza le relazioni singole.
+  // Alcuni eventi "figli" di festival salvano l'orario reale in ora_inizio
+  // invece che dentro data_inizio (vedi risolviOrarioEvento): senza questo,
+  // la lista mostrerebbe sempre "02:00" per quegli eventi.
+  const eventi = ((data ?? []) as unknown as Array<Record<string, unknown>>).map(row => {
+    const { dataInizio } = risolviOrarioEvento(
+      row.data_inizio as string,
+      row.data_fine as string | null,
+      row.ora_inizio as string | null | undefined
+    )
+    return {
+      ...row,
+      data_inizio: dataInizio,
+      geo_nodi: row.geo_nodi ?? null,
+      organizzatori: row.organizzatori ?? null,
+      categorie: ((row.categorie as Array<{ categorie: { nome: string; slug: string } }>) ?? [])
+        .map(ec => ec.categorie)
+        .filter(Boolean),
+    }
+  }) as unknown as RigaEventoAdmin[]
 
   const filtrati = filtro === 'tutti' ? eventi : eventi.filter(e => e.stato === filtro)
   const count = (s: string) => s === 'tutti' ? eventi.length : eventi.filter(e => e.stato === s).length

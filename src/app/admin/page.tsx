@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/server'
-import { formatData, formatOra } from '@/lib/utils'
+import { formatData, formatOra, risolviOrarioEvento } from '@/lib/utils'
 
 export default async function AdminDashboard() {
   const sb = await createAdminClient()
@@ -23,7 +23,7 @@ export default async function AdminDashboard() {
     sb.from('organizzatori').select('id', { count: 'exact', head: true }).eq('stato', 'in_attesa'),
     sb.from('messaggi').select('id', { count: 'exact', head: true }).eq('stato', 'nuovo'),
     sb.from('eventi')
-      .select('id, slug, titolo, data_inizio, created_at, geo_nodi(nome), organizzatori(nome)')
+      .select('id, slug, titolo, data_inizio, data_fine, ora_inizio, created_at, geo_nodi(nome), organizzatori(nome)')
       .eq('stato', 'in_revisione')
       .order('created_at', { ascending: false })
       .limit(8),
@@ -91,7 +91,10 @@ export default async function AdminDashboard() {
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm text-gray-900 truncate">{e.titolo}</p>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        {(e.geo_nodi as unknown as { nome: string } | null)?.nome} · {formatData(e.data_inizio)} {formatOra(e.data_inizio)}
+                        {(() => {
+                          const { dataInizio } = risolviOrarioEvento(e.data_inizio, e.data_fine, (e as Record<string, unknown>).ora_inizio as string | null | undefined)
+                          return <>{(e.geo_nodi as unknown as { nome: string } | null)?.nome} · {formatData(dataInizio)} {formatOra(dataInizio)}</>
+                        })()}
                       </p>
                       <p className="text-xs text-gray-400 mt-0.5">da: {(e.organizzatori as unknown as { nome: string } | null)?.nome}</p>
                     </div>

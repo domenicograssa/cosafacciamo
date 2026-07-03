@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/server'
-import { formatData, formatOra, formatPrezzo } from '@/lib/utils'
+import { formatData, formatOra, formatPrezzo, risolviOrarioEvento } from '@/lib/utils'
 import { AzioniEvento } from '@/components/admin/AzioniRevisione'
 
 const BADGE: Record<string, string> = {
@@ -49,12 +49,18 @@ export default async function AdminEventoDettaglio({
   const categorie = ((evento.categorie as unknown as Array<{ categorie: { nome: string; icona: string | null } }>) ?? [])
     .map(c => c.categorie)
 
+  // Eventi "figli" di festival salvano l'orario reale in ora_inizio invece
+  // che dentro data_inizio (vedi risolviOrarioEvento) — senza questo, la
+  // pagina mostrerebbe sempre "02:00" per questi eventi.
+  const oraInizio = (evento as Record<string, unknown>).ora_inizio as string | null | undefined
+  const { dataInizio, dataFine } = risolviOrarioEvento(evento.data_inizio, evento.data_fine, oraInizio)
+
   const info: Array<[string, string | null]> = [
     ['Comune', (evento.geo_nodi as unknown as { nome: string } | null)?.nome ?? null],
     ['Luogo', evento.luogo_nome],
     ['Indirizzo', evento.indirizzo],
-    ['Inizio', `${formatData(evento.data_inizio)} ${formatOra(evento.data_inizio)}`],
-    ['Fine', evento.data_fine ? `${formatData(evento.data_fine)} ${formatOra(evento.data_fine)}` : null],
+    ['Inizio', `${formatData(dataInizio)} ${formatOra(dataInizio)}`],
+    ['Fine', dataFine ? `${formatData(dataFine)} ${formatOra(dataFine)}` : null],
     ['Prezzo', formatPrezzo(evento.prezzo_min, evento.prezzo_max, evento.gratuito)],
     ['Categorie', categorie.length ? categorie.map(c => `${c.icona ?? ''} ${c.nome}`).join(', ') : null],
     ['Biglietti', evento.url_biglietti],

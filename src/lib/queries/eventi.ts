@@ -1,6 +1,7 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import type { Evento } from '@/types'
 import type { EventoConRelazioni } from '@/lib/supabase/types'
+import { risolviOrarioEvento } from '@/lib/utils'
 
 // Client plain senza cookie — funziona sia in SSR che in static generation
 function createClient() {
@@ -12,6 +13,8 @@ function createClient() {
 
 // Mappa da riga DB → tipo frontend
 function mapEvento(row: EventoConRelazioni): Evento {
+  const oraInizio = (row as Record<string, unknown>).ora_inizio as string | null | undefined
+  const { dataInizio, dataFine } = risolviOrarioEvento(row.data_inizio, row.data_fine, oraInizio)
   return {
     id: row.id,
     titolo: row.titolo,
@@ -32,8 +35,8 @@ function mapEvento(row: EventoConRelazioni): Evento {
     indirizzo: row.indirizzo,
     lat: row.lat,
     lng: row.lng,
-    dataInizio: row.data_inizio,
-    dataFine: row.data_fine,
+    dataInizio,
+    dataFine,
     tuttoIlGiorno: row.tutto_il_giorno,
     gratuito: row.gratuito,
     prezzoMin: row.prezzo_min,

@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/server'
-import { formatData, formatOra } from '@/lib/utils'
+import { formatData, formatOra, risolviOrarioEvento } from '@/lib/utils'
 import { AzioniOrganizzatore } from '@/components/admin/AzioniRevisione'
 import FormModificaOrganizzatore from '@/components/admin/FormModificaOrganizzatore'
 
@@ -49,12 +49,19 @@ export default async function AdminOrganizzatoreDettaglio({
   if (!org) notFound()
 
   // Carica gli eventi di questo organizzatore
-  const { data: eventi } = await sb
+  const { data: eventiRaw } = await sb
     .from('eventi')
-    .select('id, titolo, slug, stato, data_inizio, created_at')
+    .select('id, titolo, slug, stato, data_inizio, data_fine, ora_inizio, created_at')
     .eq('organizzatore_id', org.id)
     .order('data_inizio', { ascending: false })
     .limit(50)
+
+  // Alcuni eventi "figli" di festival salvano l'orario reale in ora_inizio
+  // invece che dentro data_inizio (vedi risolviOrarioEvento).
+  const eventi = (eventiRaw ?? []).map(e => ({
+    ...e,
+    data_inizio: risolviOrarioEvento(e.data_inizio, e.data_fine, e.ora_inizio).dataInizio,
+  }))
 
   return (
     <div className="space-y-6 max-w-4xl">
