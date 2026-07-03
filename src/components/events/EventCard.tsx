@@ -17,7 +17,7 @@ interface EventCardProps {
 
 export default function EventCard({ evento, compact = false, badgeEvidenza }: EventCardProps) {
   const { t } = useLang()
-  const prezzo = formatPrezzo(evento.prezzoMin, evento.prezzoMax, evento.gratuito)
+  const prezzo = formatPrezzo(evento.prezzoMin, evento.prezzoMax, evento.gratuito, evento.prezzoTesto)
   const categoria = evento.categorie[0]
 
   // Evento "in corso": iniziato in passato ma con data di fine non ancora passata

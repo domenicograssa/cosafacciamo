@@ -41,6 +41,7 @@ function mapEvento(row: EventoConRelazioni): Evento {
     gratuito: row.gratuito,
     prezzoMin: row.prezzo_min,
     prezzoMax: row.prezzo_max,
+    prezzoTesto: (row as Record<string, unknown>).prezzo as string | null ?? null,
     urlBiglietti: row.url_biglietti,
     sitoUfficiale: (row as Record<string, unknown>).sito_ufficiale as string | null ?? null,
     emailContatto: (row as Record<string, unknown>).email_contatto as string | null ?? null,

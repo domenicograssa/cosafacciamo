@@ -38,9 +38,19 @@ export function risolviOrarioEvento(
   return { dataInizio: `${soloData}T${oraInizio}:00${offset}`, dataFine: null }
 }
 
-export function formatPrezzo(min: number | null, max: number | null, gratuito: boolean): string {
+// Gli stessi script SQL dei festival che causano il bug dell'orario (vedi
+// risolviOrarioEvento) salvano il prezzo come testo libero in una colonna
+// `prezzo` (es. "Da €15 a €35") invece che in prezzo_min/prezzo_max: senza
+// il parametro testoLibero, formatPrezzo mostra "Prezzo da definire" anche
+// quando il prezzo reale è noto.
+export function formatPrezzo(
+  min: number | null,
+  max: number | null,
+  gratuito: boolean,
+  testoLibero?: string | null
+): string {
   if (gratuito) return 'Gratuito'
-  if (min === null) return 'Prezzo da definire'
+  if (min === null) return testoLibero?.trim() || 'Prezzo da definire'
   if (max && max > min) return `da € ${min}`
   return `€ ${min}`
 }

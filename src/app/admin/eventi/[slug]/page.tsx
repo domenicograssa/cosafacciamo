@@ -61,7 +61,7 @@ export default async function AdminEventoDettaglio({
     ['Indirizzo', evento.indirizzo],
     ['Inizio', `${formatData(dataInizio)} ${formatOra(dataInizio)}`],
     ['Fine', dataFine ? `${formatData(dataFine)} ${formatOra(dataFine)}` : null],
-    ['Prezzo', formatPrezzo(evento.prezzo_min, evento.prezzo_max, evento.gratuito)],
+    ['Prezzo', formatPrezzo(evento.prezzo_min, evento.prezzo_max, evento.gratuito, (evento as Record<string, unknown>).prezzo as string | null)],
     ['Categorie', categorie.length ? categorie.map(c => `${c.icona ?? ''} ${c.nome}`).join(', ') : null],
     ['Biglietti', evento.url_biglietti],
     ['Sito ufficiale', (evento as Record<string, unknown>).sito_ufficiale as string | null],

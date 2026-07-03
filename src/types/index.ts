@@ -61,6 +61,8 @@ export interface Evento {
   gratuito: boolean
   prezzoMin: number | null
   prezzoMax: number | null
+  // Prezzo testo libero (script festival), fallback quando prezzoMin è null
+  prezzoTesto: string | null
   urlBiglietti: string | null
   sitoUfficiale: string | null
   emailContatto: string | null

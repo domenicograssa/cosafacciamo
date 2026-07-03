@@ -65,7 +65,7 @@ export default async function DettaglioEvento({ params }: Props) {
 
   const categoriaIds = evento.categorie.map(c => c.id)
   const correlati = await getEventiCorrelati(evento.id, categoriaIds)
-  const prezzo = formatPrezzo(evento.prezzoMin, evento.prezzoMax, evento.gratuito)
+  const prezzo = formatPrezzo(evento.prezzoMin, evento.prezzoMax, evento.gratuito, evento.prezzoTesto)
   const fotoCitta = immagineComune(evento.geoNodo.slug)
   const paginaUrl = `${SITE_URL}/eventi/${slug}`
 
