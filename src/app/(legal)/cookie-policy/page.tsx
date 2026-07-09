@@ -9,7 +9,7 @@ export default function CookiePolicy() {
   return (
     <article className="prose prose-gray max-w-none">
       <h1>Cookie Policy</h1>
-      <p className="text-sm text-gray-500">Versione 1.1 — in vigore dal 18 giugno 2026</p>
+      <p className="text-sm text-gray-500">Versione 1.2 — in vigore dal 9 luglio 2026</p>
 
       <p>
         Il presente documento descrive le modalità di utilizzo dei cookie e di tecnologie simili
@@ -57,15 +57,49 @@ export default function CookiePolicy() {
 
       <h3>2.2 Cookie analitici</h3>
       <p>
-        Il Portale non utilizza attualmente cookie analitici. Il banner cookie include la possibilità
-        di prestare o negare il consenso all'eventuale attivazione futura di strumenti di analisi
-        del traffico. In caso di attivazione, la presente Cookie Policy sarà aggiornata.
+        Il Portale utilizza <strong>Google Analytics 4</strong> (Google Ireland Limited), uno
+        strumento di analisi statistica che raccoglie informazioni in forma aggregata sulla
+        navigazione degli utenti (pagine visitate, provenienza, durata della visita, dispositivo
+        utilizzato). Questi cookie vengono installati solo previo consenso esplicito dell'utente,
+        prestato tramite il banner cookie, e possono essere revocati in qualsiasi momento.
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Cookie</th>
+            <th>Fornitore</th>
+            <th>Scopo</th>
+            <th>Durata</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>_ga</td>
+            <td>Google Analytics</td>
+            <td>Distingue gli utenti univoci</td>
+            <td>13 mesi</td>
+          </tr>
+          <tr>
+            <td>_ga_FF8FCVMKSZ</td>
+            <td>Google Analytics</td>
+            <td>Mantiene lo stato della sessione</td>
+            <td>13 mesi</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Per approfondimenti sul trattamento dei dati da parte di Google si rimanda alla{' '}
+        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">
+          informativa privacy di Google
+        </a>.
       </p>
 
       <h2>3. Cookie di terze parti</h2>
       <p>
         Il Portale non installa cookie di profilazione propri né cookie di terze parti a fini
-        pubblicitari. Non sono presenti plugin di social network che installino cookie di tracciamento.
+        pubblicitari. È presente unicamente il cookie analitico di terze parti di Google Analytics
+        descritto al punto 2.2, attivato solo previo consenso. Non sono presenti plugin di social
+        network che installino cookie di tracciamento.
       </p>
 
       <h2>4. Come gestire i cookie</h2>

@@ -3,6 +3,7 @@ import { Nunito } from 'next/font/google'
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import CookieBanner from "@/components/ui/CookieBanner";
+import Analytics from "@/components/Analytics";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import FooterClient from "@/components/layout/FooterClient";
 
@@ -50,6 +51,7 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
           <FooterClient />
           <CookieBanner />
+          <Analytics />
         </LanguageProvider>
       </body>
     </html>

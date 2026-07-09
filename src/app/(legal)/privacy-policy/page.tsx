@@ -47,8 +47,10 @@ export default function PrivacyPolicy() {
 
       <h3>2.3 Cookie e tecnologie di tracciamento</h3>
       <p>
-        Il portale utilizza cookie tecnici necessari al funzionamento. Non sono attualmente utilizzati
-        cookie analitici o di profilazione. Per informazioni dettagliate si rimanda alla{' '}
+        Il portale utilizza cookie tecnici necessari al funzionamento e, solo previo consenso
+        dell'utente, cookie analitici (Google Analytics 4) per analizzare in forma aggregata
+        l'utilizzo del sito. Non sono utilizzati cookie di profilazione. Per informazioni
+        dettagliate si rimanda alla{' '}
         <a href="/cookie-policy">Cookie Policy</a>.
       </p>
 
