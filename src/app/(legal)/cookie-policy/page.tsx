@@ -80,7 +80,7 @@ export default function CookiePolicy() {
             <td>13 mesi</td>
           </tr>
           <tr>
-            <td>_ga_FF8FCVMKSZ</td>
+            <td>_ga_HREM9C6ET5</td>
             <td>Google Analytics</td>
             <td>Mantiene lo stato della sessione</td>
             <td>13 mesi</td>
