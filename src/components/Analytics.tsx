@@ -3,7 +3,7 @@
 import Script from 'next/script'
 import { useCookieConsent } from '@/components/ui/CookieBanner'
 
-const GA_MEASUREMENT_ID = 'G-HREM9C6ET5'
+const GA_MEASUREMENT_ID = 'G-FF8FCVMKSZ'
 
 // Carica Google Analytics (gtag.js) solo se l'utente ha prestato consenso
 // ai cookie analitici tramite il CookieBanner. Reagisce in tempo reale
