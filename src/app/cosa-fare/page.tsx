@@ -7,7 +7,7 @@ export const revalidate = 3600
 
 export const metadata = {
   title: 'Esperienze — moesco',
-  description: 'Snorkeling, corsi di cucina, giri in barca, escursioni: le esperienze da vivere nella provincia di Trapani.',
+  description: 'Snorkeling, corsi di cucina, giri in barca, escursioni: le esperienze da vivere nella provincia di Trapani e dintorni.',
 }
 
 export default async function CosaFarePage() {

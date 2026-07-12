@@ -4,12 +4,12 @@ import { getCategorie } from '@/lib/queries/categorie'
 import { getComuni } from '@/lib/queries/geo'
 
 export const metadata = {
-  title: 'Eventi in provincia di Trapani',
-  description: 'Trova eventi aggiornati in provincia di Trapani: concerti, sagre, festival, spettacoli, cinema, teatro e appuntamenti per il tempo libero.',
+  title: 'Eventi in provincia di Trapani e dintorni',
+  description: 'Trova eventi aggiornati in provincia di Trapani e dintorni: concerti, sagre, festival, spettacoli, cinema, teatro e appuntamenti per il tempo libero.',
   alternates: { canonical: 'https://www.moesco.it/eventi' },
   openGraph: {
-    title: 'Eventi in provincia di Trapani — Moesco',
-    description: 'Trova eventi aggiornati in provincia di Trapani: concerti, sagre, festival, spettacoli, cinema, teatro e appuntamenti per il tempo libero.',
+    title: 'Eventi in provincia di Trapani e dintorni — Moesco',
+    description: 'Trova eventi aggiornati in provincia di Trapani e dintorni: concerti, sagre, festival, spettacoli, cinema, teatro e appuntamenti per il tempo libero.',
     url: 'https://www.moesco.it/eventi',
     type: 'website',
   },

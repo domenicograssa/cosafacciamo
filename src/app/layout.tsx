@@ -17,10 +17,10 @@ const nunito = Nunito({
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.moesco.it'),
   title: {
-    default: 'Moesco — Eventi, sagre e cose da fare in provincia di Trapani',
+    default: 'Moesco — Eventi, sagre e cose da fare in provincia di Trapani e dintorni',
     template: '%s | Moesco',
   },
-  description: 'Scopri eventi, sagre, concerti, festival, teatro, mercatini e cose da fare in provincia di Trapani.',
+  description: 'Scopri eventi, sagre, concerti, festival, teatro, mercatini e cose da fare in provincia di Trapani e dintorni.',
   openGraph: {
     siteName: 'Moesco',
     locale: 'it_IT',

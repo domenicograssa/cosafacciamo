@@ -96,7 +96,7 @@ export async function completaRegistrazione(dati: {
         </div>
         <div style="background:#fff;padding:32px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px;">
           <p>Ciao <strong>${esc(dati.nome)}</strong>,</p>
-          <p>grazie per esserti registrato come organizzatore su <strong>moesco</strong>, il portale degli eventi e delle esperienze nel territorio di Trapani.</p>
+          <p>grazie per esserti registrato come organizzatore su <strong>moesco</strong>, il portale degli eventi e delle esperienze nel territorio di Trapani e dintorni.</p>
           <p>La tua richiesta è stata ricevuta ed è in fase di revisione da parte del nostro team. Riceverai un'email di conferma appena il tuo profilo sarà approvato — di solito entro 24-48 ore.</p>
           <p>Una volta approvato potrai:</p>
           <ul style="line-height:1.8;">

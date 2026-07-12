@@ -41,7 +41,9 @@ export async function generateMetadata({ params }: Props) {
   const nodo = await getGeoNodoBySlug(slug)
   if (!nodo) return {}
   const canonicalUrl = `https://www.moesco.it/localita/${slug}`
-  const description = `Scopri eventi, sagre, concerti e cose da fare a ${nodo.nome}, in provincia di Trapani.`
+  const description = slug === 'palermo'
+    ? `Scopri eventi, sagre, concerti e cose da fare a Palermo.`
+    : `Scopri eventi, sagre, concerti e cose da fare a ${nodo.nome}, in provincia di Trapani.`
   return {
     title: `Eventi a ${nodo.nome}`,
     description,

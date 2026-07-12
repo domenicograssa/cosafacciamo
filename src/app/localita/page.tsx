@@ -6,12 +6,12 @@ import { COMUNE_IMMAGINI } from '@/data/comuni-immagini'
 export const revalidate = 3600
 
 export const metadata = {
-  title: 'Comuni della provincia di Trapani',
-  description: 'Esplora eventi, sagre e cose da fare nei comuni della provincia di Trapani: Alcamo, Marsala, San Vito Lo Capo, Castellammare del Golfo e altri.',
+  title: 'Comuni della provincia di Trapani e dintorni',
+  description: 'Esplora eventi, sagre e cose da fare nei comuni della provincia di Trapani e dintorni: Alcamo, Marsala, San Vito Lo Capo, Castellammare del Golfo, Palermo e altri.',
   alternates: { canonical: 'https://www.moesco.it/localita' },
   openGraph: {
-    title: 'Comuni della provincia di Trapani — Moesco',
-    description: 'Esplora eventi, sagre e cose da fare nei comuni della provincia di Trapani.',
+    title: 'Comuni della provincia di Trapani e dintorni — Moesco',
+    description: 'Esplora eventi, sagre e cose da fare nei comuni della provincia di Trapani e dintorni.',
     url: 'https://www.moesco.it/localita',
     type: 'website',
   },
@@ -27,7 +27,7 @@ export default async function LocalitaIndexPage() {
 
       <h1 className="text-2xl font-bold text-gray-900">Località</h1>
       <p className="text-sm text-gray-500 mt-1 mb-8">
-        Esplora eventi e attività nei {comuni.length} comuni della provincia di Trapani.
+        Esplora eventi e attività nei {comuni.length} comuni della provincia di Trapani e dintorni.
       </p>
 
       {/* Comuni con foto */}

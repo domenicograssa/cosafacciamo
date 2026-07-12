@@ -13,7 +13,7 @@ export const strings = {
     },
     home: {
       hero: 'che facciamo oggi?',
-      subtitle: 'Scopri eventi, esperienze e attività in provincia di Trapani',
+      subtitle: 'Scopri eventi, esperienze e attività in provincia di Trapani e dintorni',
       cta: 'Scopri gli eventi',
       ctaActivities: 'Cosa fare',
       upcoming: 'Prossimi eventi',
@@ -44,7 +44,7 @@ export const strings = {
     },
     publish: {
       title: 'Pubblica il tuo evento',
-      subtitle: 'Raggiungi migliaia di persone nel territorio di Trapani',
+      subtitle: 'Raggiungi migliaia di persone nel territorio di Trapani e dintorni',
     },
     cookie: {
       title: 'Utilizziamo i cookie 🍪',
@@ -71,7 +71,7 @@ export const strings = {
     },
     home: {
       hero: 'what shall we do today?',
-      subtitle: 'Discover events, experiences and activities in the province of Trapani',
+      subtitle: 'Discover events, experiences and activities in and around the province of Trapani',
       cta: 'Explore events',
       ctaActivities: 'What to do',
       upcoming: 'Upcoming events',
@@ -102,7 +102,7 @@ export const strings = {
     },
     publish: {
       title: 'Publish your event',
-      subtitle: 'Reach thousands of people in the Trapani area',
+      subtitle: 'Reach thousands of people in and around the Trapani area',
     },
     cookie: {
       title: 'We use cookies 🍪',
