@@ -6,7 +6,7 @@ import { getEventoBySlug, getEventiCorrelati } from '@/lib/queries/eventi'
 import EventCard from '@/components/events/EventCard'
 import EventImagePlaceholder from '@/components/ui/EventImagePlaceholder'
 import ShareButtons from '@/components/events/ShareButtons'
-import { formatData, formatOra, formatPrezzo } from '@/lib/utils'
+import { formatData, formatOra, formatPrezzo, eMultiGiorno, eInCorso, formatIntervalloData } from '@/lib/utils'
 import { immagineComune } from '@/data/comuni-immagini'
 
 const SITE_URL = 'https://www.moesco.it'
@@ -68,6 +68,23 @@ export default async function DettaglioEvento({ params }: Props) {
   const prezzo = formatPrezzo(evento.prezzoMin, evento.prezzoMax, evento.gratuito, evento.prezzoTesto)
   const fotoCitta = immagineComune(evento.geoNodo.slug)
   const paginaUrl = `${SITE_URL}/eventi/${slug}`
+
+  // Eventi/rassegne "multi-giorno" (es. cartelloni stagionali) non hanno un
+  // orario secco: mostriamo un intervallo di date, o "in corso · fino al..."
+  // se sono già iniziati, invece di data_inizio + orario (che senza un vero
+  // ora_inizio salvato mostrerebbe sempre un fuorviante "02:00").
+  const multiGiorno = eMultiGiorno(evento.dataInizio, evento.dataFine)
+  const inCorso = multiGiorno && eInCorso(evento.dataInizio, evento.dataFine)
+  const etichettaData = inCorso
+    ? `In corso · fino al ${formatData(evento.dataFine!, { day: 'numeric', month: 'long', year: 'numeric' })}`
+    : multiGiorno
+    ? formatIntervalloData(evento.dataInizio, evento.dataFine!)
+    : formatData(evento.dataInizio, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  const etichettaDataBreve = inCorso
+    ? `In corso · fino al ${formatData(evento.dataFine!, { day: 'numeric', month: 'short' })}`
+    : multiGiorno
+    ? formatIntervalloData(evento.dataInizio, evento.dataFine!)
+    : `${formatData(evento.dataInizio, { weekday: 'short', day: 'numeric', month: 'short' })} · ${formatOra(evento.dataInizio)}`
 
   // ── JSON-LD Schema.org Event ─────────────────────────────────────────────
   const jsonLd: Record<string, unknown> = {
@@ -190,11 +207,13 @@ export default async function DettaglioEvento({ params }: Props) {
 
           <div className="grid sm:grid-cols-2 gap-4">
             <InfoRow icon="🗓️" label="Data">
-              {formatData(evento.dataInizio, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              {etichettaData}
             </InfoRow>
-            <InfoRow icon="🕐" label="Orario">
-              {formatOra(evento.dataInizio)}{evento.dataFine && ` – ${formatOra(evento.dataFine)}`}
-            </InfoRow>
+            {!multiGiorno && (
+              <InfoRow icon="🕐" label="Orario">
+                {formatOra(evento.dataInizio)}{evento.dataFine && ` – ${formatOra(evento.dataFine)}`}
+              </InfoRow>
+            )}
             <InfoRow icon="📍" label="Luogo">
               {evento.luogoNome ?? evento.indirizzo ?? evento.geoNodo.nome}
               {evento.indirizzo && evento.luogoNome && <span className="block text-sm text-gray-500">{evento.indirizzo}</span>}
@@ -287,7 +306,7 @@ export default async function DettaglioEvento({ params }: Props) {
             <div className="text-center">
               <p className={`text-2xl font-extrabold ${evento.gratuito ? 'text-green-600' : 'text-gray-900'}`}>{prezzo}</p>
               <p className="text-sm text-gray-500 mt-0.5">
-                {formatData(evento.dataInizio, { weekday: 'short', day: 'numeric', month: 'short' })} · {formatOra(evento.dataInizio)}
+                {etichettaDataBreve}
               </p>
             </div>
             {(evento.urlPrenotazione || evento.urlBiglietti) ? (
@@ -335,7 +354,7 @@ export default async function DettaglioEvento({ params }: Props) {
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 px-4 py-3 flex items-center gap-3 shadow-lg">
         <div className="flex-1 min-w-0">
           <p className={`text-lg font-extrabold leading-none ${evento.gratuito ? 'text-green-600' : 'text-gray-900'}`}>{prezzo}</p>
-          <p className="text-xs text-gray-500 mt-0.5 truncate">{formatData(evento.dataInizio, { day: 'numeric', month: 'short' })} · {formatOra(evento.dataInizio)}</p>
+          <p className="text-xs text-gray-500 mt-0.5 truncate">{etichettaDataBreve}</p>
         </div>
         {(evento.urlPrenotazione || evento.urlBiglietti || evento.sitoUfficiale) && (
           <a

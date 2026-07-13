@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Evento } from '@/types'
-import { formatData } from '@/lib/utils'
+import { formatData, eMultiGiorno, eInCorso, formatIntervalloData } from '@/lib/utils'
 import EventImagePlaceholder from '@/components/ui/EventImagePlaceholder'
 import { immagineComune } from '@/data/comuni-immagini'
 import { useLang } from '@/lib/i18n/LanguageContext'
@@ -24,6 +24,14 @@ export default function ArticoloEvidenza({ evento }: Props) {
   const fotoCitta = immagineComune(evento.geoNodo.slug)
 
   const testo = (evento.testoArticolo?.trim() || evento.descrizione?.trim() || evento.descrizioneBreve?.trim() || '')
+
+  const multiGiorno = eMultiGiorno(evento.dataInizio, evento.dataFine)
+  const inCorso = eInCorso(evento.dataInizio, evento.dataFine)
+  const etichettaData = inCorso
+    ? `In corso · fino al ${formatData(evento.dataFine!, { day: 'numeric', month: 'short' })}`
+    : multiGiorno
+    ? formatIntervalloData(evento.dataInizio, evento.dataFine!)
+    : formatData(evento.dataInizio)
 
   return (
     <Link
@@ -68,7 +76,7 @@ export default function ArticoloEvidenza({ evento }: Props) {
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          <span>{formatData(evento.dataInizio)}</span>
+          <span>{etichettaData}</span>
           <span className="text-gray-300">·</span>
           <span className="text-gray-500 font-normal truncate">{evento.geoNodo.nome}</span>
         </div>

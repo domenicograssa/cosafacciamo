@@ -55,6 +55,45 @@ export function formatPrezzo(
   return `€ ${min}`
 }
 
+// Vero se dataFine cade in un giorno diverso da dataInizio (in Europe/Rome) —
+// distingue un evento puntuale (stesso giorno, con orario di inizio/fine) da
+// un evento/rassegna "multi-giorno" (festival, cartellone stagionale...) per
+// cui mostrare un orario secco come "02:00 – 02:00" non ha senso.
+export function eMultiGiorno(dataInizio: string, dataFine: string | null): boolean {
+  if (!dataFine) return false
+  const giornoInizio = formatData(dataInizio, { year: 'numeric', month: 'numeric', day: 'numeric' })
+  const giornoFine = formatData(dataFine, { year: 'numeric', month: 'numeric', day: 'numeric' })
+  return giornoInizio !== giornoFine
+}
+
+// Vero se un evento multi-giorno è "in corso" adesso (iniziato ma non ancora finito).
+export function eInCorso(dataInizio: string, dataFine: string | null): boolean {
+  if (!dataFine) return false
+  const adesso = Date.now()
+  return new Date(dataInizio).getTime() <= adesso && new Date(dataFine).getTime() >= adesso
+}
+
+// Formatta un intervallo di date leggibile, evitando ripetizioni inutili:
+// stesso mese → "10 – 19 luglio 2026"; mesi diversi, stesso anno → "10 luglio – 6 settembre 2026".
+export function formatIntervalloData(dataInizio: string, dataFine: string): string {
+  const inizio = new Date(dataInizio)
+  const fine = new Date(dataFine)
+  const partsOf = (d: Date) => Object.fromEntries(
+    new Intl.DateTimeFormat('it-IT', { day: 'numeric', month: 'long', year: 'numeric', timeZone: TZ })
+      .formatToParts(d).map(p => [p.type, p.value])
+  ) as Record<string, string>
+  const pi = partsOf(inizio)
+  const pf = partsOf(fine)
+
+  if (pi.year !== pf.year) {
+    return `${formatData(dataInizio, { day: 'numeric', month: 'long', year: 'numeric' })} – ${formatData(dataFine, { day: 'numeric', month: 'long', year: 'numeric' })}`
+  }
+  if (pi.month !== pf.month) {
+    return `${pi.day} ${pi.month} – ${pf.day} ${pf.month} ${pf.year}`
+  }
+  return `${pi.day} – ${pf.day} ${pf.month} ${pf.year}`
+}
+
 export function cn(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(' ')
 }

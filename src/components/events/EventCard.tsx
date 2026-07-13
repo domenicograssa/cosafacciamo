@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Evento } from '@/types'
-import { formatData, formatOra, formatPrezzo } from '@/lib/utils'
+import { formatData, formatOra, formatPrezzo, eMultiGiorno, eInCorso, formatIntervalloData } from '@/lib/utils'
 import EventImagePlaceholder from '@/components/ui/EventImagePlaceholder'
 import { immagineComune } from '@/data/comuni-immagini'
 import { useLang } from '@/lib/i18n/LanguageContext'
@@ -21,11 +21,16 @@ export default function EventCard({ evento, compact = false, badgeEvidenza }: Ev
   const categoria = evento.categorie[0]
 
   // Evento "in corso": iniziato in passato ma con data di fine non ancora passata
-  // (es. mostre che durano settimane) — mostriamo "fino al" invece della data vecchia
-  const adesso = Date.now()
-  const inCorso = !!evento.dataFine &&
-    new Date(evento.dataInizio).getTime() < adesso &&
-    new Date(evento.dataFine).getTime() >= adesso
+  // (es. mostre/rassegne che durano settimane) — mostriamo "fino al" invece della data vecchia.
+  // Se invece è multi-giorno ma non ancora iniziato, mostriamo l'intervallo completo
+  // invece di data_inizio + orario (fuorviante: "02:00" quando non c'è un vero orario).
+  const multiGiorno = eMultiGiorno(evento.dataInizio, evento.dataFine)
+  const inCorso = eInCorso(evento.dataInizio, evento.dataFine)
+  const etichettaData = inCorso
+    ? `${t.card.ongoing} · ${t.card.until} ${formatData(evento.dataFine!)}`
+    : multiGiorno
+    ? formatIntervalloData(evento.dataInizio, evento.dataFine!)
+    : `${formatData(evento.dataInizio)} · ${formatOra(evento.dataInizio)}`
 
   // Priorità immagine: 1) immagine autorizzata dell'evento, 2) foto della città, 3) placeholder categoria
   const immagineAutorizzata = evento.mediaAssetUrl ?? null
@@ -50,9 +55,7 @@ export default function EventCard({ evento, compact = false, badgeEvidenza }: Ev
         </div>
         <div className="flex-1 min-w-0">
           <p className={`text-xs font-semibold ${inCorso ? 'text-green-600' : 'text-amber-600'}`}>
-            {inCorso
-              ? `${t.card.ongoing} · ${t.card.until} ${formatData(evento.dataFine!)}`
-              : `${formatData(evento.dataInizio)} · ${formatOra(evento.dataInizio)}`}
+            {etichettaData}
           </p>
           <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-amber-600 transition-colors">{evento.titolo}</p>
           <div className="flex items-center gap-1 text-xs text-gray-500 mt-0.5">
@@ -156,9 +159,7 @@ export default function EventCard({ evento, compact = false, badgeEvidenza }: Ev
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
           <span className={inCorso ? 'text-green-600' : undefined}>
-            {inCorso
-              ? `${t.card.ongoing} · ${t.card.until} ${formatData(evento.dataFine!)}`
-              : `${formatData(evento.dataInizio)} · ${formatOra(evento.dataInizio)}`}
+            {etichettaData}
           </span>
         </div>
 
