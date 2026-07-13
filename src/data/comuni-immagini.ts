@@ -178,6 +178,20 @@ export const COMUNE_SLIDES: Record<string, SlideComune[]> = {
       creditoUrl: 'https://commons.wikimedia.org/wiki/File:Cretto_di_Burri_-_Gibellina.JPG',
     },
   ],
+  'palermo': [
+    {
+      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Il_Teatro_Massimo_di_Palermo.jpg?width=1400',
+      alt: 'Il Teatro Massimo di Palermo',
+      credito: 'Vitoparisi92, CC BY-SA 4.0, via Wikimedia Commons',
+      creditoUrl: 'https://commons.wikimedia.org/wiki/File:Il_Teatro_Massimo_di_Palermo.jpg',
+    },
+    {
+      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Palermo_Cathedral_BW_2025-04-29_11-57-44.jpg?width=1400',
+      alt: 'La Cattedrale di Palermo',
+      credito: 'Berthold Werner, CC BY-SA 4.0, via Wikimedia Commons',
+      creditoUrl: 'https://commons.wikimedia.org/wiki/File:Palermo_Cathedral_BW_2025-04-29_11-57-44.jpg',
+    },
+  ],
 }
 
 export const COMUNE_IMMAGINI: Record<string, ImmagineComune> = {
@@ -240,6 +254,13 @@ export const COMUNE_IMMAGINI: Record<string, ImmagineComune> = {
     alt: 'Un dammuso a Pantelleria',
     credito: 'Michael Leithold, pubblico dominio, via Wikimedia Commons',
     creditoUrl: 'https://commons.wikimedia.org/wiki/File:Dammuso_in_Pantelleria,_Sicily.JPG',
+  },
+  // Wikimedia Commons — CC BY-SA 4.0 — autore: Vitoparisi92 (Wiki Loves Monuments 2017)
+  'palermo': {
+    url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Il_Teatro_Massimo_di_Palermo.jpg?width=1280',
+    alt: 'Il Teatro Massimo di Palermo',
+    credito: 'Vitoparisi92, CC BY-SA 4.0, via Wikimedia Commons',
+    creditoUrl: 'https://commons.wikimedia.org/wiki/File:Il_Teatro_Massimo_di_Palermo.jpg',
   },
 }
 

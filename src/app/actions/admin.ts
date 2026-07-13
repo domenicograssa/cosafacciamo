@@ -311,6 +311,62 @@ export async function modificaEvento(
   }
 }
 
+// Toggle rapido "in evidenza" dalla pagina admin/in-evidenza — non richiede
+// di aprire il form completo di modifica evento.
+export async function impostaInEvidenza(
+  eventoId: string,
+  valore: boolean
+): Promise<{ ok: boolean; errore?: string }> {
+  try {
+    await richiedeLogin()
+    const sb = await createAdminClient()
+
+    const { data: evento, error } = await sb
+      .from('eventi')
+      .update({ in_evidenza: valore })
+      .eq('id', eventoId)
+      .select('slug, geo_nodi(slug)')
+      .single()
+    if (error) return { ok: false, errore: error.message }
+
+    const geoNodo = evento?.geo_nodi as { slug: string } | { slug: string }[] | null
+    const geoSlug = Array.isArray(geoNodo) ? geoNodo[0]?.slug : geoNodo?.slug
+    revalidatePath('/admin/in-evidenza')
+    ricaricaPagine(evento?.slug, geoSlug)
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, errore: e instanceof Error ? e.message : 'Errore imprevisto' }
+  }
+}
+
+// Salva solo il testo articolo (usato dalla pagina admin/in-evidenza per
+// modifiche rapide senza aprire il form completo).
+export async function salvaTestoArticolo(
+  eventoId: string,
+  testo: string
+): Promise<{ ok: boolean; errore?: string }> {
+  try {
+    await richiedeLogin()
+    const sb = await createAdminClient()
+
+    const { data: evento, error } = await sb
+      .from('eventi')
+      .update({ testo_articolo: testo.trim() || null })
+      .eq('id', eventoId)
+      .select('slug, geo_nodi(slug)')
+      .single()
+    if (error) return { ok: false, errore: error.message }
+
+    const geoNodo = evento?.geo_nodi as { slug: string } | { slug: string }[] | null
+    const geoSlug = Array.isArray(geoNodo) ? geoNodo[0]?.slug : geoNodo?.slug
+    revalidatePath('/admin/in-evidenza')
+    ricaricaPagine(evento?.slug, geoSlug)
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, errore: e instanceof Error ? e.message : 'Errore imprevisto' }
+  }
+}
+
 export async function modificaOrganizzatore(
   organizzatoreId: string,
   dati: {

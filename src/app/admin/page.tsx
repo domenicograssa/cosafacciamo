@@ -13,6 +13,7 @@ export default async function AdminDashboard() {
     { count: attivitaBozza },
     { count: orgInAttesa },
     { count: messaggiNuovi },
+    { count: inEvidenza },
     { data: daRevisionare },
     { data: attivitaDaPubblicare },
   ] = await Promise.all([
@@ -22,6 +23,7 @@ export default async function AdminDashboard() {
     sb.from('attivita').select('id', { count: 'exact', head: true }).eq('stato', 'bozza'),
     sb.from('organizzatori').select('id', { count: 'exact', head: true }).eq('stato', 'in_attesa'),
     sb.from('messaggi').select('id', { count: 'exact', head: true }).eq('stato', 'nuovo'),
+    sb.from('eventi').select('id', { count: 'exact', head: true }).eq('in_evidenza', true).eq('stato', 'approvato'),
     sb.from('eventi')
       .select('id, slug, titolo, data_inizio, data_fine, ora_inizio, created_at, geo_nodi(nome), organizzatori(nome)')
       .eq('stato', 'in_revisione')
@@ -39,6 +41,7 @@ export default async function AdminDashboard() {
     { label: 'Eventi approvati',    valore: approvati ?? 0,    colore: 'bg-green-50 text-green-700 border-green-200', icon: '✅', href: '/admin/eventi?stato=approvato' },
     { label: 'Eventi rifiutati',    valore: rifiutati ?? 0,    colore: 'bg-red-50 text-red-700 border-red-200',       icon: '❌', href: '/admin/eventi?stato=rifiutato' },
     { label: 'Attività da pubblicare', valore: attivitaBozza ?? 0, colore: 'bg-blue-50 text-blue-700 border-blue-200', icon: '🤿', href: '/admin/attivita' },
+    { label: 'In primo piano (3 posti)', valore: `${inEvidenza ?? 0}/3`, colore: 'bg-purple-50 text-purple-700 border-purple-200', icon: '⭐', href: '/admin/in-evidenza' },
   ]
 
   return (
@@ -57,7 +60,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* KPI */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {kpi.map(k => (
           <Link key={k.label} href={k.href} className={`rounded-2xl border p-5 hover:shadow-md transition-shadow ${k.colore}`}>
             <div className="text-3xl mb-2">{k.icon}</div>
