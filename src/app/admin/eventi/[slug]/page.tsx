@@ -153,6 +153,22 @@ export default async function AdminEventoDettaglio({
         </div>
       )}
 
+      {/* Fonte ricerca automatica: evento proposto dal task settimanale, va
+          verificato controllando la fonte prima di approvare */}
+      {(evento as Record<string, unknown>).fonte_ricerca && (
+        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
+          <p className="text-xs font-semibold text-blue-500 uppercase tracking-wide">Proposto da ricerca automatica — verificare la fonte</p>
+          <a
+            href={(evento as Record<string, unknown>).fonte_ricerca as string}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-blue-700 underline mt-1 inline-block break-all"
+          >
+            {(evento as Record<string, unknown>).fonte_ricerca as string}
+          </a>
+        </div>
+      )}
+
       {/* Nota revisione precedente */}
       {evento.note_revisione && (
         <div className="bg-red-50 border border-red-100 rounded-2xl p-5">
