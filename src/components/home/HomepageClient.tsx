@@ -6,6 +6,7 @@ import Image from 'next/image'
 import SearchBar from '@/components/ui/SearchBar'
 import CategoryChip from '@/components/ui/CategoryChip'
 import EventCard from '@/components/events/EventCard'
+import ArticoloEvidenza from '@/components/home/ArticoloEvidenza'
 import { useLang } from '@/lib/i18n/LanguageContext'
 import type { Evento, Categoria, GeoNodo } from '@/types'
 
@@ -44,9 +45,10 @@ interface Props {
   eventiOggi: Evento[]
   categorie: Categoria[]
   comuni: GeoNodo[]
+  articoliInEvidenza: Evento[]
 }
 
-export default function HomepageClient({ eventiOggi, categorie, comuni }: Props) {
+export default function HomepageClient({ eventiOggi, categorie, comuni, articoliInEvidenza }: Props) {
   const { t, lang } = useLang()
   const [categoriaAttiva, setCategoriaAttiva] = useState<string | null>(null)
   const [slideIdx, setSlideIdx] = useState(0)
@@ -154,6 +156,19 @@ export default function HomepageClient({ eventiOggi, categorie, comuni }: Props)
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-14">
+
+        {/* ─── IN PRIMO PIANO (articoli) ────────────────────────────────── */}
+        {articoliInEvidenza.length > 0 && (
+          <section>
+            <div className="mb-5">
+              <h2 className="text-xl font-bold text-gray-900">{t.home.featured}</h2>
+              <p className="text-sm text-gray-500 mt-0.5">{t.home.featuredSubtitle}</p>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {articoliInEvidenza.map(evento => <ArticoloEvidenza key={evento.id} evento={evento} />)}
+            </div>
+          </section>
+        )}
 
         {/* ─── IN EVIDENZA ──────────────────────────────────────────────── */}
         <section>

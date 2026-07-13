@@ -69,6 +69,10 @@ export interface Evento {
   telefonoContatto: string | null
   urlPrenotazione: string | null
   stato: StatoEvento
+  // Scelto manualmente in admin per la sezione "In primo piano" della homepage
+  inEvidenza: boolean
+  // Testo esteso opzionale per la card "In primo piano"; se null si usa descrizione
+  testoArticolo: string | null
   geoNodo: GeoNodo
   categorie: Categoria[]
   organizzatore: {

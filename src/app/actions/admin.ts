@@ -250,6 +250,8 @@ export async function modificaEvento(
     telefono_contatto?: string
     geo_nodo_id?: string
     immagine_copertina?: string
+    in_evidenza?: boolean
+    testo_articolo?: string
     categorie_ids?: string[]
   }
 ): Promise<{ ok: boolean; errore?: string }> {
@@ -276,6 +278,10 @@ export async function modificaEvento(
     if (dati.geo_nodo_id) aggiornamento.geo_nodo_id = dati.geo_nodo_id
     if (dati.immagine_copertina !== undefined) {
       aggiornamento.immagine_copertina = dati.immagine_copertina?.trim() || null
+    }
+    if (dati.in_evidenza !== undefined) aggiornamento.in_evidenza = dati.in_evidenza
+    if (dati.testo_articolo !== undefined) {
+      aggiornamento.testo_articolo = dati.testo_articolo?.trim() || null
     }
 
     const { data: evento, error } = await sb

@@ -48,6 +48,8 @@ function mapEvento(row: EventoConRelazioni): Evento {
     telefonoContatto: (row as Record<string, unknown>).telefono_contatto as string | null ?? null,
     urlPrenotazione: (row as Record<string, unknown>).url_prenotazione as string | null ?? null,
     stato: row.stato,
+    inEvidenza: (row as Record<string, unknown>).in_evidenza as boolean ?? false,
+    testoArticolo: (row as Record<string, unknown>).testo_articolo as string | null ?? null,
     geoNodo: {
       id: row.geo_nodi.id,
       parentId: row.geo_nodi.parent_id,
@@ -196,6 +198,56 @@ export async function getEventiHome(limit = 10): Promise<Evento[]> {
       console.error('getEventiHome (passati):', errPassati)
     } else {
       risultato.push(...(passati ?? []).map(r => mapEvento(flattenCategorie(r as Record<string, unknown>))))
+    }
+  }
+
+  return risultato
+}
+
+// Eventi "in primo piano" per la sezione articoli della homepage: fino a 3 eventi.
+// Priorità agli eventi marcati manualmente `in_evidenza` in admin (ordinati per
+// data più vicina); gli slot restanti vengono riempiti in automatico con i
+// prossimi eventi approvati in ordine di data, così la selezione ruota da sola
+// settimana dopo settimana man mano che gli eventi passano.
+export async function getEventiInEvidenza(limit = 3): Promise<Evento[]> {
+  const sb = createClient()
+
+  const oggi = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Rome' })
+  const inizioOggi = `${oggi}T00:00:00`
+
+  const { data: pinnati, error: errPinnati } = await sb
+    .from('eventi')
+    .select(EVENTO_SELECT)
+    .eq('stato', 'approvato')
+    .eq('in_evidenza', true)
+    .or(`data_inizio.gte.${inizioOggi},data_fine.gte.${inizioOggi}`)
+    .order('data_inizio', { ascending: true })
+    .limit(limit)
+
+  if (errPinnati) { console.error('getEventiInEvidenza (pinnati):', errPinnati); return [] }
+
+  const risultato = (pinnati ?? []).map(r => mapEvento(flattenCategorie(r as Record<string, unknown>)))
+
+  const spazio = limit - risultato.length
+  if (spazio > 0) {
+    const idsEsclusi = risultato.map(e => e.id)
+    const queryAuto = sb
+      .from('eventi')
+      .select(EVENTO_SELECT)
+      .eq('stato', 'approvato')
+      .or(`data_inizio.gte.${inizioOggi},data_fine.gte.${inizioOggi}`)
+      .order('data_inizio', { ascending: true })
+      .limit(spazio + idsEsclusi.length) // margine per poter escludere lato client
+
+    const { data: auto, error: errAuto } = await queryAuto
+    if (errAuto) {
+      console.error('getEventiInEvidenza (auto):', errAuto)
+    } else {
+      const extra = (auto ?? [])
+        .map(r => mapEvento(flattenCategorie(r as Record<string, unknown>)))
+        .filter(e => !idsEsclusi.includes(e.id))
+        .slice(0, spazio)
+      risultato.push(...extra)
     }
   }
 

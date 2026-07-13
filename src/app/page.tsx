@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import HomepageClient from '@/components/home/HomepageClient'
-import { getEventiHome } from '@/lib/queries/eventi'
+import { getEventiHome, getEventiInEvidenza } from '@/lib/queries/eventi'
 import { getCategorie } from '@/lib/queries/categorie'
 import { getComuni } from '@/lib/queries/geo'
 
@@ -19,10 +19,11 @@ export const metadata: Metadata = {
 }
 
 export default async function Homepage() {
-  const [eventiOggi, categorie, comuni] = await Promise.all([
+  const [eventiOggi, categorie, comuni, articoliInEvidenza] = await Promise.all([
     getEventiHome(10),
     getCategorie(),
     getComuni(),
+    getEventiInEvidenza(3),
   ])
 
   return (
@@ -30,6 +31,7 @@ export default async function Homepage() {
       eventiOggi={eventiOggi}
       categorie={categorie}
       comuni={comuni}
+      articoliInEvidenza={articoliInEvidenza}
     />
   )
 }

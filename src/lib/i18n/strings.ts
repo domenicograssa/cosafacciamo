@@ -20,6 +20,9 @@ export const strings = {
       activities: 'Esperienze e attività',
       noEvents: 'Nessun evento in programma al momento.',
       seeAll: 'Vedi tutti →',
+      featured: 'In primo piano',
+      featuredSubtitle: 'Gli eventi che ci piace raccontare questa settimana',
+      readMore: 'Scopri di più',
     },
     event: {
       free: 'Gratuito',
@@ -78,6 +81,9 @@ export const strings = {
       activities: 'Experiences & activities',
       noEvents: 'No events scheduled at the moment.',
       seeAll: 'See all →',
+      featured: 'Featured',
+      featuredSubtitle: 'The events we want to tell you about this week',
+      readMore: 'Read more',
     },
     event: {
       free: 'Free',

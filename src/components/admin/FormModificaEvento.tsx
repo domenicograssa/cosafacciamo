@@ -64,6 +64,8 @@ export default function FormModificaEvento({
   const [sitoUfficiale, setSitoUfficiale] = useState((evento.sito_ufficiale as string | null) ?? '')
   const [emailContatto, setEmailContatto] = useState((evento.email_contatto as string | null) ?? '')
   const [telefonoContatto, setTelefonoContatto] = useState((evento.telefono_contatto as string | null) ?? '')
+  const [inEvidenza, setInEvidenza] = useState((evento.in_evidenza as boolean | null) ?? false)
+  const [testoArticolo, setTestoArticolo] = useState((evento.testo_articolo as string | null) ?? '')
   const [catSelezionate, setCatSelezionate] = useState<string[]>(categorieSelezionate)
 
   const toggleCategoria = (id: string) => {
@@ -103,6 +105,8 @@ export default function FormModificaEvento({
       telefono_contatto: telefonoContatto || undefined,
       geo_nodo_id: geoNodoId || undefined,
       immagine_copertina: immagine,
+      in_evidenza: inEvidenza,
+      testo_articolo: testoArticolo || undefined,
       categorie_ids: catSelezionate,
     })
 
@@ -239,6 +243,25 @@ export default function FormModificaEvento({
           </div>
         </div>
       )}
+
+      {/* In evidenza homepage */}
+      <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4 space-y-3">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" checked={inEvidenza} onChange={e => setInEvidenza(e.target.checked)}
+            className="w-4 h-4 accent-amber-400" />
+          <span className="text-sm font-semibold text-gray-800">Metti in evidenza nella sezione &quot;In primo piano&quot; della homepage</span>
+        </label>
+        <p className="text-xs text-gray-500">
+          Gli eventi in evidenza hanno la priorità nei 3 posti della sezione &quot;In primo piano&quot;.
+          Se ne selezioni meno di 3, i posti restanti si riempiono da soli con i prossimi eventi in programma.
+        </p>
+        <div>
+          <label className={labelCls}>Testo articolo homepage (opzionale)</label>
+          <textarea value={testoArticolo} onChange={e => setTestoArticolo(e.target.value)}
+            rows={4} placeholder="Se lasci vuoto, in homepage viene mostrata la descrizione completa dell'evento."
+            className={inputCls + ' resize-y bg-white'} />
+        </div>
+      </div>
 
       {/* Immagine */}
       <div>
