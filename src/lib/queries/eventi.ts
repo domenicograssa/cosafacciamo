@@ -209,17 +209,26 @@ export async function getEventiHome(limit = 10): Promise<Evento[]> {
 // data più vicina); gli slot restanti vengono riempiti in automatico con i
 // prossimi eventi approvati in ordine di data, così la selezione ruota da sola
 // settimana dopo settimana man mano che gli eventi passano.
+//
+// Ogni volta che un evento viene messo in evidenza (da admin) riceve anche una
+// scadenza automatica a 2 giorni (`in_evidenza_scade_il`, vedi app/actions/admin.ts).
+// Qui filtriamo via i pin scaduti: tornano così ad essere trattati come eventi
+// normali e il posto libero viene rioccupato dal riempimento automatico —
+// questo garantisce che la vetrina "in primo piano" cambi almeno ogni 2 giorni
+// anche senza intervento manuale, pur restando modificabile a mano in ogni momento.
 export async function getEventiInEvidenza(limit = 3): Promise<Evento[]> {
   const sb = createClient()
 
   const oggi = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Rome' })
   const inizioOggi = `${oggi}T00:00:00`
+  const adesso = new Date().toISOString()
 
   const { data: pinnati, error: errPinnati } = await sb
     .from('eventi')
     .select(EVENTO_SELECT)
     .eq('stato', 'approvato')
     .eq('in_evidenza', true)
+    .or(`in_evidenza_scade_il.is.null,in_evidenza_scade_il.gt.${adesso}`)
     .or(`data_inizio.gte.${inizioOggi},data_fine.gte.${inizioOggi}`)
     .order('data_inizio', { ascending: true })
     .limit(limit)

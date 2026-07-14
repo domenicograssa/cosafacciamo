@@ -12,6 +12,7 @@ interface RigaEvento {
   data_inizio: string
   data_fine: string | null
   in_evidenza: boolean
+  in_evidenza_scade_il: string | null
   testo_articolo: string | null
   descrizione: string | null
   geo_nodi: { nome: string; slug: string } | null
@@ -54,11 +55,14 @@ export default function GestioneInEvidenza({ eventi: eventiIniziali }: { eventi:
 
   const toggle = async (id: string, valore: boolean) => {
     setErrore('')
-    setEventi(prev => prev.map(e => e.id === id ? { ...e, in_evidenza: valore } : e))
+    const scadenzaOttimistica = valore
+      ? new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString()
+      : null
+    setEventi(prev => prev.map(e => e.id === id ? { ...e, in_evidenza: valore, in_evidenza_scade_il: scadenzaOttimistica } : e))
     const esito = await impostaInEvidenza(id, valore)
     if (!esito.ok) {
       setErrore(esito.errore ?? 'Errore imprevisto.')
-      setEventi(prev => prev.map(e => e.id === id ? { ...e, in_evidenza: !valore } : e))
+      setEventi(prev => prev.map(e => e.id === id ? { ...e, in_evidenza: !valore, in_evidenza_scade_il: null } : e))
     }
   }
 
@@ -104,6 +108,9 @@ export default function GestioneInEvidenza({ eventi: eventiIniziali }: { eventi:
               </span>
               <p className="font-semibold text-sm text-gray-900 line-clamp-2">{evento.titolo}</p>
               <p className="text-xs text-gray-500">{evento.geo_nodi?.nome ?? '—'} · {formatData(evento.data_inizio)}</p>
+              {!automatico && evento.in_evidenza_scade_il && (
+                <p className="text-[11px] text-amber-600">Scade il {formatData(evento.in_evidenza_scade_il)}</p>
+              )}
             </div>
           ))}
         </div>
@@ -146,7 +153,12 @@ export default function GestioneInEvidenza({ eventi: eventiIniziali }: { eventi:
 
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm text-gray-900 truncate">{e.titolo}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{e.geo_nodi?.nome ?? '—'} · {formatData(e.data_inizio)}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {e.geo_nodi?.nome ?? '—'} · {formatData(e.data_inizio)}
+                        {e.in_evidenza && e.in_evidenza_scade_il && (
+                          <span className="text-amber-600"> · scade il {formatData(e.in_evidenza_scade_il)}</span>
+                        )}
+                      </p>
                     </div>
 
                     <button

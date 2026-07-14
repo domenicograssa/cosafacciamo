@@ -7,10 +7,21 @@ export default async function InEvidenzaAdminPage() {
 
   const oggi = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Rome' })
   const inizioOggi = `${oggi}T00:00:00`
+  const adesso = new Date().toISOString()
+
+  // Pulizia: i pin manuali scadono dopo 2 giorni (vedi app/actions/admin.ts).
+  // Li spegniamo qui così il toggle in questa pagina riflette sempre lo stato
+  // reale — la homepage pubblica li ignora comunque già tramite il filtro in
+  // getEventiInEvidenza, indipendentemente da questa pulizia.
+  await sb
+    .from('eventi')
+    .update({ in_evidenza: false, in_evidenza_scade_il: null })
+    .eq('in_evidenza', true)
+    .lt('in_evidenza_scade_il', adesso)
 
   const { data } = await sb
     .from('eventi')
-    .select('id, slug, titolo, data_inizio, data_fine, in_evidenza, testo_articolo, descrizione, geo_nodi(nome, slug)')
+    .select('id, slug, titolo, data_inizio, data_fine, in_evidenza, in_evidenza_scade_il, testo_articolo, descrizione, geo_nodi(nome, slug)')
     .eq('stato', 'approvato')
     .or(`data_inizio.gte.${inizioOggi},data_fine.gte.${inizioOggi}`)
     .order('data_inizio', { ascending: true })
@@ -22,6 +33,7 @@ export default async function InEvidenzaAdminPage() {
     data_inizio: string
     data_fine: string | null
     in_evidenza: boolean
+    in_evidenza_scade_il: string | null
     testo_articolo: string | null
     descrizione: string | null
     geo_nodi: { nome: string; slug: string } | null
@@ -39,7 +51,9 @@ export default async function InEvidenzaAdminPage() {
         <p className="text-sm text-gray-500 mt-1">
           Scegli quali eventi mettere in evidenza nella sezione &quot;In primo piano&quot; della homepage.
           Gli eventi selezionati hanno la priorità sui 3 posti disponibili; i posti restanti si riempiono
-          da soli con i prossimi eventi in programma.
+          da soli con i prossimi eventi in programma. Ogni scelta manuale dura 2 giorni, poi scade in
+          automatico e il posto torna a riempirsi da solo — puoi rimetterla in evidenza in qualsiasi
+          momento per rinnovarla.
         </p>
       </div>
 

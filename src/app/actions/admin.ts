@@ -47,6 +47,16 @@ function ricaricaPagine(slug?: string, geoSlug?: string) {
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.moesco.it'
 
+// Ogni volta che un evento viene messo "in evidenza" (da admin/in-evidenza o dal
+// form di modifica) riceve una scadenza automatica a 2 giorni: allo scadere, la
+// query pubblica getEventiInEvidenza smette di considerarlo pinnato e il posto
+// viene rioccupato in automatico dal prossimo evento in programma. Rimettere
+// manualmente in evidenza un evento (anche lo stesso) rinnova la scadenza.
+const GIORNI_ROTAZIONE_IN_EVIDENZA = 2
+function scadenzaInEvidenza(): string {
+  return new Date(Date.now() + GIORNI_ROTAZIONE_IN_EVIDENZA * 24 * 60 * 60 * 1000).toISOString()
+}
+
 export async function aggiornaStatoEvento(
   eventoId: string,
   nuovoStato: 'approvato' | 'rifiutato' | 'sospeso',
@@ -279,7 +289,10 @@ export async function modificaEvento(
     if (dati.immagine_copertina !== undefined) {
       aggiornamento.immagine_copertina = dati.immagine_copertina?.trim() || null
     }
-    if (dati.in_evidenza !== undefined) aggiornamento.in_evidenza = dati.in_evidenza
+    if (dati.in_evidenza !== undefined) {
+      aggiornamento.in_evidenza = dati.in_evidenza
+      aggiornamento.in_evidenza_scade_il = dati.in_evidenza ? scadenzaInEvidenza() : null
+    }
     if (dati.testo_articolo !== undefined) {
       aggiornamento.testo_articolo = dati.testo_articolo?.trim() || null
     }
@@ -323,7 +336,10 @@ export async function impostaInEvidenza(
 
     const { data: evento, error } = await sb
       .from('eventi')
-      .update({ in_evidenza: valore })
+      .update({
+        in_evidenza: valore,
+        in_evidenza_scade_il: valore ? scadenzaInEvidenza() : null,
+      })
       .eq('id', eventoId)
       .select('slug, geo_nodi(slug)')
       .single()
