@@ -50,7 +50,6 @@ interface Props {
 
 export default function HomepageClient({ eventiOggi, categorie, comuni, articoliInEvidenza }: Props) {
   const { t, lang } = useLang()
-  const [categoriaAttiva, setCategoriaAttiva] = useState<string | null>(null)
   const [slideIdx, setSlideIdx] = useState(0)
 
   useEffect(() => {
@@ -58,9 +57,7 @@ export default function HomepageClient({ eventiOggi, categorie, comuni, articoli
     return () => clearInterval(t)
   }, [])
 
-  const inEvidenza = categoriaAttiva
-    ? eventiOggi.filter(e => e.categorie.some(c => c.slug === categoriaAttiva))
-    : eventiOggi.slice(0, 5)
+  const inEvidenza = eventiOggi.slice(0, 5)
 
   const gratuiti = eventiOggi.filter(e => e.gratuito).slice(0, 4)
 
@@ -147,8 +144,7 @@ export default function HomepageClient({ eventiOggi, categorie, comuni, articoli
               <CategoryChip
                 key={cat.id}
                 categoria={cat}
-                attiva={categoriaAttiva === cat.slug}
-                onClick={() => setCategoriaAttiva(prev => prev === cat.slug ? null : cat.slug)}
+                href={`/eventi?categoria=${cat.slug}`}
               />
             ))}
           </div>
@@ -174,9 +170,7 @@ export default function HomepageClient({ eventiOggi, categorie, comuni, articoli
         <section>
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-xl font-bold text-gray-900">
-              {categoriaAttiva
-                ? categorie.find(c => c.slug === categoriaAttiva)?.nome
-                : t.home.upcoming}
+              {t.home.upcoming}
             </h2>
             <Link href="/eventi" className="flex items-center gap-1.5 text-sm text-amber-600 font-semibold hover:underline">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -193,9 +187,9 @@ export default function HomepageClient({ eventiOggi, categorie, comuni, articoli
             <div className="py-12 text-center text-gray-400">
               <p className="text-4xl mb-3">📭</p>
               <p className="text-sm">{t.home.noEvents}</p>
-              <button onClick={() => setCategoriaAttiva(null)} className="mt-3 text-sm text-amber-600 font-semibold hover:underline">
+              <Link href="/eventi" className="mt-3 inline-block text-sm text-amber-600 font-semibold hover:underline">
                 {t.home.cta}
-              </button>
+              </Link>
             </div>
           )}
         </section>
