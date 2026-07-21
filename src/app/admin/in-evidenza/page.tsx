@@ -19,12 +19,29 @@ export default async function InEvidenzaAdminPage() {
     .eq('in_evidenza', true)
     .lt('in_evidenza_scade_il', adesso)
 
-  const { data } = await sb
+  // Nota: qui teniamo anche gli eventi già iniziati ma non ancora conclusi
+  // (data_fine nel futuro) perché l'admin deve poterli comunque trovare e
+  // pinnare manualmente dalla lista. Il riempimento AUTOMATICO dei posti
+  // liberi però (vedi GestioneInEvidenza) considera solo i non-pinnati in
+  // testa a questo elenco: per questo li ordiniamo mettendo prima i non
+  // ancora iniziati (quelli "prossimi alla realizzazione"), poi tutto il
+  // resto — stessa logica di getEventiInEvidenza in lib/queries/eventi.ts.
+  const { data: nonIniziati } = await sb
     .from('eventi')
     .select('id, slug, titolo, data_inizio, data_fine, in_evidenza, in_evidenza_scade_il, testo_articolo, descrizione, geo_nodi(nome, slug)')
     .eq('stato', 'approvato')
-    .or(`data_inizio.gte.${inizioOggi},data_fine.gte.${inizioOggi}`)
+    .gte('data_inizio', inizioOggi)
     .order('data_inizio', { ascending: true })
+
+  const { data: inCorso } = await sb
+    .from('eventi')
+    .select('id, slug, titolo, data_inizio, data_fine, in_evidenza, in_evidenza_scade_il, testo_articolo, descrizione, geo_nodi(nome, slug)')
+    .eq('stato', 'approvato')
+    .lt('data_inizio', inizioOggi)
+    .gte('data_fine', inizioOggi)
+    .order('data_inizio', { ascending: true })
+
+  const data = [...(nonIniziati ?? []), ...(inCorso ?? [])]
 
   const eventi = (data ?? []) as unknown as {
     id: string

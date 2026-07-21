@@ -240,11 +240,16 @@ export async function getEventiInEvidenza(limit = 3): Promise<Evento[]> {
   const spazio = limit - risultato.length
   if (spazio > 0) {
     const idsEsclusi = risultato.map(e => e.id)
+    // Solo eventi non ancora iniziati, ordinati per data più vicina: il
+    // riempimento automatico deve mostrare ciò che sta per succedere, non
+    // eventi/mostre partiti mesi fa che restano "aperti" (data_fine lontana)
+    // e che altrimenti scavalcherebbero in ordinamento i prossimi eventi
+    // veri e propri (data_inizio più vecchia = ordinati per primi).
     const queryAuto = sb
       .from('eventi')
       .select(EVENTO_SELECT)
       .eq('stato', 'approvato')
-      .or(`data_inizio.gte.${inizioOggi},data_fine.gte.${inizioOggi}`)
+      .gte('data_inizio', inizioOggi)
       .order('data_inizio', { ascending: true })
       .limit(spazio + idsEsclusi.length) // margine per poter escludere lato client
 
