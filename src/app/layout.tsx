@@ -6,6 +6,7 @@ import CookieBanner from "@/components/ui/CookieBanner";
 import Analytics from "@/components/Analytics";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import FooterClient from "@/components/layout/FooterClient";
+import { getLang } from "@/lib/i18n/getLang";
 
 const nunito = Nunito({
   subsets: ['latin'],
@@ -14,39 +15,56 @@ const nunito = Nunito({
   display: 'swap',
 })
 
-export const metadata: Metadata = {
-  metadataBase: new URL('https://www.moesco.it'),
-  title: {
-    default: 'Moesco — Eventi, sagre e cose da fare in provincia di Trapani e dintorni',
-    template: '%s | Moesco',
-  },
-  description: 'Scopri eventi, sagre, concerti, festival, teatro, mercatini e cose da fare in provincia di Trapani e dintorni.',
-  openGraph: {
-    siteName: 'Moesco',
-    locale: 'it_IT',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-  verification: {
-    other: { 'msvalidate.01': '0ADFAC900C27C8CF8C5CDF8579C59B6B' },
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = await getLang()
+  const isEn = lang === 'en'
 
-export default function RootLayout({
+  return {
+    metadataBase: new URL('https://www.moesco.it'),
+    title: {
+      default: isEn
+        ? 'Moesco — Events, festivals and things to do around Trapani, Sicily'
+        : 'Moesco — Eventi, sagre e cose da fare in provincia di Trapani e dintorni',
+      template: '%s | Moesco',
+    },
+    description: isEn
+      ? 'Discover events, festivals, concerts, theatre, markets and things to do around the province of Trapani, Sicily.'
+      : 'Scopri eventi, sagre, concerti, festival, teatro, mercatini e cose da fare in provincia di Trapani e dintorni.',
+    alternates: {
+      languages: {
+        'it': 'https://www.moesco.it',
+        'en': 'https://www.moesco.it/en',
+      },
+    },
+    openGraph: {
+      siteName: 'Moesco',
+      locale: isEn ? 'en_US' : 'it_IT',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+    verification: {
+      other: { 'msvalidate.01': '0ADFAC900C27C8CF8C5CDF8579C59B6B' },
+    },
+  }
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const lang = await getLang()
+
   return (
-    <html lang="it" className={`h-full ${nunito.variable}`}>
+    <html lang={lang} className={`h-full ${nunito.variable}`}>
       <body className="min-h-full flex flex-col bg-gray-50">
-        <LanguageProvider>
+        <LanguageProvider initialLang={lang}>
           <Navbar />
           <main className="flex-1">{children}</main>
           <FooterClient />

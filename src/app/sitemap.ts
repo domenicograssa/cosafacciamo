@@ -11,11 +11,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  // ── Pagine statiche ──────────────────────────────────────────────────────
+  // ── Pagine statiche (con alternate /en per contenuto tradotto) ────────────
   const statiche: MetadataRoute.Sitemap = [
-    { url: BASE_URL,                             changeFrequency: 'daily',  priority: 1.0, lastModified: new Date() },
-    { url: `${BASE_URL}/eventi`,                 changeFrequency: 'daily',  priority: 0.9, lastModified: new Date() },
-    { url: `${BASE_URL}/localita`,               changeFrequency: 'weekly', priority: 0.7, lastModified: new Date() },
+    { url: BASE_URL,                             changeFrequency: 'daily',  priority: 1.0, lastModified: new Date(), alternates: { languages: { it: BASE_URL, en: `${BASE_URL}/en` } } },
+    { url: `${BASE_URL}/eventi`,                 changeFrequency: 'daily',  priority: 0.9, lastModified: new Date(), alternates: { languages: { it: `${BASE_URL}/eventi`, en: `${BASE_URL}/en/eventi` } } },
+    { url: `${BASE_URL}/localita`,               changeFrequency: 'weekly', priority: 0.7, lastModified: new Date(), alternates: { languages: { it: `${BASE_URL}/localita`, en: `${BASE_URL}/en/localita` } } },
     { url: `${BASE_URL}/cosa-fare`,              changeFrequency: 'weekly', priority: 0.7, lastModified: new Date() },
     { url: `${BASE_URL}/organizzatori`,          changeFrequency: 'weekly', priority: 0.5, lastModified: new Date() },
     { url: `${BASE_URL}/contatti`,               changeFrequency: 'yearly', priority: 0.4 },
@@ -36,6 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: 'weekly' as const,
     priority: 0.6,
     lastModified: new Date(),
+    alternates: { languages: { it: `${BASE_URL}/localita/${c.slug}`, en: `${BASE_URL}/en/localita/${c.slug}` } },
   }))
 
   // ── Schede evento approvate ───────────────────────────────────────────────
@@ -51,6 +52,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: e.updated_at ? new Date(e.updated_at) : new Date(),
     changeFrequency: 'weekly' as const,
     priority: 0.8,
+    alternates: { languages: { it: `${BASE_URL}/eventi/${e.slug}`, en: `${BASE_URL}/en/eventi/${e.slug}` } },
   }))
 
   return [...statiche, ...comuniUrls, ...eventiUrls]

@@ -46,7 +46,6 @@ export default function FormModificaEventoDashboard({
 
   const [titolo, setTitolo] = useState(evento.titolo)
   const [descrizione, setDescrizione] = useState(evento.descrizione ?? '')
-  const [descrizioneBreve, setDescrizioneBreve] = useState(evento.descrizione_breve ?? '')
   const [luogoNome, setLuogoNome] = useState(evento.luogo_nome ?? '')
   const [indirizzo, setIndirizzo] = useState(evento.indirizzo ?? '')
   const [geoNodoId, setGeoNodoId] = useState(evento.geo_nodo_id ?? '')
@@ -85,7 +84,9 @@ export default function FormModificaEventoDashboard({
     const esito = await modificaEventoOrganizzatore(evento.id, {
       titolo,
       descrizione,
-      descrizione_breve: descrizioneBreve || descrizione.slice(0, 280),
+      // Non più editabile a mano: derivata dalla descrizione completa, serve
+      // solo per meta-tag SEO (og:description, JSON-LD) — mai mostrata in pagina.
+      descrizione_breve: descrizione.slice(0, 280),
       luogo_nome: luogoNome || undefined,
       indirizzo: indirizzo || undefined,
       data_inizio: isoRoma(dataInizio, oraInizio),
@@ -127,13 +128,6 @@ export default function FormModificaEventoDashboard({
       <div>
         <label className={labelCls}>Titolo *</label>
         <input type="text" value={titolo} onChange={e => setTitolo(e.target.value)} required className={inputCls} />
-      </div>
-
-      <div>
-        <label className={labelCls}>Descrizione breve (max 280 caratteri)</label>
-        <textarea value={descrizioneBreve} onChange={e => setDescrizioneBreve(e.target.value)}
-          rows={2} maxLength={280} className={inputCls + ' resize-none'} />
-        <p className="text-xs text-gray-400 mt-0.5">{descrizioneBreve.length}/280</p>
       </div>
 
       <div>

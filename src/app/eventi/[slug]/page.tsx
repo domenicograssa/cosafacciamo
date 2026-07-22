@@ -8,6 +8,8 @@ import EventImagePlaceholder from '@/components/ui/EventImagePlaceholder'
 import ShareButtons from '@/components/events/ShareButtons'
 import { formatData, formatOra, formatPrezzo, eMultiGiorno, eInCorso, formatIntervalloData } from '@/lib/utils'
 import { immagineComune } from '@/data/comuni-immagini'
+import { getLang } from '@/lib/i18n/getLang'
+import { strings } from '@/lib/i18n/strings'
 
 const SITE_URL = 'https://www.moesco.it'
 
@@ -32,19 +34,29 @@ interface Props {
 
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params
-  const evento = await getEventoBySlug(slug)
+  const lang = await getLang()
+  const evento = await getEventoBySlug(slug, lang)
   if (!evento) return {}
 
-  const canonicalUrl = `${SITE_URL}/eventi/${slug}`
+  const canonicalUrl = lang === 'en' ? `${SITE_URL}/en/eventi/${slug}` : `${SITE_URL}/eventi/${slug}`
   const ogImage = evento.mediaAssetUrl ?? null
+  const descrizioneFallback = lang === 'en'
+    ? `${evento.titolo} in ${evento.geoNodo.nome}. Find all the details on moesco.`
+    : `${evento.titolo} a ${evento.geoNodo.nome}. Scopri tutti i dettagli su moesco.`
 
   return {
     title: `${evento.titolo} — ${evento.geoNodo.nome}`,
-    description: evento.descrizioneBreve ?? `${evento.titolo} a ${evento.geoNodo.nome}. Scopri tutti i dettagli su moesco.`,
-    alternates: { canonical: canonicalUrl },
+    description: evento.descrizioneBreve ?? descrizioneFallback,
+    alternates: {
+      canonical: canonicalUrl,
+      languages: {
+        'it': `${SITE_URL}/eventi/${slug}`,
+        'en': `${SITE_URL}/en/eventi/${slug}`,
+      },
+    },
     openGraph: {
       title: `${evento.titolo} — ${evento.geoNodo.nome}`,
-      description: evento.descrizioneBreve ?? `${evento.titolo} a ${evento.geoNodo.nome}.`,
+      description: evento.descrizioneBreve ?? descrizioneFallback,
       url: canonicalUrl,
       type: 'article',
       ...(ogImage ? { images: [{ url: ogImage, width: 1200, height: 630, alt: evento.titolo }] } : {}),
@@ -60,14 +72,16 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function DettaglioEvento({ params }: Props) {
   const { slug } = await params
-  const evento = await getEventoBySlug(slug)
+  const lang = await getLang()
+  const t = strings[lang]
+  const evento = await getEventoBySlug(slug, lang)
   if (!evento) notFound()
 
   const categoriaIds = evento.categorie.map(c => c.id)
-  const correlati = await getEventiCorrelati(evento.id, categoriaIds)
+  const correlati = await getEventiCorrelati(evento.id, categoriaIds, 4, lang)
   const prezzo = formatPrezzo(evento.prezzoMin, evento.prezzoMax, evento.gratuito, evento.prezzoTesto)
   const fotoCitta = immagineComune(evento.geoNodo.slug)
-  const paginaUrl = `${SITE_URL}/eventi/${slug}`
+  const paginaUrl = lang === 'en' ? `${SITE_URL}/en/eventi/${slug}` : `${SITE_URL}/eventi/${slug}`
 
   // Eventi/rassegne "multi-giorno" (es. cartelloni stagionali) non hanno un
   // orario secco: mostriamo un intervallo di date, o "in corso · fino al..."
@@ -147,11 +161,11 @@ export default async function DettaglioEvento({ params }: Props) {
 
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-        <Link href="/" className="hover:text-amber-600">Home</Link>
+        <Link href={lang === 'en' ? '/en' : '/'} className="hover:text-amber-600">{t.event.breadcrumbHome}</Link>
         <span>›</span>
-        <Link href="/eventi" className="hover:text-amber-600">Eventi</Link>
+        <Link href={lang === 'en' ? '/en/eventi' : '/eventi'} className="hover:text-amber-600">{t.event.breadcrumbEvents}</Link>
         <span>›</span>
-        <Link href={`/localita/${evento.geoNodo.slug}`} className="hover:text-amber-600">{evento.geoNodo.nome}</Link>
+        <Link href={`${lang === 'en' ? '/en' : ''}/localita/${evento.geoNodo.slug}`} className="hover:text-amber-600">{evento.geoNodo.nome}</Link>
         <span>›</span>
         <span className="text-gray-900 font-medium truncate">{evento.titolo}</span>
       </nav>
@@ -197,43 +211,40 @@ export default async function DettaglioEvento({ params }: Props) {
 
           <div>
             <h1 className="text-3xl font-extrabold text-gray-900 leading-tight">{evento.titolo}</h1>
-            {evento.descrizioneBreve && (
-              <p className="mt-3 text-lg text-gray-600 leading-relaxed">{evento.descrizioneBreve}</p>
-            )}
             {evento.descrizione && (
               <div className="mt-4 text-gray-700 leading-relaxed whitespace-pre-line">{evento.descrizione}</div>
             )}
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
-            <InfoRow icon="🗓️" label="Data">
+            <InfoRow icon="🗓️" label={t.event.date}>
               {etichettaData}
             </InfoRow>
             {!multiGiorno && (
-              <InfoRow icon="🕐" label="Orario">
+              <InfoRow icon="🕐" label={t.event.time}>
                 {formatOra(evento.dataInizio)}{evento.dataFine && ` – ${formatOra(evento.dataFine)}`}
               </InfoRow>
             )}
-            <InfoRow icon="📍" label="Luogo">
+            <InfoRow icon="📍" label={t.event.where}>
               {evento.luogoNome ?? evento.indirizzo ?? evento.geoNodo.nome}
               {evento.indirizzo && evento.luogoNome && <span className="block text-sm text-gray-500">{evento.indirizzo}</span>}
             </InfoRow>
-            <InfoRow icon="🏛️" label="Comune">
+            <InfoRow icon="🏛️" label={t.event.town}>
               {evento.geoNodo.nome}
             </InfoRow>
-            <InfoRow icon="🏷️" label="Prezzo">
+            <InfoRow icon="🏷️" label={t.event.price}>
               <span className={evento.gratuito ? 'text-green-600 font-bold' : 'font-semibold'}>{prezzo}</span>
             </InfoRow>
-            <InfoRow icon="🏢" label="Organizzatore">
+            <InfoRow icon="🏢" label={t.event.organizer}>
               {evento.organizzatore.nome}
             </InfoRow>
             {evento.emailContatto && (
-              <InfoRow icon="✉️" label="Email">
+              <InfoRow icon="✉️" label={t.event.email}>
                 <a href={`mailto:${evento.emailContatto}`} className="text-amber-600 hover:underline">{evento.emailContatto}</a>
               </InfoRow>
             )}
             {evento.telefonoContatto && (
-              <InfoRow icon="📞" label="Telefono">
+              <InfoRow icon="📞" label={t.event.phone}>
                 <a href={`tel:${evento.telefonoContatto}`} className="text-amber-600 hover:underline">{evento.telefonoContatto}</a>
               </InfoRow>
             )}
@@ -252,7 +263,7 @@ export default async function DettaglioEvento({ params }: Props) {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg>
-                  VISITA IL SITO UFFICIALE
+                  {t.event.visitOfficialSite}
                 </a>
               )}
               {evento.urlPrenotazione && (
@@ -262,7 +273,7 @@ export default async function DettaglioEvento({ params }: Props) {
                   rel="noopener noreferrer"
                   className="flex-1 flex items-center justify-center gap-2 border-2 border-amber-400 text-amber-600 hover:bg-amber-50 font-bold py-3 px-6 rounded-xl transition-colors"
                 >
-                  🎟️ Prenota / Acquista biglietti
+                  🎟️ {t.event.bookOrBuyTickets}
                 </a>
               )}
             </div>
@@ -272,11 +283,8 @@ export default async function DettaglioEvento({ params }: Props) {
           <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl p-4">
             <span className="text-xl shrink-0">⚠️</span>
             <p className="text-sm text-amber-900 leading-relaxed">
-              <strong>Avviso:</strong> le informazioni sugli eventi sono fornite dagli organizzatori.{' '}
-              <em>moesco</em> non è in alcun modo responsabile per eventuali errori, omissioni
-              o cambiamenti dovuti a fattori non prevedibili. Ti invitiamo a verificare eventuali
-              variazioni dell&apos;ultima ora visitando il sito ufficiale e i canali social
-              dell&apos;organizzatore, i cui riferimenti sono indicati in questa pagina.
+              <strong>{t.event.noticeTitle}</strong> {t.event.noticeIntro}{' '}
+              <em>moesco</em> {t.event.noticeRest}
             </p>
           </div>
 
@@ -284,7 +292,7 @@ export default async function DettaglioEvento({ params }: Props) {
             <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
               <div className="bg-gray-50 px-4 py-3 border-b border-gray-100 flex items-center gap-2">
                 <span className="text-lg">🗺️</span>
-                <p className="text-sm font-semibold text-gray-700">Come arrivare</p>
+                <p className="text-sm font-semibold text-gray-700">{t.event.howToGetThere}</p>
               </div>
               <div className="h-48 bg-gradient-to-br from-blue-50 to-teal-50 flex items-center justify-center">
                 <div className="text-center">
@@ -292,7 +300,7 @@ export default async function DettaglioEvento({ params }: Props) {
                   <p className="text-sm font-semibold text-gray-700 mt-2">{evento.luogoNome ?? evento.geoNodo.nome}</p>
                   {evento.indirizzo && <p className="text-xs text-gray-500">{evento.indirizzo}</p>}
                   <a href={`https://maps.google.com/?q=${evento.lat},${evento.lng}`} target="_blank" rel="noopener noreferrer" className="inline-block mt-3 text-xs text-amber-600 font-semibold hover:underline">
-                    Apri in Google Maps →
+                    {t.event.openInMaps}
                   </a>
                 </div>
               </div>
@@ -316,7 +324,7 @@ export default async function DettaglioEvento({ params }: Props) {
                 rel="noopener noreferrer"
                 className="block text-center w-full bg-amber-400 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition-colors"
               >
-                🎟️ Prenota / Biglietti
+                🎟️ {t.event.bookTicketsShort}
               </a>
             ) : evento.sitoUfficiale ? (
               <a
@@ -325,17 +333,17 @@ export default async function DettaglioEvento({ params }: Props) {
                 rel="noopener noreferrer"
                 className="block text-center w-full bg-amber-400 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition-colors"
               >
-                Info sul sito ufficiale
+                {t.event.infoOnOfficialSite}
               </a>
             ) : (
               <p className="text-xs text-center text-gray-400">
-                Per informazioni contatta l&apos;organizzatore
+                {t.event.contactOrganizerForInfo}
               </p>
             )}
           </div>
 
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Organizzatore</p>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">{t.event.organizer}</p>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center font-bold text-amber-600">
                 {evento.organizzatore.nome.charAt(0)}
@@ -363,7 +371,7 @@ export default async function DettaglioEvento({ params }: Props) {
             rel="noopener noreferrer"
             className="bg-amber-400 hover:bg-amber-500 text-white font-bold py-3 px-6 rounded-xl transition-colors shrink-0"
           >
-            {evento.urlPrenotazione || evento.urlBiglietti ? 'Prenota' : 'Info'}
+            {evento.urlPrenotazione || evento.urlBiglietti ? t.event.book : t.event.info}
           </a>
         )}
       </div>
@@ -373,7 +381,7 @@ export default async function DettaglioEvento({ params }: Props) {
 
       {correlati.length > 0 && (
         <section className="mt-14">
-          <h2 className="text-xl font-bold text-gray-900 mb-5">Potrebbe interessarti</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-5">{t.event.youMightAlsoLike}</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {correlati.map(e => <EventCard key={e.id} evento={e} />)}
           </div>

@@ -6,6 +6,7 @@ import { Evento, Categoria, GeoNodo } from '@/types'
 import CategoryChip, { icona } from '@/components/ui/CategoryChip'
 import ComuneCombobox from '@/components/ui/ComuneCombobox'
 import { normalizzaTesto } from '@/lib/utils'
+import { useLang } from '@/lib/i18n/LanguageContext'
 
 interface FiltriState {
   testo: string
@@ -25,6 +26,7 @@ interface EventiListProps {
 }
 
 export default function EventiList({ eventi, categorie, comuni, titoloIniziale, filtriIniziali }: EventiListProps) {
+  const { t } = useLang()
   const [filtri, setFiltri] = useState<FiltriState>(() => ({
     testo: '',
     categorie: [],
@@ -39,7 +41,7 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale, 
     return eventi.filter(e => {
       if (filtri.testo) {
         const q = normalizzaTesto(filtri.testo)
-        const campi = [e.titolo, e.descrizioneBreve ?? '', e.luogoNome ?? '', e.geoNodo.nome]
+        const campi = [e.titolo, e.descrizione ?? '', e.luogoNome ?? '', e.geoNodo.nome]
         if (!campi.some(campo => normalizzaTesto(campo).includes(q))) return false
       }
       if (filtri.categorie.length > 0 && !e.categorie.some(c => filtri.categorie.includes(c.slug))) return false
@@ -91,29 +93,29 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale, 
     inizio.setHours(0, 0, 0, 0)
     const fine = e.dataFine ? new Date(e.dataFine) : null
 
-    if (inizio < oggi && fine && fine >= oggi) return 'In corso'
+    if (inizio < oggi && fine && fine >= oggi) return t.list.ongoing
     const diffDays = Math.round((inizio.getTime() - oggi.getTime()) / 86400000)
-    if (diffDays === 0) return 'Oggi'
-    if (diffDays === 1) return 'Domani'
-    return `Tra ${diffDays} giorni`
+    if (diffDays === 0) return t.list.today
+    if (diffDays === 1) return t.list.tomorrow
+    return t.list.inDays.replace('{n}', String(diffDays))
   }
 
   const PannelloFiltri = () => (
     <div className="space-y-6">
       {/* Comune */}
       <div>
-        <p className="text-sm font-semibold text-gray-900 mb-3">Località</p>
+        <p className="text-sm font-semibold text-gray-900 mb-3">{t.list.location}</p>
         <ComuneCombobox
           comuni={comuni}
           value={filtri.comune}
           onChange={v => setFiltri(p => ({ ...p, comune: v }))}
-          placeholder="Tutte le località — cerca…"
+          placeholder={t.list.allLocations}
         />
       </div>
 
       {/* Data */}
       <div>
-        <p className="text-sm font-semibold text-gray-900 mb-3">Data</p>
+        <p className="text-sm font-semibold text-gray-900 mb-3">{t.list.date}</p>
         <input
           type="date"
           value={filtri.data}
@@ -131,13 +133,13 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale, 
           >
             <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${filtri.soloGratuiti ? 'translate-x-5' : 'translate-x-1'}`} />
           </div>
-          <span className="text-sm font-medium text-gray-700">Solo eventi gratuiti</span>
+          <span className="text-sm font-medium text-gray-700">{t.list.freeOnly}</span>
         </label>
       </div>
 
       {/* Categorie */}
       <div>
-        <p className="text-sm font-semibold text-gray-900 mb-3">Categoria</p>
+        <p className="text-sm font-semibold text-gray-900 mb-3">{t.list.category}</p>
         <div className="flex flex-wrap gap-2">
           {categorie.map(cat => (
             <button
@@ -162,7 +164,7 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale, 
           onClick={resetFiltri}
           className="w-full text-sm text-red-500 font-semibold py-2 border border-red-200 rounded-xl hover:bg-red-50 transition-colors"
         >
-          Rimuovi filtri
+          {t.list.removeFilters}
         </button>
       )}
     </div>
@@ -175,10 +177,10 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale, 
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            {titoloIniziale ?? 'Tutti gli eventi'}
+            {titoloIniziale ?? t.list.allEvents}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            {eventiFiltrati.length} {eventiFiltrati.length === 1 ? 'evento trovato' : 'eventi trovati'}
+            {eventiFiltrati.length} {eventiFiltrati.length === 1 ? t.list.eventFound : t.list.eventsFound}
           </p>
         </div>
 
@@ -190,7 +192,7 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale, 
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
           </svg>
-          Filtri
+          {t.list.filters}
           {haFiltriAttivi && <span className="w-2 h-2 rounded-full bg-amber-400" />}
         </button>
       </div>
@@ -204,13 +206,13 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale, 
           type="search"
           value={filtri.testo}
           onChange={e => setFiltri(p => ({ ...p, testo: e.target.value }))}
-          placeholder="Cerca un evento, un luogo o un comune…"
+          placeholder={t.list.searchPlaceholder}
           className="w-full text-sm bg-white border border-gray-200 rounded-2xl pl-11 pr-4 py-3.5 shadow-sm outline-none focus:ring-2 focus:ring-amber-400 placeholder-gray-400"
         />
         {filtri.testo && (
           <button
             onClick={() => setFiltri(p => ({ ...p, testo: '' }))}
-            aria-label="Cancella ricerca"
+            aria-label={t.list.clearSearch}
             className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -226,10 +228,10 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale, 
         <aside className="hidden lg:block w-64 shrink-0">
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sticky top-24">
             <div className="flex items-center justify-between mb-5">
-              <p className="font-bold text-gray-900">Filtri</p>
+              <p className="font-bold text-gray-900">{t.list.filters}</p>
               {haFiltriAttivi && (
                 <button onClick={resetFiltri} className="text-xs text-amber-600 font-semibold hover:underline">
-                  Rimuovi tutti
+                  {t.list.removeAll}
                 </button>
               )}
             </div>
@@ -245,7 +247,7 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale, 
             <section className="mb-8">
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-lg">🗓</span>
-                <h2 className="text-base font-bold text-gray-900">In evidenza questa settimana</h2>
+                <h2 className="text-base font-bold text-gray-900">{t.list.featuredThisWeek}</h2>
                 <span className="text-xs font-semibold text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
                   {eventiInEvidenza.length}
                 </span>
@@ -274,10 +276,10 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale, 
           ) : (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <div className="text-5xl mb-4">🔍</div>
-              <p className="font-semibold text-gray-900">Nessun evento trovato</p>
-              <p className="text-sm text-gray-500 mt-1">Prova a modificare i filtri</p>
+              <p className="font-semibold text-gray-900">{t.list.noEventsFound}</p>
+              <p className="text-sm text-gray-500 mt-1">{t.list.tryDifferentFilters}</p>
               <button onClick={resetFiltri} className="mt-4 text-sm text-amber-600 font-semibold hover:underline">
-                Rimuovi filtri
+                {t.list.removeFilters}
               </button>
             </div>
           )}
@@ -290,7 +292,7 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale, 
           <div className="absolute inset-0 bg-black/40" onClick={() => setFiltroAperto(false)} />
           <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl p-5 max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-5">
-              <p className="font-bold text-gray-900 text-lg">Filtri</p>
+              <p className="font-bold text-gray-900 text-lg">{t.list.filters}</p>
               <button onClick={() => setFiltroAperto(false)} className="p-2 text-gray-500">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -302,7 +304,7 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale, 
               onClick={() => setFiltroAperto(false)}
               className="w-full mt-6 bg-amber-400 hover:bg-amber-500 text-white font-semibold py-3 rounded-xl transition-colors"
             >
-              Mostra {eventiFiltrati.length} eventi
+              {t.list.show} {eventiFiltrati.length} {t.list.eventsWord}
             </button>
           </div>
         </div>

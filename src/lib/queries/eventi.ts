@@ -2,6 +2,16 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import type { Evento } from '@/types'
 import type { EventoConRelazioni } from '@/lib/supabase/types'
 import { risolviOrarioEvento } from '@/lib/utils'
+import type { Lang } from '@/lib/i18n/strings'
+
+// Sceglie il testo tradotto se presente e la lingua è 'en', altrimenti
+// l'originale italiano (mai una stringa vuota per una traduzione mancante).
+function testoLocalizzato(it: string, en: string | null | undefined, lang: Lang): string {
+  return lang === 'en' && en?.trim() ? en : it
+}
+function testoLocalizzatoNullable(it: string | null, en: string | null | undefined, lang: Lang): string | null {
+  return lang === 'en' && en?.trim() ? en : it
+}
 
 // Client plain senza cookie — funziona sia in SSR che in static generation
 function createClient() {
@@ -12,15 +22,16 @@ function createClient() {
 }
 
 // Mappa da riga DB → tipo frontend
-function mapEvento(row: EventoConRelazioni): Evento {
-  const oraInizio = (row as Record<string, unknown>).ora_inizio as string | null | undefined
+function mapEvento(row: EventoConRelazioni, lang: Lang = 'it'): Evento {
+  const r = row as Record<string, unknown>
+  const oraInizio = r.ora_inizio as string | null | undefined
   const { dataInizio, dataFine } = risolviOrarioEvento(row.data_inizio, row.data_fine, oraInizio)
   return {
     id: row.id,
-    titolo: row.titolo,
+    titolo: testoLocalizzato(row.titolo, r.titolo_en as string | null, lang),
     slug: row.slug,
-    descrizioneBreve: row.descrizione_breve,
-    descrizione: (row as Record<string, unknown>).descrizione as string | null ?? null,
+    descrizioneBreve: testoLocalizzatoNullable(row.descrizione_breve, r.descrizione_breve_en as string | null, lang),
+    descrizione: testoLocalizzatoNullable((r.descrizione as string | null) ?? null, r.descrizione_en as string | null, lang),
     immagineCopertura: row.immagine_copertina,
     // Mostra solo immagini caricate dagli organizzatori sul nostro storage
     // (diritti dichiarati in fase di pubblicazione) oppure immagini redazionali
@@ -31,7 +42,7 @@ function mapEvento(row: EventoConRelazioni): Evento {
         ? row.immagine_copertina
         : null,
     mediaAssetAlt: null,
-    luogoNome: row.luogo_nome,
+    luogoNome: testoLocalizzatoNullable(row.luogo_nome, r.luogo_nome_en as string | null, lang),
     indirizzo: row.indirizzo,
     lat: row.lat,
     lng: row.lng,
@@ -60,7 +71,7 @@ function mapEvento(row: EventoConRelazioni): Evento {
     },
     categorie: row.categorie.map(c => ({
       id: c.id,
-      nome: c.nome,
+      nome: testoLocalizzato(c.nome, (c as unknown as Record<string, unknown>).nome_en as string | null, lang),
       slug: c.slug,
       icona: c.icona ?? '',
       colore: c.colore ?? '#6366F1',
@@ -99,6 +110,7 @@ export async function getEventiApprovati(opzioni?: {
   data?: string          // 'YYYY-MM-DD'
   limit?: number
   includiPassati?: boolean // default false
+  lang?: Lang
 }): Promise<Evento[]> {
   const sb = createClient()
 
@@ -141,12 +153,13 @@ export async function getEventiApprovati(opzioni?: {
   const { data, error } = await query
   if (error) { console.error('getEventiApprovati:', error); return [] }
 
-  return (data ?? []).map(r => mapEvento(flattenCategorie(r as Record<string, unknown>)))
+  const lang = opzioni?.lang ?? 'it'
+  return (data ?? []).map(r => mapEvento(flattenCategorie(r as Record<string, unknown>), lang))
 }
 
 // Eventi per la homepage: prima quelli di oggi e in corso, poi i prossimi giorni
 // in ordine di data; gli eventi già passati finiscono in coda (solo se c'è spazio).
-export async function getEventiHome(limit = 10): Promise<Evento[]> {
+export async function getEventiHome(limit = 10, lang: Lang = 'it'): Promise<Evento[]> {
   const sb = createClient()
 
   // Inizio della giornata corrente in Europe/Rome (il server gira in UTC)
@@ -165,7 +178,7 @@ export async function getEventiHome(limit = 10): Promise<Evento[]> {
 
   if (errFuturi) { console.error('getEventiHome (futuri):', errFuturi); return [] }
 
-  const risultato = (futuri ?? []).map(r => mapEvento(flattenCategorie(r as Record<string, unknown>)))
+  const risultato = (futuri ?? []).map(r => mapEvento(flattenCategorie(r as Record<string, unknown>), lang))
 
   // Ordina: 1) eventi che iniziano oggi, 2) eventi in corso (iniziati prima ma non
   // ancora finiti, es. mostre — quelli che finiscono prima in cima), 3) prossimi giorni
@@ -197,7 +210,7 @@ export async function getEventiHome(limit = 10): Promise<Evento[]> {
     if (errPassati) {
       console.error('getEventiHome (passati):', errPassati)
     } else {
-      risultato.push(...(passati ?? []).map(r => mapEvento(flattenCategorie(r as Record<string, unknown>))))
+      risultato.push(...(passati ?? []).map(r => mapEvento(flattenCategorie(r as Record<string, unknown>), lang)))
     }
   }
 
@@ -216,7 +229,7 @@ export async function getEventiHome(limit = 10): Promise<Evento[]> {
 // normali e il posto libero viene rioccupato dal riempimento automatico —
 // questo garantisce che la vetrina "in primo piano" cambi almeno ogni 2 giorni
 // anche senza intervento manuale, pur restando modificabile a mano in ogni momento.
-export async function getEventiInEvidenza(limit = 3): Promise<Evento[]> {
+export async function getEventiInEvidenza(limit = 3, lang: Lang = 'it'): Promise<Evento[]> {
   const sb = createClient()
 
   const oggi = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Rome' })
@@ -235,7 +248,7 @@ export async function getEventiInEvidenza(limit = 3): Promise<Evento[]> {
 
   if (errPinnati) { console.error('getEventiInEvidenza (pinnati):', errPinnati); return [] }
 
-  const risultato = (pinnati ?? []).map(r => mapEvento(flattenCategorie(r as Record<string, unknown>)))
+  const risultato = (pinnati ?? []).map(r => mapEvento(flattenCategorie(r as Record<string, unknown>), lang))
 
   const spazio = limit - risultato.length
   if (spazio > 0) {
@@ -258,7 +271,7 @@ export async function getEventiInEvidenza(limit = 3): Promise<Evento[]> {
       console.error('getEventiInEvidenza (auto):', errAuto)
     } else {
       const extra = (auto ?? [])
-        .map(r => mapEvento(flattenCategorie(r as Record<string, unknown>)))
+        .map(r => mapEvento(flattenCategorie(r as Record<string, unknown>), lang))
         .filter(e => !idsEsclusi.includes(e.id))
         .slice(0, spazio)
       risultato.push(...extra)
@@ -268,7 +281,7 @@ export async function getEventiInEvidenza(limit = 3): Promise<Evento[]> {
   return risultato
 }
 
-export async function getEventoBySlug(slug: string): Promise<Evento | null> {
+export async function getEventoBySlug(slug: string, lang: Lang = 'it'): Promise<Evento | null> {
   const sb = createClient()
 
   const { data, error } = await sb
@@ -279,10 +292,10 @@ export async function getEventoBySlug(slug: string): Promise<Evento | null> {
     .single()
 
   if (error || !data) return null
-  return mapEvento(flattenCategorie(data as Record<string, unknown>))
+  return mapEvento(flattenCategorie(data as Record<string, unknown>), lang)
 }
 
-export async function getEventiCorrelati(eventoId: string, categoriaIds: string[], limit = 4): Promise<Evento[]> {
+export async function getEventiCorrelati(eventoId: string, categoriaIds: string[], limit = 4, lang: Lang = 'it'): Promise<Evento[]> {
   const sb = createClient()
 
   const { data: eventiIds } = await sb
@@ -302,7 +315,7 @@ export async function getEventiCorrelati(eventoId: string, categoriaIds: string[
     .eq('stato', 'approvato')
 
   if (error || !data) return []
-  return data.map(r => mapEvento(flattenCategorie(r as Record<string, unknown>)))
+  return data.map(r => mapEvento(flattenCategorie(r as Record<string, unknown>), lang))
 }
 
 // ─── Query admin ────────────────────────────────────────────────────────────

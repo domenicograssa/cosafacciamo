@@ -87,9 +87,6 @@ export default async function AdminEventoDettaglio({
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-xl font-extrabold text-gray-900">{evento.titolo}</h1>
-            {evento.descrizione_breve && (
-              <p className="text-sm text-gray-600 mt-1">{evento.descrizione_breve}</p>
-            )}
           </div>
           <span className={`text-xs font-semibold px-3 py-1.5 rounded-full shrink-0 ${BADGE[evento.stato] ?? ''}`}>
             {LABEL[evento.stato] ?? evento.stato}

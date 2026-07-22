@@ -1,6 +1,7 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import type { Categoria } from '@/types'
 import type { Database } from '@/lib/supabase/types'
+import type { Lang } from '@/lib/i18n/strings'
 
 function createClient() {
   return createSupabaseClient<Database>(
@@ -11,10 +12,11 @@ function createClient() {
 
 type CategoriaDB = Database['public']['Tables']['categorie']['Row']
 
-function mapCategoria(row: CategoriaDB): Categoria {
+function mapCategoria(row: CategoriaDB, lang: Lang = 'it'): Categoria {
+  const nomeEn = (row as unknown as Record<string, unknown>).nome_en as string | null | undefined
   return {
     id: row.id,
-    nome: row.nome,
+    nome: lang === 'en' && nomeEn?.trim() ? nomeEn : row.nome,
     slug: row.slug,
     icona: row.icona ?? '',
     colore: row.colore ?? '#6366F1',
@@ -22,7 +24,7 @@ function mapCategoria(row: CategoriaDB): Categoria {
   }
 }
 
-export async function getCategorie(): Promise<Categoria[]> {
+export async function getCategorie(lang: Lang = 'it'): Promise<Categoria[]> {
   const sb = createClient()
   const { data, error } = await sb
     .from('categorie')
@@ -30,5 +32,5 @@ export async function getCategorie(): Promise<Categoria[]> {
     .eq('attiva', true)
     .order('ordinamento')
   if (error) { console.error('getCategorie:', error); return [] }
-  return (data ?? []).map(mapCategoria)
+  return (data ?? []).map(r => mapCategoria(r, lang))
 }

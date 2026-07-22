@@ -23,7 +23,7 @@ export default function ArticoloEvidenza({ evento }: Props) {
   const immagineAutorizzata = evento.mediaAssetUrl ?? null
   const fotoCitta = immagineComune(evento.geoNodo.slug)
 
-  const testo = (evento.testoArticolo?.trim() || evento.descrizione?.trim() || evento.descrizioneBreve?.trim() || '')
+  const testo = (evento.testoArticolo?.trim() || evento.descrizione?.trim() || '')
 
   const multiGiorno = eMultiGiorno(evento.dataInizio, evento.dataFine)
   const inCorso = eInCorso(evento.dataInizio, evento.dataFine)
