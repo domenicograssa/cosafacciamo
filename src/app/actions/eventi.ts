@@ -20,27 +20,21 @@ async function richiedeOrganizzatore() {
   return { sb, org }
 }
 
+const MAX_IMMAGINE_BYTES = 2 * 1024 * 1024 // 2 MB dopo compressione client
+
+function slugifyNomeFile(testo: string): string {
+  return testo
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80)
+}
+
 export async function modificaEventoOrganizzatore(
   eventoId: string,
-  dati: {
-    titolo: string
-    descrizione: string
-    descrizione_breve: string
-    luogo_nome?: string
-    indirizzo?: string
-    data_inizio: string
-    data_fine?: string
-    gratuito: boolean
-    prezzo_min?: number | null
-    prezzo_max?: number | null
-    url_biglietti?: string
-    sito_ufficiale?: string
-    email_contatto?: string
-    telefono_contatto?: string
-    geo_nodo_id?: string
-    immagine_copertina?: string
-    categorie_ids?: string[]
-  }
+  fd: FormData
 ): Promise<{ ok: boolean; errore?: string }> {
   try {
     const { sb, org } = await richiedeOrganizzatore()
@@ -48,7 +42,7 @@ export async function modificaEventoOrganizzatore(
     // Verifica che l'evento appartenga a questo organizzatore
     const { data: ev } = await sb
       .from('eventi')
-      .select('id, stato')
+      .select('id, stato, titolo')
       .eq('id', eventoId)
       .eq('organizzatore_id', org.id)
       .single()
@@ -57,26 +51,49 @@ export async function modificaEventoOrganizzatore(
 
     const sbAdmin = await createAdminClient()
 
+    const campo = (k: string) => String(fd.get(k) ?? '').trim()
+    const gratuito = fd.get('gratuito') === 'true'
+    const titolo = campo('titolo')
+    const descrizione = campo('descrizione')
+
     const aggiornamento: Record<string, unknown> = {
-      titolo: dati.titolo.trim(),
-      descrizione: dati.descrizione.trim(),
-      descrizione_breve: dati.descrizione_breve.trim().slice(0, 280),
-      luogo_nome: dati.luogo_nome?.trim() || null,
-      indirizzo: dati.indirizzo?.trim() || null,
-      data_inizio: dati.data_inizio,
-      data_fine: dati.data_fine || null,
-      gratuito: dati.gratuito,
-      prezzo_min: dati.gratuito ? null : (dati.prezzo_min ?? null),
-      prezzo_max: dati.gratuito ? null : (dati.prezzo_max ?? null),
-      url_biglietti: dati.url_biglietti?.trim() || null,
-      sito_ufficiale: dati.sito_ufficiale?.trim() || null,
-      email_contatto: dati.email_contatto?.trim() || null,
-      telefono_contatto: dati.telefono_contatto?.trim() || null,
+      titolo: titolo.trim(),
+      descrizione: descrizione.trim(),
+      descrizione_breve: descrizione.trim().slice(0, 280),
+      luogo_nome: campo('luogo_nome') || null,
+      indirizzo: campo('indirizzo') || null,
+      data_inizio: campo('data_inizio'),
+      data_fine: campo('data_fine') || null,
+      gratuito,
+      prezzo_min: gratuito ? null : (campo('prezzo_min') ? Number(campo('prezzo_min')) : null),
+      prezzo_max: gratuito ? null : (campo('prezzo_max') ? Number(campo('prezzo_max')) : null),
+      url_biglietti: campo('url_biglietti') || null,
+      sito_ufficiale: campo('sito_ufficiale') || null,
+      email_contatto: campo('email_contatto') || null,
+      telefono_contatto: campo('telefono_contatto') || null,
     }
-    if (dati.geo_nodo_id) aggiornamento.geo_nodo_id = dati.geo_nodo_id
-    if (dati.immagine_copertina !== undefined) {
-      aggiornamento.immagine_copertina = dati.immagine_copertina?.trim() || null
+    if (campo('geo_nodo_id')) aggiornamento.geo_nodo_id = campo('geo_nodo_id')
+
+    // ── Immagine: nuovo upload, rimozione esplicita, oppure lasciata invariata ──
+    const file = fd.get('immagine')
+    if (file instanceof File && file.size > 0) {
+      if (file.size > MAX_IMMAGINE_BYTES)
+        return { ok: false, errore: 'L\'immagine supera la dimensione massima di 2 MB.' }
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type))
+        return { ok: false, errore: 'Formato immagine non supportato (usa JPG, PNG o WebP).' }
+
+      const percorso = `eventi/${slugifyNomeFile(titolo || ev.titolo)}-${Date.now().toString(36)}.jpg`
+      const buffer = Buffer.from(await file.arrayBuffer())
+      const { error: errUp } = await sbAdmin.storage
+        .from('eventi-immagini')
+        .upload(percorso, buffer, { contentType: 'image/jpeg', upsert: false })
+      if (errUp) return { ok: false, errore: 'Errore nel caricamento dell\'immagine. Riprova.' }
+      const { data: pub } = sbAdmin.storage.from('eventi-immagini').getPublicUrl(percorso)
+      aggiornamento.immagine_copertina = pub.publicUrl
+    } else if (fd.get('rimuovi_immagine') === 'true') {
+      aggiornamento.immagine_copertina = null
     }
+
     // Se l'evento era approvato, torna in revisione dopo la modifica
     if (ev.stato === 'approvato') aggiornamento.stato = 'in_revisione'
 
@@ -88,11 +105,13 @@ export async function modificaEventoOrganizzatore(
       .single()
     if (error) return { ok: false, errore: error.message }
 
-    if (dati.categorie_ids !== undefined) {
+    const categorieRaw = fd.get('categorie_ids')
+    if (categorieRaw !== null) {
+      const categorieIds = String(categorieRaw).split(',').filter(Boolean)
       await sbAdmin.from('eventi_categorie').delete().eq('evento_id', eventoId)
-      if (dati.categorie_ids.length > 0) {
+      if (categorieIds.length > 0) {
         await sbAdmin.from('eventi_categorie').insert(
-          dati.categorie_ids.map(catId => ({ evento_id: eventoId, categoria_id: catId }))
+          categorieIds.map(catId => ({ evento_id: eventoId, categoria_id: catId }))
         )
       }
     }

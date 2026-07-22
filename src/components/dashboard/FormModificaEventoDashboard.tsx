@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { modificaEventoOrganizzatore } from '@/app/actions/eventi'
 import { dataOraInputRoma, isoDaRoma } from '@/lib/utils'
+import { comprimiImmagine } from '@/lib/comprimi-immagine'
 
 interface Evento {
   id: string
@@ -47,7 +48,10 @@ export default function FormModificaEventoDashboard({
   const [luogoNome, setLuogoNome] = useState(evento.luogo_nome ?? '')
   const [indirizzo, setIndirizzo] = useState(evento.indirizzo ?? '')
   const [geoNodoId, setGeoNodoId] = useState(evento.geo_nodo_id ?? '')
-  const [immagine, setImmagine] = useState(evento.immagine_copertina ?? '')
+  const [immagineAttuale, setImmagineAttuale] = useState(evento.immagine_copertina ?? '')
+  const [nuovaImmagine, setNuovaImmagine] = useState<File | null>(null)
+  const [anteprimaNuova, setAnteprimaNuova] = useState<string | null>(null)
+  const [erroreImmagine, setErroreImmagine] = useState('')
   const inizioIniziale = dataOraInputRoma(evento.data_inizio)
   const fineIniziale = dataOraInputRoma(evento.data_fine)
   const [dataInizio, setDataInizio] = useState(inizioIniziale.data)
@@ -67,6 +71,21 @@ export default function FormModificaEventoDashboard({
     setCatSelezionate(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id])
   }
 
+  const selezionaImmagine = (file: File | null) => {
+    setErroreImmagine('')
+    if (!file) { setNuovaImmagine(null); setAnteprimaNuova(null); return }
+    if (!file.type.startsWith('image/')) { setErroreImmagine('Il file selezionato non è un\'immagine.'); return }
+    if (file.size > 10 * 1024 * 1024) { setErroreImmagine('L\'immagine è troppo grande (massimo 10 MB).'); return }
+    setNuovaImmagine(file)
+    setAnteprimaNuova(URL.createObjectURL(file))
+  }
+
+  const rimuoviImmagineAttuale = () => {
+    setImmagineAttuale('')
+    setNuovaImmagine(null)
+    setAnteprimaNuova(null)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!titolo || !descrizione || !dataInizio || !oraInizio) {
@@ -76,34 +95,43 @@ export default function FormModificaEventoDashboard({
     setSaving(true)
     setErrore('')
 
-    const esito = await modificaEventoOrganizzatore(evento.id, {
-      titolo,
-      descrizione,
-      // Non più editabile a mano: derivata dalla descrizione completa, serve
-      // solo per meta-tag SEO (og:description, JSON-LD) — mai mostrata in pagina.
-      descrizione_breve: descrizione.slice(0, 280),
-      luogo_nome: luogoNome || undefined,
-      indirizzo: indirizzo || undefined,
-      data_inizio: isoDaRoma(dataInizio, oraInizio),
-      data_fine: dataFine && oraFine ? isoDaRoma(dataFine, oraFine) : undefined,
-      gratuito,
-      prezzo_min: !gratuito && prezzoMin ? Number(prezzoMin) : null,
-      prezzo_max: !gratuito && prezzoMax ? Number(prezzoMax) : null,
-      url_biglietti: urlBiglietti || undefined,
-      sito_ufficiale: sitoUfficiale || undefined,
-      email_contatto: emailContatto || undefined,
-      telefono_contatto: telefonoContatto || undefined,
-      geo_nodo_id: geoNodoId || undefined,
-      immagine_copertina: immagine,
-      categorie_ids: catSelezionate,
-    })
+    try {
+      const fd = new window.FormData()
+      fd.append('titolo', titolo)
+      fd.append('descrizione', descrizione)
+      fd.append('luogo_nome', luogoNome)
+      fd.append('indirizzo', indirizzo)
+      fd.append('data_inizio', isoDaRoma(dataInizio, oraInizio))
+      fd.append('data_fine', dataFine && oraFine ? isoDaRoma(dataFine, oraFine) : '')
+      fd.append('gratuito', String(gratuito))
+      fd.append('prezzo_min', !gratuito ? prezzoMin : '')
+      fd.append('prezzo_max', !gratuito ? prezzoMax : '')
+      fd.append('url_biglietti', urlBiglietti)
+      fd.append('sito_ufficiale', sitoUfficiale)
+      fd.append('email_contatto', emailContatto)
+      fd.append('telefono_contatto', telefonoContatto)
+      fd.append('geo_nodo_id', geoNodoId)
+      fd.append('categorie_ids', catSelezionate.join(','))
 
-    setSaving(false)
-    if (!esito.ok) {
-      setErrore(esito.errore ?? 'Errore imprevisto.')
-    } else {
-      setOk(true)
-      setTimeout(() => router.push('/dashboard/miei-eventi'), 1500)
+      if (nuovaImmagine) {
+        const blob = await comprimiImmagine(nuovaImmagine)
+        fd.append('immagine', blob, 'evento.jpg')
+      } else if (!immagineAttuale && evento.immagine_copertina) {
+        fd.append('rimuovi_immagine', 'true')
+      }
+
+      const esito = await modificaEventoOrganizzatore(evento.id, fd)
+
+      if (!esito.ok) {
+        setErrore(esito.errore ?? 'Errore imprevisto.')
+      } else {
+        setOk(true)
+        setTimeout(() => router.push('/dashboard/miei-eventi'), 1500)
+      }
+    } catch {
+      setErrore('Errore nella preparazione dei dati. Riprova.')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -218,14 +246,49 @@ export default function FormModificaEventoDashboard({
       )}
 
       <div>
-        <label className={labelCls}>URL immagine di copertina</label>
-        <input type="url" value={immagine} onChange={e => setImmagine(e.target.value)}
-          placeholder="https://…" className={inputCls} />
-        {immagine && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={immagine} alt="Anteprima" className="mt-2 rounded-xl max-h-40 object-cover"
-            onError={ev => { (ev.target as HTMLImageElement).style.display = 'none' }} />
+        <label className={labelCls}>Immagine di copertina</label>
+        {anteprimaNuova ? (
+          <div className="relative rounded-xl overflow-hidden border border-gray-200">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={anteprimaNuova} alt="Anteprima nuova immagine" className="w-full aspect-video object-cover" />
+            <button
+              type="button"
+              onClick={() => selezionaImmagine(null)}
+              className="absolute top-2 right-2 bg-white/90 hover:bg-white text-gray-700 text-xs font-semibold px-3 py-1.5 rounded-full shadow"
+            >
+              ✕ Annulla
+            </button>
+          </div>
+        ) : immagineAttuale ? (
+          <div className="relative rounded-xl overflow-hidden border border-gray-200">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={immagineAttuale} alt="Immagine attuale" className="w-full aspect-video object-cover"
+              onError={ev => { (ev.target as HTMLImageElement).style.display = 'none' }} />
+            <div className="absolute top-2 right-2 flex gap-2">
+              <label className="bg-white/90 hover:bg-white text-gray-700 text-xs font-semibold px-3 py-1.5 rounded-full shadow cursor-pointer">
+                Sostituisci
+                <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
+                  onChange={e => selezionaImmagine(e.target.files?.[0] ?? null)} />
+              </label>
+              <button type="button" onClick={rimuoviImmagineAttuale}
+                className="bg-white/90 hover:bg-white text-red-600 text-xs font-semibold px-3 py-1.5 rounded-full shadow">
+                ✕ Rimuovi
+              </button>
+            </div>
+          </div>
+        ) : (
+          <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 hover:border-amber-400 rounded-xl py-8 cursor-pointer transition-colors">
+            <span className="text-3xl">🖼️</span>
+            <span className="text-sm font-semibold text-gray-700">Carica un&apos;immagine</span>
+            <span className="text-xs text-gray-500">JPG, PNG o WebP — verrà ottimizzata automaticamente</span>
+            <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
+              onChange={e => selezionaImmagine(e.target.files?.[0] ?? null)} />
+          </label>
         )}
+        {erroreImmagine && <p className="text-red-600 text-xs mt-1.5">{erroreImmagine}</p>}
+        <p className="text-xs text-gray-500 mt-1.5">
+          Carica solo immagini di cui sei titolare o per cui disponi dei diritti di pubblicazione.
+        </p>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
