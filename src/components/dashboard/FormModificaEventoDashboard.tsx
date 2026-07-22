@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { modificaEventoOrganizzatore } from '@/app/actions/eventi'
+import { dataOraInputRoma, isoDaRoma } from '@/lib/utils'
 
 interface Evento {
   id: string
@@ -24,9 +25,6 @@ interface Evento {
 
 interface Comune { id: string; nome: string }
 interface Categoria { id: string; nome: string; icona: string | null }
-
-function toDateInput(iso: string | null) { return iso ? iso.slice(0, 10) : '' }
-function toTimeInput(iso: string | null) { return iso ? iso.slice(11, 16) : '' }
 
 export default function FormModificaEventoDashboard({
   evento,
@@ -50,10 +48,12 @@ export default function FormModificaEventoDashboard({
   const [indirizzo, setIndirizzo] = useState(evento.indirizzo ?? '')
   const [geoNodoId, setGeoNodoId] = useState(evento.geo_nodo_id ?? '')
   const [immagine, setImmagine] = useState(evento.immagine_copertina ?? '')
-  const [dataInizio, setDataInizio] = useState(toDateInput(evento.data_inizio))
-  const [oraInizio, setOraInizio] = useState(toTimeInput(evento.data_inizio))
-  const [dataFine, setDataFine] = useState(toDateInput(evento.data_fine))
-  const [oraFine, setOraFine] = useState(toTimeInput(evento.data_fine))
+  const inizioIniziale = dataOraInputRoma(evento.data_inizio)
+  const fineIniziale = dataOraInputRoma(evento.data_fine)
+  const [dataInizio, setDataInizio] = useState(inizioIniziale.data)
+  const [oraInizio, setOraInizio] = useState(inizioIniziale.ora)
+  const [dataFine, setDataFine] = useState(fineIniziale.data)
+  const [oraFine, setOraFine] = useState(fineIniziale.ora)
   const [gratuito, setGratuito] = useState(evento.gratuito)
   const [prezzoMin, setPrezzoMin] = useState(evento.prezzo_min?.toString() ?? '')
   const [prezzoMax, setPrezzoMax] = useState(evento.prezzo_max?.toString() ?? '')
@@ -65,11 +65,6 @@ export default function FormModificaEventoDashboard({
 
   const toggleCategoria = (id: string) => {
     setCatSelezionate(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id])
-  }
-
-  const isoRoma = (data: string, ora: string) => {
-    if (!data || !ora) return ''
-    return `${data}T${ora}:00+02:00`
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -89,8 +84,8 @@ export default function FormModificaEventoDashboard({
       descrizione_breve: descrizione.slice(0, 280),
       luogo_nome: luogoNome || undefined,
       indirizzo: indirizzo || undefined,
-      data_inizio: isoRoma(dataInizio, oraInizio),
-      data_fine: dataFine && oraFine ? isoRoma(dataFine, oraFine) : undefined,
+      data_inizio: isoDaRoma(dataInizio, oraInizio),
+      data_fine: dataFine && oraFine ? isoDaRoma(dataFine, oraFine) : undefined,
       gratuito,
       prezzo_min: !gratuito && prezzoMin ? Number(prezzoMin) : null,
       prezzo_max: !gratuito && prezzoMax ? Number(prezzoMax) : null,

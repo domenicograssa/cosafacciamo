@@ -94,6 +94,37 @@ export function formatIntervalloData(dataInizio: string, dataFine: string): stri
   return `${pi.day} – ${pf.day} ${pf.month} ${pf.year}`
 }
 
+// Converte un timestamp salvato (UTC) negli input <date>/<time> di un form,
+// mostrando data e ora in Europe/Rome. Prima del fix, i form di modifica
+// evento leggevano i caratteri grezzi dell'ISO string (UTC) come se fossero
+// già ora locale: ogni salvataggio senza toccare l'orario lo faceva slittare
+// di 2 ore indietro (bug scoperto sull'evento Loredana Bertè, 22/07/2026).
+export function dataOraInputRoma(iso: string | null): { data: string; ora: string } {
+  if (!iso) return { data: '', ora: '' }
+  const d = new Date(iso)
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: TZ,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }).formatToParts(d)
+  const get = (t: string) => parts.find(p => p.type === t)?.value ?? ''
+  return { data: `${get('year')}-${get('month')}-${get('day')}`, ora: `${get('hour')}:${get('minute')}` }
+}
+
+// Converte data/ora inserite come Europe/Rome (dai form di modifica) nell'ISO
+// string UTC corretto da salvare. L'offset (+01:00 CET o +02:00 CEST) viene
+// calcolato dinamicamente per la data in questione, invece di essere fissato
+// a +02:00: senza questo, gli eventi modificati in inverno (ora solare)
+// finirebbero salvati con un'ora di scarto.
+export function isoDaRoma(data: string, ora: string): string {
+  if (!data || !ora) return ''
+  const probe = new Date(`${data}T12:00:00Z`)
+  const offset = new Intl.DateTimeFormat('en-US', {
+    timeZone: TZ, timeZoneName: 'longOffset',
+  }).formatToParts(probe).find(p => p.type === 'timeZoneName')?.value.replace('GMT', '') || '+01:00'
+  return `${data}T${ora}:00${offset}`
+}
+
 export function cn(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(' ')
 }
