@@ -5,6 +5,7 @@ import { getComuni } from '@/lib/queries/geo'
 import { getCategorie } from '@/lib/queries/categorie'
 import { risolviOrarioEvento } from '@/lib/utils'
 import FiltriEventiAdmin, { type RigaEventoAdmin } from '@/components/admin/FiltriEventiAdmin'
+import TraduciMancantiBtn from '@/components/admin/TraduciMancantiBtn'
 
 const STATI = [
   { key: 'tutti',        label: 'Tutti' },
@@ -61,7 +62,10 @@ export default async function AdminEventiPage({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-extrabold text-gray-900">Gestione eventi</h1>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <h1 className="text-2xl font-extrabold text-gray-900">Gestione eventi</h1>
+        <TraduciMancantiBtn />
+      </div>
 
       {/* Tab stati */}
       <div className="flex gap-2 overflow-x-auto pb-1">

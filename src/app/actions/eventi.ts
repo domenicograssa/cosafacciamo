@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { traduciEvento } from '@/lib/traduzione'
 
 // Recupera l'organizzatore associato all'utente loggato (o lancia errore)
 async function richiedeOrganizzatore() {
@@ -181,13 +182,33 @@ export async function approvaEvento(eventoId: string) {
   await richiedeAdmin()
   const sb = await createAdminClient()
 
+  const aggiornamento: Record<string, unknown> = {
+    stato: 'approvato',
+    pubblicato_il: new Date().toISOString(),
+    revisionato_il: new Date().toISOString(),
+  }
+
+  // Traduzione automatica IT -> EN alla pubblicazione (solo se non è già
+  // presente, per non richiamare l'API ad ogni riapprovazione).
+  const { data: evento } = await sb
+    .from('eventi')
+    .select('titolo, descrizione, descrizione_breve, luogo_nome, titolo_en')
+    .eq('id', eventoId)
+    .single()
+
+  if (evento && !evento.titolo_en) {
+    const traduzione = await traduciEvento({
+      titolo: evento.titolo,
+      descrizione: evento.descrizione,
+      descrizioneBreve: evento.descrizione_breve,
+      luogoNome: evento.luogo_nome,
+    })
+    if (traduzione) Object.assign(aggiornamento, traduzione)
+  }
+
   const { error } = await sb
     .from('eventi')
-    .update({
-      stato: 'approvato',
-      pubblicato_il: new Date().toISOString(),
-      revisionato_il: new Date().toISOString(),
-    })
+    .update(aggiornamento)
     .eq('id', eventoId)
 
   if (error) throw new Error(`Errore approvazione: ${error.message}`)
@@ -294,4 +315,57 @@ export async function pubblicaEventoDaForm(formData: {
   revalidatePath('/admin/eventi')
 
   return evento.id
+}
+
+// Traduce in blocco tutti gli eventi approvati che non hanno ancora una
+// versione inglese (titolo_en vuoto) — utile come backfill una tantum dopo
+// l'introduzione della traduzione automatica, o per recuperare eventuali
+// traduzioni saltate per errore API. Ritorna un riepilogo dei risultati.
+export async function traduciEventiMancanti(): Promise<{
+  totale: number
+  tradotti: number
+  falliti: string[]
+}> {
+  await richiedeAdmin()
+  const sb = await createAdminClient()
+
+  const { data: eventi, error } = await sb
+    .from('eventi')
+    .select('id, titolo, descrizione, descrizione_breve, luogo_nome')
+    .eq('stato', 'approvato')
+    .is('titolo_en', null)
+
+  if (error) throw new Error(`Errore recupero eventi: ${error.message}`)
+  if (!eventi || eventi.length === 0) return { totale: 0, tradotti: 0, falliti: [] }
+
+  let tradotti = 0
+  const falliti: string[] = []
+
+  for (const evento of eventi) {
+    const traduzione = await traduciEvento({
+      titolo: evento.titolo,
+      descrizione: evento.descrizione,
+      descrizioneBreve: evento.descrizione_breve,
+      luogoNome: evento.luogo_nome,
+    })
+
+    if (!traduzione) {
+      falliti.push(evento.titolo)
+      continue
+    }
+
+    const { error: erroreUpdate } = await sb
+      .from('eventi')
+      .update(traduzione)
+      .eq('id', evento.id)
+
+    if (erroreUpdate) falliti.push(evento.titolo)
+    else tradotti++
+  }
+
+  revalidatePath('/admin/eventi')
+  revalidatePath('/eventi')
+  revalidatePath('/')
+
+  return { totale: eventi.length, tradotti, falliti }
 }
