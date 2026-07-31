@@ -32,11 +32,16 @@ function isAdmin(email: string | undefined): boolean {
 // Pattern "rewrite + cookie" (senza cartella [locale] in app/): /en/* viene
 // riscritto internamente sulla stessa pagina italiana (stessi file, stesso
 // slug), con un cookie che dice ai Server Component quale lingua servire
-// (vedi src/lib/i18n/getLang.ts). Alla prima visita senza scelta esplicita,
-// rileviamo la lingua/paese del visitatore (Accept-Language + geo Vercel) e
-// mandiamo su /en chi non sembra italiano — una volta impostato, il cookie
-// vince sempre sulla detection automatica, così lo switch manuale in navbar
-// resta stabile.
+// (vedi src/lib/i18n/getLang.ts).
+//
+// Italiano è SEMPRE la lingua di default alla prima visita (nessun cookie):
+// niente auto-detect basato su Accept-Language/geo IP. In passato la
+// detection mandava su /en visitatori italiani veri (header del browser non
+// affidabili, IP geolocalizzati male, tool automatizzati senza header
+// coerenti) e il cookie impostato su "en" restava fisso per un anno,
+// rompendo la navigazione in italiano finché non si passava manualmente
+// dallo switch in navbar. L'inglese resta disponibile solo tramite quello
+// switch manuale, mai come default automatico.
 const PREFISSI_ESCLUSI_DA_I18N = ['/admin', '/dashboard', '/accedi', '/api', '/_next']
 const ESTENSIONI_STATICHE = /\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|txt|xml|json|woff|woff2|ttf)$/i
 
@@ -72,22 +77,8 @@ function gestisciLingua(request: NextRequest): NextResponse | null {
   }
 
   if (!cookieLang) {
-    const acceptLanguage = request.headers.get('accept-language') || ''
-    const country = request.headers.get('x-vercel-ip-country') || ''
-    const primaPreferenza = acceptLanguage.split(',')[0]?.trim().toLowerCase() || ''
-    const sembraItaliano = primaPreferenza.startsWith('it') || country === 'IT'
-    const abbiamoUnSegnale = primaPreferenza !== '' || country !== ''
-
-    if (abbiamoUnSegnale && !sembraItaliano) {
-      const redirectUrl = request.nextUrl.clone()
-      redirectUrl.pathname = '/en' + pathname
-      const res = NextResponse.redirect(redirectUrl)
-      res.cookies.set(LANG_COOKIE, 'en', { path: '/', maxAge: UN_ANNO })
-      return res
-    }
-
-    // Italiano di default (o nessun segnale disponibile): fissiamo il cookie
-    // per non ripetere la detection ad ogni richiesta.
+    // Nessuna detection: italiano di default, sempre. Fissiamo il cookie per
+    // non ripetere la logica ad ogni richiesta.
     const res = NextResponse.next()
     res.cookies.set(LANG_COOKIE, 'it', { path: '/', maxAge: UN_ANNO })
     return res
