@@ -51,6 +51,9 @@ export async function generateMetadata(): Promise<Metadata> {
     verification: {
       other: { 'msvalidate.01': '0ADFAC900C27C8CF8C5CDF8579C59B6B' },
     },
+    other: {
+      google: 'notranslate',
+    },
   }
 }
 
@@ -62,7 +65,7 @@ export default async function RootLayout({
   const lang = await getLang()
 
   return (
-    <html lang={lang} className={`h-full ${nunito.variable}`}>
+    <html lang={lang} translate="no" className={`h-full notranslate ${nunito.variable}`}>
       <body className="min-h-full flex flex-col bg-gray-50">
         <LanguageProvider initialLang={lang}>
           <Navbar />
