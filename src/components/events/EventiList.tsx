@@ -7,6 +7,7 @@ import CategoryChip, { icona } from '@/components/ui/CategoryChip'
 import ComuneCombobox from '@/components/ui/ComuneCombobox'
 import { normalizzaTesto } from '@/lib/utils'
 import { useLang } from '@/lib/i18n/LanguageContext'
+import { nomeCategoria } from '@/lib/i18n/strings'
 
 interface FiltriState {
   testo: string
@@ -26,7 +27,7 @@ interface EventiListProps {
 }
 
 export default function EventiList({ eventi, categorie, comuni, titoloIniziale, filtriIniziali }: EventiListProps) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const [filtri, setFiltri] = useState<FiltriState>(() => ({
     testo: '',
     categorie: [],
@@ -153,7 +154,7 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale, 
               style={filtri.categorie.includes(cat.slug) ? { backgroundColor: cat.colore, borderColor: cat.colore } : {}}
             >
               <span>{icona(cat.icona)}</span>
-              <span>{cat.nome}</span>
+              <span>{nomeCategoria(cat, lang)}</span>
             </button>
           ))}
         </div>

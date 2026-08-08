@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { Categoria } from '@/types'
+import { nomeCategoria } from '@/lib/i18n/strings'
+import type { Lang } from '@/lib/i18n/strings'
 
 const ICONA_EMOJI: Record<string, string> = {
   'music-note': '🎵',
@@ -35,9 +37,11 @@ interface CategoryChipProps {
   /** Se presente, il chip diventa un link di navigazione (es. homepage → /eventi?categoria=slug)
    *  invece di un toggle di filtro locale (usato invece in EventiList/AttivitaList/PubblicaForm). */
   href?: string
+  /** Lingua per il nome mostrato — default 'it' (i form admin/pubblicazione restano sempre italiani). */
+  lang?: Lang
 }
 
-export default function CategoryChip({ categoria, attiva = false, onClick, href }: CategoryChipProps) {
+export default function CategoryChip({ categoria, attiva = false, onClick, href, lang = 'it' }: CategoryChipProps) {
   const className = `flex flex-col items-center gap-1.5 px-4 py-3 rounded-xl text-xs font-semibold transition-all shrink-0 border-2 ${
     attiva
       ? 'text-white border-transparent shadow-md scale-105'
@@ -47,7 +51,7 @@ export default function CategoryChip({ categoria, attiva = false, onClick, href 
   const content = (
     <>
       <span className="text-xl">{icona(categoria.icona)}</span>
-      <span>{categoria.nome}</span>
+      <span>{nomeCategoria(categoria, lang)}</span>
     </>
   )
 

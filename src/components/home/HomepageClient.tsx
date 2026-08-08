@@ -144,7 +144,8 @@ export default function HomepageClient({ eventiOggi, categorie, comuni, articoli
               <CategoryChip
                 key={cat.id}
                 categoria={cat}
-                href={`/eventi?categoria=${cat.slug}`}
+                href={`${lang === 'en' ? '/en' : ''}/eventi?categoria=${cat.slug}`}
+                lang={lang}
               />
             ))}
           </div>

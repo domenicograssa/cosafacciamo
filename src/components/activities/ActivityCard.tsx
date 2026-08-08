@@ -1,11 +1,15 @@
+'use client'
+
 import Link from 'next/link'
 import Image from 'next/image'
 import type { Attivita } from '@/types'
+import { useLang } from '@/lib/i18n/LanguageContext'
+import { nomeCategoria } from '@/lib/i18n/strings'
 
-const LIVELLO_LABEL: Record<string, string> = {
-  facile: 'Facile',
-  medio: 'Medio',
-  esperto: 'Esperto',
+const LIVELLO_LABEL: Record<string, { it: string; en: string }> = {
+  facile: { it: 'Facile', en: 'Easy' },
+  medio: { it: 'Medio', en: 'Medium' },
+  esperto: { it: 'Esperto', en: 'Expert' },
 }
 
 const LIVELLO_COLOR: Record<string, string> = {
@@ -20,6 +24,7 @@ interface ActivityCardProps {
 }
 
 export default function ActivityCard({ attivita, compact = false }: ActivityCardProps) {
+  const { t, lang } = useLang()
   const categoria = attivita.categorie[0]
 
   if (compact) {
@@ -45,7 +50,7 @@ export default function ActivityCard({ attivita, compact = false }: ActivityCard
             <p className="text-xs text-gray-500 mt-0.5">{attivita.durata}</p>
           )}
           <p className={`text-xs font-medium mt-1 ${attivita.gratuito ? 'text-green-600' : 'text-amber-600'}`}>
-            {attivita.gratuito ? 'Gratuito' : 'A pagamento'}
+            {attivita.gratuito ? t.activity.free : t.activity.paid}
           </p>
         </div>
       </Link>
@@ -83,14 +88,14 @@ export default function ActivityCard({ attivita, compact = false }: ActivityCard
             className="absolute top-3 left-3 text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wide"
             style={{ backgroundColor: categoria.colore }}
           >
-            {categoria.nome}
+            {nomeCategoria(categoria, lang)}
           </span>
         )}
 
         {/* Badge gratuito */}
         {attivita.gratuito && (
           <span className="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">
-            Gratuito
+            {t.activity.free}
           </span>
         )}
       </div>
@@ -127,7 +132,7 @@ export default function ActivityCard({ attivita, compact = false }: ActivityCard
           {/* Livello */}
           {attivita.livello && (
             <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${LIVELLO_COLOR[attivita.livello]}`}>
-              {LIVELLO_LABEL[attivita.livello]}
+              {LIVELLO_LABEL[attivita.livello]?.[lang] ?? attivita.livello}
             </span>
           )}
         </div>

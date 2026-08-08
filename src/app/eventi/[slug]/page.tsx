@@ -9,7 +9,7 @@ import ShareButtons from '@/components/events/ShareButtons'
 import { formatData, formatOra, formatPrezzo, eMultiGiorno, eInCorso, formatIntervalloData } from '@/lib/utils'
 import { immagineComune } from '@/data/comuni-immagini'
 import { getLang } from '@/lib/i18n/getLang'
-import { strings } from '@/lib/i18n/strings'
+import { strings, nomeCategoria } from '@/lib/i18n/strings'
 
 const SITE_URL = 'https://www.moesco.it'
 
@@ -79,7 +79,7 @@ export default async function DettaglioEvento({ params }: Props) {
 
   const categoriaIds = evento.categorie.map(c => c.id)
   const correlati = await getEventiCorrelati(evento.id, categoriaIds, 4, lang)
-  const prezzo = formatPrezzo(evento.prezzoMin, evento.prezzoMax, evento.gratuito, evento.prezzoTesto)
+  const prezzo = formatPrezzo(evento.prezzoMin, evento.prezzoMax, evento.gratuito, evento.prezzoTesto, lang)
   const fotoCitta = immagineComune(evento.geoNodo.slug)
   const paginaUrl = lang === 'en' ? `${SITE_URL}/en/eventi/${slug}` : `${SITE_URL}/eventi/${slug}`
 
@@ -90,15 +90,15 @@ export default async function DettaglioEvento({ params }: Props) {
   const multiGiorno = eMultiGiorno(evento.dataInizio, evento.dataFine)
   const inCorso = multiGiorno && eInCorso(evento.dataInizio, evento.dataFine)
   const etichettaData = inCorso
-    ? `In corso · fino al ${formatData(evento.dataFine!, { day: 'numeric', month: 'long', year: 'numeric' })}`
+    ? `${t.card.ongoing} · ${t.card.until} ${formatData(evento.dataFine!, { day: 'numeric', month: 'long', year: 'numeric' }, lang)}`
     : multiGiorno
-    ? formatIntervalloData(evento.dataInizio, evento.dataFine!)
-    : formatData(evento.dataInizio, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+    ? formatIntervalloData(evento.dataInizio, evento.dataFine!, lang)
+    : formatData(evento.dataInizio, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }, lang)
   const etichettaDataBreve = inCorso
-    ? `In corso · fino al ${formatData(evento.dataFine!, { day: 'numeric', month: 'short' })}`
+    ? `${t.card.ongoing} · ${t.card.until} ${formatData(evento.dataFine!, { day: 'numeric', month: 'short' }, lang)}`
     : multiGiorno
-    ? formatIntervalloData(evento.dataInizio, evento.dataFine!)
-    : `${formatData(evento.dataInizio, { weekday: 'short', day: 'numeric', month: 'short' })} · ${formatOra(evento.dataInizio)}`
+    ? formatIntervalloData(evento.dataInizio, evento.dataFine!, lang)
+    : `${formatData(evento.dataInizio, { weekday: 'short', day: 'numeric', month: 'short' }, lang)} · ${formatOra(evento.dataInizio, lang)}`
 
   // ── JSON-LD Schema.org Event ─────────────────────────────────────────────
   const jsonLd: Record<string, unknown> = {
@@ -182,14 +182,14 @@ export default async function DettaglioEvento({ params }: Props) {
             ) : (
               <EventImagePlaceholder
                 categoriaSlug={evento.categorie[0]?.slug}
-                categoriaNome={evento.categorie[0]?.nome}
+                categoriaNome={evento.categorie[0] ? nomeCategoria(evento.categorie[0], lang) : undefined}
                 categoriaColore={evento.categorie[0]?.colore}
               />
             )}
             <div className="absolute top-4 left-4 flex gap-2">
               {evento.categorie.map(cat => (
                 <span key={cat.id} className="text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide" style={{ backgroundColor: cat.colore }}>
-                  {cat.nome}
+                  {nomeCategoria(cat, lang)}
                 </span>
               ))}
             </div>
@@ -222,7 +222,7 @@ export default async function DettaglioEvento({ params }: Props) {
             </InfoRow>
             {!multiGiorno && (
               <InfoRow icon="🕐" label={t.event.time}>
-                {formatOra(evento.dataInizio)}{evento.dataFine && ` – ${formatOra(evento.dataFine)}`}
+                {formatOra(evento.dataInizio, lang)}{evento.dataFine && ` – ${formatOra(evento.dataFine, lang)}`}
               </InfoRow>
             )}
             <InfoRow icon="📍" label={t.event.where}>

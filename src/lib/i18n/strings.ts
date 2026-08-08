@@ -116,6 +116,52 @@ export const strings = {
       tomorrow: 'Domani',
       inDays: 'Tra {n} giorni',
     },
+    // Nomi categoria (badge sulle card, chip filtri). In italiano coincidono
+    // sempre col campo `nome` che arriva dal DB — questa mappa serve solo per
+    // l'inglese (vedi sotto), tenuta qui per completezza/tipo.
+    categorie: {
+      'concerti': 'Concerti',
+      'cultura': 'Cultura',
+      'sport': 'Sport',
+      'food-wine': 'Food & Wine',
+      'escursioni': 'Escursioni',
+      'per-famiglie': 'Famiglie',
+      'famiglie': 'Famiglie',
+      'mare': 'Mare',
+      'nightlife': 'Nightlife',
+      'mostre': 'Mostre',
+      'natura': 'Natura',
+      'archeologia': 'Archeologia',
+      'outdoor': 'Outdoor',
+      'borghi': 'Borghi',
+      'panorami': 'Panorami',
+      'arte': 'Arte',
+      'benessere': 'Benessere',
+      'isole': 'Isole',
+      'cinema': 'Cinema',
+      'gratuiti': 'Gratuiti',
+    } as Record<string, string>,
+    activity: {
+      free: 'Gratuito',
+      paid: 'A pagamento',
+      levelEasy: 'Facile',
+      levelMedium: 'Medio',
+      levelExpert: 'Esperto',
+      whatToDo: 'Cosa fare',
+      activityFound: 'attività trovata',
+      activitiesFound: 'attività trovate',
+      location: 'Località',
+      allLocations: 'Tutte le località',
+      freeOnly: 'Solo attività gratuite',
+      category: 'Categoria',
+      filters: 'Filtri',
+      removeAll: 'Rimuovi tutti',
+      removeFilters: 'Rimuovi filtri',
+      noActivitiesFound: 'Nessuna attività trovata',
+      tryDifferentFilters: 'Prova a modificare i filtri',
+      show: 'Mostra',
+      activitiesWord: 'attività',
+    },
   },
   en: {
     nav: {
@@ -232,5 +278,58 @@ export const strings = {
       tomorrow: 'Tomorrow',
       inDays: 'In {n} days',
     },
+    categorie: {
+      'concerti': 'Concerts',
+      'cultura': 'Culture',
+      'sport': 'Sport',
+      'food-wine': 'Food & Wine',
+      'escursioni': 'Excursions',
+      'per-famiglie': 'Families',
+      'famiglie': 'Families',
+      'mare': 'Sea',
+      'nightlife': 'Nightlife',
+      'mostre': 'Exhibitions',
+      'natura': 'Nature',
+      'archeologia': 'Archaeology',
+      'outdoor': 'Outdoor',
+      'borghi': 'Villages',
+      'panorami': 'Views',
+      'arte': 'Art',
+      'benessere': 'Wellness',
+      'isole': 'Islands',
+      'cinema': 'Cinema',
+      'gratuiti': 'Free',
+    } as Record<string, string>,
+    activity: {
+      free: 'Free',
+      paid: 'Paid',
+      levelEasy: 'Easy',
+      levelMedium: 'Medium',
+      levelExpert: 'Expert',
+      whatToDo: 'What to do',
+      activityFound: 'activity found',
+      activitiesFound: 'activities found',
+      location: 'Location',
+      allLocations: 'All locations',
+      freeOnly: 'Free activities only',
+      category: 'Category',
+      filters: 'Filters',
+      removeAll: 'Remove all',
+      removeFilters: 'Remove filters',
+      noActivitiesFound: 'No activities found',
+      tryDifferentFilters: 'Try changing the filters',
+      show: 'Show',
+      activitiesWord: 'activities',
+    },
   },
 } satisfies Record<Lang, typeof strings['it']>
+
+// Nome categoria da mostrare nei badge/chip: in italiano è sempre `nome` (il
+// campo che arriva dal DB, fonte di verità); in inglese si cerca lo slug
+// nella mappa `categorie` sopra e, se non trovato (categoria nuova non ancora
+// mappata), si ripiega comunque su `nome` invece di mostrare vuoto/undefined.
+export function nomeCategoria(categoria: { slug?: string | null; nome: string }, lang: Lang): string {
+  if (lang === 'it') return categoria.nome
+  const slug = categoria.slug ?? ''
+  return strings.en.categorie[slug] ?? categoria.nome
+}

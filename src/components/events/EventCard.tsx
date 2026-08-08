@@ -7,6 +7,7 @@ import { formatData, formatOra, formatPrezzo, eMultiGiorno, eInCorso, formatInte
 import EventImagePlaceholder from '@/components/ui/EventImagePlaceholder'
 import { immagineComune } from '@/data/comuni-immagini'
 import { useLang } from '@/lib/i18n/LanguageContext'
+import { nomeCategoria } from '@/lib/i18n/strings'
 
 interface EventCardProps {
   evento: Evento
@@ -16,8 +17,8 @@ interface EventCardProps {
 }
 
 export default function EventCard({ evento, compact = false, badgeEvidenza }: EventCardProps) {
-  const { t } = useLang()
-  const prezzo = formatPrezzo(evento.prezzoMin, evento.prezzoMax, evento.gratuito, evento.prezzoTesto)
+  const { t, lang } = useLang()
+  const prezzo = formatPrezzo(evento.prezzoMin, evento.prezzoMax, evento.gratuito, evento.prezzoTesto, lang)
   const categoria = evento.categorie[0]
 
   // Evento "in corso": iniziato in passato ma con data di fine non ancora passata
@@ -27,10 +28,10 @@ export default function EventCard({ evento, compact = false, badgeEvidenza }: Ev
   const multiGiorno = eMultiGiorno(evento.dataInizio, evento.dataFine)
   const inCorso = eInCorso(evento.dataInizio, evento.dataFine)
   const etichettaData = inCorso
-    ? `${t.card.ongoing} · ${t.card.until} ${formatData(evento.dataFine!)}`
+    ? `${t.card.ongoing} · ${t.card.until} ${formatData(evento.dataFine!, undefined, lang)}`
     : multiGiorno
-    ? formatIntervalloData(evento.dataInizio, evento.dataFine!)
-    : `${formatData(evento.dataInizio)} · ${formatOra(evento.dataInizio)}`
+    ? formatIntervalloData(evento.dataInizio, evento.dataFine!, lang)
+    : `${formatData(evento.dataInizio, undefined, lang)} · ${formatOra(evento.dataInizio, lang)}`
 
   // Priorità immagine: 1) immagine autorizzata dell'evento, 2) foto della città, 3) placeholder categoria
   const immagineAutorizzata = evento.mediaAssetUrl ?? null
@@ -47,7 +48,7 @@ export default function EventCard({ evento, compact = false, badgeEvidenza }: Ev
           ) : (
             <EventImagePlaceholder
               categoriaSlug={categoria?.slug}
-              categoriaNome={categoria?.nome}
+              categoriaNome={categoria ? nomeCategoria(categoria, lang) : undefined}
               categoriaColore={categoria?.colore}
               compact
             />
@@ -94,7 +95,7 @@ export default function EventCard({ evento, compact = false, badgeEvidenza }: Ev
         ) : (
           <EventImagePlaceholder
             categoriaSlug={categoria?.slug}
-            categoriaNome={categoria?.nome}
+            categoriaNome={categoria ? nomeCategoria(categoria, lang) : undefined}
             categoriaColore={categoria?.colore}
           />
         )}
@@ -105,7 +106,7 @@ export default function EventCard({ evento, compact = false, badgeEvidenza }: Ev
             className="absolute top-3 left-3 text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wide z-10"
             style={{ backgroundColor: categoria.colore }}
           >
-            {categoria.nome}
+            {nomeCategoria(categoria, lang)}
           </span>
         )}
 
@@ -122,19 +123,19 @@ export default function EventCard({ evento, compact = false, badgeEvidenza }: Ev
             <>
               <p className="text-[9px] font-bold uppercase text-green-600 leading-none">{t.card.until}</p>
               <p className="text-base font-extrabold text-gray-900 leading-none mt-0.5">
-                {formatData(evento.dataFine!, { day: 'numeric' })}
+                {formatData(evento.dataFine!, { day: 'numeric' }, lang)}
               </p>
               <p className="text-[10px] font-bold uppercase text-green-600 leading-none mt-0.5">
-                {formatData(evento.dataFine!, { month: 'short' }).replace('.', '')}
+                {formatData(evento.dataFine!, { month: 'short' }, lang).replace('.', '')}
               </p>
             </>
           ) : (
             <>
               <p className="text-base font-extrabold text-gray-900 leading-none">
-                {formatData(evento.dataInizio, { day: 'numeric' })}
+                {formatData(evento.dataInizio, { day: 'numeric' }, lang)}
               </p>
               <p className="text-[10px] font-bold uppercase text-amber-600 leading-none mt-0.5">
-                {formatData(evento.dataInizio, { month: 'short' }).replace('.', '')}
+                {formatData(evento.dataInizio, { month: 'short' }, lang).replace('.', '')}
               </p>
             </>
           )}

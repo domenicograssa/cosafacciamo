@@ -1,16 +1,25 @@
+import type { Lang } from './i18n/strings'
+
 // Fuso orario di riferimento del portale: senza questo, il server (UTC) mostrerebbe orari sbagliati
 const TZ = 'Europe/Rome'
 
-export function formatData(dateStr: string, opzioni?: Intl.DateTimeFormatOptions): string {
+// Locale da usare per Intl a seconda della lingua del sito. Prima di questa
+// mappa, formatData/formatOra/formatIntervalloData erano fissi su 'it-IT':
+// sulle pagine /en questo mostrava date miste tipo "sab 8 ago" dentro card
+// altrimenti in inglese (bug segnalato dall'utente, "come al solito il
+// problema di traduzione" — 8/8/2026).
+const LOCALE: Record<Lang, string> = { it: 'it-IT', en: 'en-US' }
+
+export function formatData(dateStr: string, opzioni?: Intl.DateTimeFormatOptions, lang: Lang = 'it'): string {
   const data = new Date(dateStr)
-  return data.toLocaleDateString('it-IT', {
+  return data.toLocaleDateString(LOCALE[lang], {
     ...(opzioni ?? { weekday: 'short', day: 'numeric', month: 'short' }),
     timeZone: TZ,
   })
 }
 
-export function formatOra(dateStr: string): string {
-  return new Date(dateStr).toLocaleTimeString('it-IT', {
+export function formatOra(dateStr: string, lang: Lang = 'it'): string {
+  return new Date(dateStr).toLocaleTimeString(LOCALE[lang], {
     hour: '2-digit', minute: '2-digit', timeZone: TZ,
   })
 }
@@ -43,15 +52,22 @@ export function risolviOrarioEvento(
 // `prezzo` (es. "Da €15 a €35") invece che in prezzo_min/prezzo_max: senza
 // il parametro testoLibero, formatPrezzo mostra "Prezzo da definire" anche
 // quando il prezzo reale è noto.
+const PREZZO_LABELS: Record<Lang, { gratuito: string; daDefinire: string; da: string }> = {
+  it: { gratuito: 'Gratuito', daDefinire: 'Prezzo da definire', da: 'da' },
+  en: { gratuito: 'Free', daDefinire: 'Price to be announced', da: 'from' },
+}
+
 export function formatPrezzo(
   min: number | null,
   max: number | null,
   gratuito: boolean,
-  testoLibero?: string | null
+  testoLibero?: string | null,
+  lang: Lang = 'it'
 ): string {
-  if (gratuito) return 'Gratuito'
-  if (min === null) return testoLibero?.trim() || 'Prezzo da definire'
-  if (max && max > min) return `da € ${min}`
+  const l = PREZZO_LABELS[lang]
+  if (gratuito) return l.gratuito
+  if (min === null) return testoLibero?.trim() || l.daDefinire
+  if (max && max > min) return `${l.da} € ${min}`
   return `€ ${min}`
 }
 
@@ -75,18 +91,18 @@ export function eInCorso(dataInizio: string, dataFine: string | null): boolean {
 
 // Formatta un intervallo di date leggibile, evitando ripetizioni inutili:
 // stesso mese → "10 – 19 luglio 2026"; mesi diversi, stesso anno → "10 luglio – 6 settembre 2026".
-export function formatIntervalloData(dataInizio: string, dataFine: string): string {
+export function formatIntervalloData(dataInizio: string, dataFine: string, lang: Lang = 'it'): string {
   const inizio = new Date(dataInizio)
   const fine = new Date(dataFine)
   const partsOf = (d: Date) => Object.fromEntries(
-    new Intl.DateTimeFormat('it-IT', { day: 'numeric', month: 'long', year: 'numeric', timeZone: TZ })
+    new Intl.DateTimeFormat(LOCALE[lang], { day: 'numeric', month: 'long', year: 'numeric', timeZone: TZ })
       .formatToParts(d).map(p => [p.type, p.value])
   ) as Record<string, string>
   const pi = partsOf(inizio)
   const pf = partsOf(fine)
 
   if (pi.year !== pf.year) {
-    return `${formatData(dataInizio, { day: 'numeric', month: 'long', year: 'numeric' })} – ${formatData(dataFine, { day: 'numeric', month: 'long', year: 'numeric' })}`
+    return `${formatData(dataInizio, { day: 'numeric', month: 'long', year: 'numeric' }, lang)} – ${formatData(dataFine, { day: 'numeric', month: 'long', year: 'numeric' }, lang)}`
   }
   if (pi.month !== pf.month) {
     return `${pi.day} ${pi.month} – ${pf.day} ${pf.month} ${pf.year}`

@@ -7,6 +7,7 @@ import { formatData, eMultiGiorno, eInCorso, formatIntervalloData } from '@/lib/
 import EventImagePlaceholder from '@/components/ui/EventImagePlaceholder'
 import { immagineComune } from '@/data/comuni-immagini'
 import { useLang } from '@/lib/i18n/LanguageContext'
+import { nomeCategoria } from '@/lib/i18n/strings'
 
 interface Props {
   evento: Evento
@@ -17,7 +18,7 @@ interface Props {
 // la descrizione completa dell'evento) — usata nella sezione "In primo piano"
 // della homepage.
 export default function ArticoloEvidenza({ evento }: Props) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const categoria = evento.categorie[0]
 
   const immagineAutorizzata = evento.mediaAssetUrl ?? null
@@ -28,10 +29,10 @@ export default function ArticoloEvidenza({ evento }: Props) {
   const multiGiorno = eMultiGiorno(evento.dataInizio, evento.dataFine)
   const inCorso = eInCorso(evento.dataInizio, evento.dataFine)
   const etichettaData = inCorso
-    ? `In corso · fino al ${formatData(evento.dataFine!, { day: 'numeric', month: 'short' })}`
+    ? `${t.card.ongoing} · ${t.card.until} ${formatData(evento.dataFine!, { day: 'numeric', month: 'short' }, lang)}`
     : multiGiorno
-    ? formatIntervalloData(evento.dataInizio, evento.dataFine!)
-    : formatData(evento.dataInizio)
+    ? formatIntervalloData(evento.dataInizio, evento.dataFine!, lang)
+    : formatData(evento.dataInizio, undefined, lang)
 
   return (
     <Link
@@ -56,7 +57,7 @@ export default function ArticoloEvidenza({ evento }: Props) {
         ) : (
           <EventImagePlaceholder
             categoriaSlug={categoria?.slug}
-            categoriaNome={categoria?.nome}
+            categoriaNome={categoria ? nomeCategoria(categoria, lang) : undefined}
             categoriaColore={categoria?.colore}
           />
         )}
@@ -66,7 +67,7 @@ export default function ArticoloEvidenza({ evento }: Props) {
             className="absolute top-3 left-3 text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wide z-10"
             style={{ backgroundColor: categoria.colore }}
           >
-            {categoria.nome}
+            {nomeCategoria(categoria, lang)}
           </span>
         )}
       </div>
