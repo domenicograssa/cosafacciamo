@@ -56,6 +56,8 @@ export const strings = {
       noticeIntro: 'le informazioni sugli eventi sono fornite dagli organizzatori.',
       noticeRest: "non è in alcun modo responsabile per eventuali errori, omissioni o cambiamenti dovuti a fattori non prevedibili. Ti invitiamo a verificare eventuali variazioni dell'ultima ora visitando il sito ufficiale e i canali social dell'organizzatore, i cui riferimenti sono indicati in questa pagina.",
       youMightAlsoLike: 'Potrebbe interessarti',
+      copyLink: 'Copia',
+      linkCopied: 'Copiato!',
     },
     footer: {
       tagline: 'Scopri. Partecipa. Vivi il territorio.',
@@ -218,6 +220,8 @@ export const strings = {
       noticeIntro: 'event information is provided by the organizers.',
       noticeRest: "is not responsible for any errors, omissions or last-minute changes. We recommend checking the organizer's official website and social channels, linked on this page, for the latest updates.",
       youMightAlsoLike: 'You might also like',
+      copyLink: 'Copy',
+      linkCopied: 'Copied!',
     },
     footer: {
       tagline: 'Discover. Participate. Experience the territory.',

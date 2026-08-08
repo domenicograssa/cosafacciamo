@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useLang } from '@/lib/i18n/LanguageContext'
 
 interface ShareButtonsProps {
   titolo: string
@@ -8,6 +9,7 @@ interface ShareButtonsProps {
 }
 
 export default function ShareButtons({ titolo, url }: ShareButtonsProps) {
+  const { t } = useLang()
   const [copiato, setCopiato] = useState(false)
 
   const encodedUrl  = encodeURIComponent(url)
@@ -31,7 +33,7 @@ export default function ShareButtons({ titolo, url }: ShareButtonsProps) {
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Condividi</p>
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">{t.event.share}</p>
       <div className="grid grid-cols-4 gap-2">
 
         {/* WhatsApp */}
@@ -87,14 +89,14 @@ export default function ShareButtons({ titolo, url }: ShareButtonsProps) {
               <svg className="w-7 h-7 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              <span className="text-[10px] text-green-600 font-semibold">Copiato!</span>
+              <span className="text-[10px] text-green-600 font-semibold">{t.event.linkCopied}</span>
             </>
           ) : (
             <>
               <svg className="w-7 h-7 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
               </svg>
-              <span className="text-[10px] text-gray-500">Copia</span>
+              <span className="text-[10px] text-gray-500">{t.event.copyLink}</span>
             </>
           )}
         </button>
