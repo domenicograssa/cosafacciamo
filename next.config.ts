@@ -22,11 +22,28 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async headers() {
+    return [
+      {
+        // Segnale esplicito di lingua a livello HTTP (oltre a <html lang>,
+        // notranslate e cookie moesco_lang) per i webview/in-app browser che
+        // ignorano i meta tag ma leggono l'header di risposta.
+        source: '/:path*',
+        headers: [
+          { key: 'Content-Language', value: 'it' },
+        ],
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.pexels.com',
       },
       {
         protocol: 'https',

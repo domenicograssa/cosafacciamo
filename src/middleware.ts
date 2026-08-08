@@ -1,7 +1,12 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const LANG_COOKIE = 'moesco_lang'
+// v2: rinominato da 'moesco_lang' per invalidare i cookie "en" residui
+// impostati prima della fix "italiano sempre di default" (vedi sotto) — senza
+// il bump di versione, chi aveva già il cookie vecchio a "en" (es. da un
+// browser in-app tipo Facebook/Instagram) sarebbe rimasto bloccato in inglese
+// per un anno, nonostante il fix.
+const LANG_COOKIE = 'moesco_lang_v2'
 const UN_ANNO = 60 * 60 * 24 * 365
 
 function buildSupabase(request: NextRequest, response: NextResponse) {
