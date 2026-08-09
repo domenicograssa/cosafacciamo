@@ -5,6 +5,7 @@ import Image from 'next/image'
 import type { Attivita } from '@/types'
 import { useLang } from '@/lib/i18n/LanguageContext'
 import { nomeCategoria } from '@/lib/i18n/strings'
+import { sfondoConTestoBianco } from '@/lib/utils'
 
 const LIVELLO_LABEL: Record<string, { it: string; en: string }> = {
   facile: { it: 'Facile', en: 'Easy' },
@@ -86,7 +87,7 @@ export default function ActivityCard({ attivita, compact = false }: ActivityCard
         {categoria && (
           <span
             className="absolute top-3 left-3 text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wide"
-            style={{ backgroundColor: categoria.colore }}
+            style={{ backgroundColor: sfondoConTestoBianco(categoria.colore) }}
           >
             {nomeCategoria(categoria, lang)}
           </span>

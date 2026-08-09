@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Evento } from '@/types'
-import { formatData, formatOra, formatPrezzo, eMultiGiorno, eInCorso, formatIntervalloData } from '@/lib/utils'
+import { formatData, formatOra, formatPrezzo, eMultiGiorno, eInCorso, formatIntervalloData, sfondoConTestoBianco } from '@/lib/utils'
 import ImmagineEvento from '@/components/ui/ImmagineEvento'
 import { fotoComunePerEvento } from '@/data/comuni-immagini'
 import { useLang } from '@/lib/i18n/LanguageContext'
@@ -92,7 +92,7 @@ export default function EventCard({ evento, compact = false, badgeEvidenza }: Ev
         {categoria && (
           <span
             className="absolute top-3 left-3 text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wide z-10"
-            style={{ backgroundColor: categoria.colore }}
+            style={{ backgroundColor: sfondoConTestoBianco(categoria.colore) }}
           >
             {nomeCategoria(categoria, lang)}
           </span>

@@ -5,7 +5,7 @@ import EventCard from './EventCard'
 import { Evento, Categoria, GeoNodo } from '@/types'
 import CategoryChip, { icona } from '@/components/ui/CategoryChip'
 import ComuneCombobox from '@/components/ui/ComuneCombobox'
-import { normalizzaTesto } from '@/lib/utils'
+import { normalizzaTesto, sfondoConTestoBianco } from '@/lib/utils'
 import { useLang } from '@/lib/i18n/LanguageContext'
 import { nomeCategoria } from '@/lib/i18n/strings'
 
@@ -151,7 +151,7 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale, 
                   ? 'text-white border-transparent'
                   : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
               }`}
-              style={filtri.categorie.includes(cat.slug) ? { backgroundColor: cat.colore, borderColor: cat.colore } : {}}
+              style={filtri.categorie.includes(cat.slug) ? { backgroundColor: sfondoConTestoBianco(cat.colore), borderColor: sfondoConTestoBianco(cat.colore) } : {}}
             >
               <span>{icona(cat.icona)}</span>
               <span>{nomeCategoria(cat, lang)}</span>

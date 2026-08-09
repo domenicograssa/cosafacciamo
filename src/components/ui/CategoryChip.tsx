@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Categoria } from '@/types'
 import { nomeCategoria } from '@/lib/i18n/strings'
 import type { Lang } from '@/lib/i18n/strings'
+import { sfondoConTestoBianco } from '@/lib/utils'
 
 const ICONA_EMOJI: Record<string, string> = {
   'music-note': '🎵',
@@ -47,10 +48,13 @@ export default function CategoryChip({ categoria, attiva = false, onClick, href,
       ? 'text-white border-transparent shadow-md scale-105'
       : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
   }`
-  const style = attiva ? { backgroundColor: categoria.colore, borderColor: categoria.colore } : {}
+  // Il colore viene scurito quanto serve a rendere leggibile il testo bianco
+  // sopra (WCAG AA 4,5:1) — vedi sfondoConTestoBianco in lib/utils.
+  const tinta = sfondoConTestoBianco(categoria.colore)
+  const style = attiva ? { backgroundColor: tinta, borderColor: tinta } : {}
   const content = (
     <>
-      <span className="text-xl">{icona(categoria.icona)}</span>
+      <span className="text-xl" aria-hidden="true">{icona(categoria.icona)}</span>
       <span>{nomeCategoria(categoria, lang)}</span>
     </>
   )
@@ -64,7 +68,13 @@ export default function CategoryChip({ categoria, attiva = false, onClick, href,
   }
 
   return (
-    <button onClick={onClick} className={className} style={style}>
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={attiva}
+      className={className}
+      style={style}
+    >
       {content}
     </button>
   )

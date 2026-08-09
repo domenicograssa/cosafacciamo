@@ -215,6 +215,35 @@ export default async function DettaglioEvento({ params }: Props) {
             {evento.descrizione && (
               <div className="mt-4 text-gray-700 leading-relaxed whitespace-pre-line">{evento.descrizione}</div>
             )}
+
+            {/*
+              Trasparenza sui contenuti di origine automatizzata: gli eventi
+              individuati dalla procedura di ricerca automatica dichiarano
+              pubblicamente la fonte da cui l'informazione è stata tratta, così
+              che chi legge possa verificarla. La scheda resta comunque
+              approvata a mano prima della pubblicazione.
+            */}
+            {evento.fonteRicerca && (
+              <aside className="mt-5 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-900">
+                <p>
+                  <span aria-hidden="true">ℹ️ </span>
+                  {lang === 'en'
+                    ? 'This listing was compiled from public sources by an automated search and reviewed by our team before publication. Please check the official source for last-minute changes.'
+                    : 'Questa scheda è stata compilata a partire da fonti pubbliche tramite una ricerca automatica ed è stata verificata dalla redazione prima della pubblicazione. Ti consigliamo di controllare la fonte ufficiale per eventuali variazioni dell’ultimo momento.'}
+                </p>
+                <p className="mt-1.5 break-words">
+                  {lang === 'en' ? 'Source: ' : 'Fonte: '}
+                  <a
+                    href={evento.fonteRicerca}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    className="underline hover:no-underline font-semibold"
+                  >
+                    {evento.fonteRicerca}
+                  </a>
+                </p>
+              </aside>
+            )}
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">

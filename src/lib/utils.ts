@@ -145,6 +145,60 @@ export function cn(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(' ')
 }
 
+// ─── Contrasto dei colori categoria (accessibilità) ─────────────────────────
+// I colori delle categorie arrivano dal database e sono pensati per essere
+// vivaci, non per reggere del testo bianco sopra: misurati sulla home, chip
+// come "Mare" (#0EA5E9) davano 2,77:1 e "Per famiglie" (#EC4899) 3,53:1,
+// sotto il minimo di 4,5:1 richiesto da WCAG 2.1 AA (criterio 1.4.3) per il
+// testo normale. Invece di rimettere mano ai colori nel database — che
+// verrebbero comunque usati altrove come tinta decorativa — si scurisce qui
+// il colore quanto basta perché il bianco sopra risulti leggibile.
+// La tinta resta riconoscibile: si abbassa solo la luminosità.
+
+function hexAOrgb(hex: string): [number, number, number] | null {
+  const pulito = hex.trim().replace('#', '')
+  const esteso = pulito.length === 3 ? pulito.split('').map(c => c + c).join('') : pulito
+  if (!/^[0-9a-f]{6}$/i.test(esteso)) return null
+  return [
+    parseInt(esteso.slice(0, 2), 16),
+    parseInt(esteso.slice(2, 4), 16),
+    parseInt(esteso.slice(4, 6), 16),
+  ]
+}
+
+function luminanzaRelativa([r, g, b]: [number, number, number]): number {
+  const canale = (v: number) => {
+    const s = v / 255
+    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4)
+  }
+  return 0.2126 * canale(r) + 0.7152 * canale(g) + 0.0722 * canale(b)
+}
+
+/** Rapporto di contrasto del colore dato rispetto al bianco. */
+function contrastoConBianco(rgb: [number, number, number]): number {
+  return 1.05 / (luminanzaRelativa(rgb) + 0.05)
+}
+
+/**
+ * Restituisce il colore di sfondo scurito quanto basta perché il testo bianco
+ * sopra raggiunga il rapporto di contrasto richiesto.
+ * @param hex colore originale della categoria (es. "#0EA5E9")
+ * @param minimo rapporto minimo — 4.5 per testo normale, 3 per testo grande
+ */
+export function sfondoConTestoBianco(hex: string | null | undefined, minimo = 4.5): string {
+  if (!hex) return '#4B5563' // grigio neutro di riserva (7,5:1 sul bianco)
+  const rgb = hexAOrgb(hex)
+  if (!rgb) return hex
+
+  let corrente = rgb
+  // Scurisce del 6% per volta finché il contrasto è sufficiente (max 40 passi:
+  // si arriva comunque al nero, che ha il contrasto massimo).
+  for (let i = 0; i < 40 && contrastoConBianco(corrente) < minimo; i++) {
+    corrente = corrente.map(c => Math.round(c * 0.94)) as [number, number, number]
+  }
+  return '#' + corrente.map(c => c.toString(16).padStart(2, '0')).join('')
+}
+
 // Normalizza un testo per ricerche: minuscole, senza accenti, senza spazi esterni
 const COMBINING_MARKS = /[̀-ͯ]/g
 export function normalizzaTesto(s: string): string {

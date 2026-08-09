@@ -6,6 +6,7 @@ import type { Attivita, Categoria, GeoNodo } from '@/types'
 import { icona } from '@/components/ui/CategoryChip'
 import { useLang } from '@/lib/i18n/LanguageContext'
 import { nomeCategoria } from '@/lib/i18n/strings'
+import { sfondoConTestoBianco } from '@/lib/utils'
 
 interface FiltriState {
   categorie: string[]
@@ -93,7 +94,7 @@ export default function AttivitaList({ attivita, categorie, comuni, titoloInizia
                   ? 'text-white border-transparent'
                   : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
               }`}
-              style={filtri.categorie.includes(cat.slug) ? { backgroundColor: cat.colore, borderColor: cat.colore } : {}}
+              style={filtri.categorie.includes(cat.slug) ? { backgroundColor: sfondoConTestoBianco(cat.colore), borderColor: sfondoConTestoBianco(cat.colore) } : {}}
             >
               <span>{icona(cat.icona)}</span>
               <span>{nomeCategoria(cat, lang)}</span>

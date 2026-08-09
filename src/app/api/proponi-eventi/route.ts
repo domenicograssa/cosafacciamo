@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/server'
+import { richiestaAutorizzata } from '@/lib/api-auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,7 +11,9 @@ export const dynamic = 'force-dynamic'
 // stato 'in_revisione' (mai pubblicati direttamente) sotto l'organizzatore
 // tecnico 'ricerca-automatica-moesco', salvando la fonte in fonte_ricerca
 // così chi approva in /admin/eventi può verificarla prima di pubblicare.
-// Auth: stesso pattern di /api/revalidate (query param secret = ADMIN_EMAIL).
+// Auth: segreto condiviso CRON_SECRET — vedi src/lib/api-auth.ts. Da inviare
+// nell'header "Authorization: Bearer <CRON_SECRET>"; ?secret=<...> resta
+// accettato solo per retrocompatibilità.
 
 interface EventoCandidato {
   titolo: string
@@ -61,11 +64,7 @@ interface EsitoCandidato {
 }
 
 export async function POST(req: NextRequest) {
-  const { searchParams } = new URL(req.url)
-  const secret = searchParams.get('secret')
-  const adminEmail = process.env.ADMIN_EMAIL
-
-  if (!adminEmail || secret !== adminEmail) {
+  if (!richiestaAutorizzata(req)) {
     return NextResponse.json({ ok: false, errore: 'Non autorizzato.' }, { status: 401 })
   }
 

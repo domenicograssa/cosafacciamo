@@ -9,7 +9,7 @@ export default function CookiePolicy() {
   return (
     <article className="prose prose-gray max-w-none">
       <h1>Cookie Policy</h1>
-      <p className="text-sm text-gray-500">Versione 1.2 — in vigore dal 9 luglio 2026</p>
+      <p className="text-sm text-gray-500">Versione 1.3 — in vigore dal 9 agosto 2026</p>
 
       <p>
         Il presente documento descrive le modalità di utilizzo dei cookie e di tecnologie simili
@@ -36,24 +36,35 @@ export default function CookiePolicy() {
       <table>
         <thead>
           <tr>
-            <th>Cookie</th>
+            <th>Nome</th>
+            <th>Tipo</th>
             <th>Scopo</th>
             <th>Durata</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>sb-session</td>
-            <td>Gestione sessione autenticata (area admin/organizzatori)</td>
-            <td>Sessione</td>
+            <td>sb-*-auth-token</td>
+            <td>Cookie</td>
+            <td>Gestione della sessione autenticata (area amministrazione e organizzatori). Presente solo dopo l&apos;accesso.</td>
+            <td>Sessione / fino al logout</td>
           </tr>
           <tr>
-            <td>cookie_consent</td>
-            <td>Memorizza la scelta dell'utente sui cookie</td>
-            <td>12 mesi</td>
+            <td>moesco_cookie_consent</td>
+            <td>Memoria locale del browser (localStorage)</td>
+            <td>Memorizza la scelta espressa sui cookie, per non riproporre il banner a ogni visita</td>
+            <td>6 mesi</td>
           </tr>
         </tbody>
       </table>
+      <p>
+        La scelta sui cookie non è conservata in un cookie ma nella memoria
+        locale del browser: resta quindi sul dispositivo dell&apos;utente e non
+        viene trasmessa al server a ogni richiesta. Trascorsi sei mesi la scelta
+        scade e il banner viene ripresentato, in linea con le indicazioni del
+        Garante del 9 luglio 2021. Cancellando i dati di navigazione del browser
+        la scelta viene rimossa e il banner ricompare.
+      </p>
 
       <h3>2.2 Cookie analitici</h3>
       <p>
@@ -88,9 +99,21 @@ export default function CookiePolicy() {
         </tbody>
       </table>
       <p>
+        I cookie analitici <strong>non vengono installati</strong> finché l&apos;utente non presta il
+        proprio consenso: fino a quel momento nessuno script di Google viene caricato dal browser.
+        Google Analytics 4 è configurato con l&apos;anonimizzazione degli indirizzi IP attiva per
+        impostazione predefinita. Il consenso può essere revocato in qualsiasi momento dal link
+        «Gestisci preferenze cookie» nel piè di pagina; la revoca ha effetto immediato e impedisce
+        ogni ulteriore raccolta.
+      </p>
+      <p>
         Per approfondimenti sul trattamento dei dati da parte di Google si rimanda alla{' '}
         <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">
           informativa privacy di Google
+        </a>. Per eliminare i cookie già installati è possibile usare le impostazioni del browser
+        oppure il{' '}
+        <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer">
+          componente aggiuntivo di disattivazione di Google Analytics
         </a>.
       </p>
 

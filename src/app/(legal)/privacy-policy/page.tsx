@@ -9,7 +9,7 @@ export default function PrivacyPolicy() {
   return (
     <article className="prose prose-gray max-w-none">
       <h1>Privacy Policy</h1>
-      <p className="text-sm text-gray-500">Versione 1.2 — in vigore dal 20 giugno 2026</p>
+      <p className="text-sm text-gray-500">Versione 1.3 — in vigore dal 9 agosto 2026</p>
 
       <h2>1. Titolare del trattamento</h2>
       <p>
@@ -59,7 +59,52 @@ export default function PrivacyPolicy() {
       <ul>
         <li><strong>Erogazione del servizio</strong> (base giuridica: esecuzione del contratto — art. 6, par. 1, lett. b GDPR): gestione della registrazione degli organizzatori, pubblicazione degli eventi, risposta a richieste, invio di comunicazioni transazionali via email.</li>
         <li><strong>Adempimento di obblighi legali</strong> (base giuridica: obbligo legale — art. 6, par. 1, lett. c GDPR): conservazione dei log di consenso ai sensi della normativa vigente.</li>
+        <li><strong>Risposta alle richieste inviate tramite il modulo contatti</strong> (base giuridica: consenso — art. 6, par. 1, lett. a GDPR): i dati inseriti nel modulo sono usati unicamente per rispondere e non per altre finalità.</li>
+        <li><strong>Sicurezza del portale e prevenzione degli abusi</strong> (base giuridica: legittimo interesse — art. 6, par. 1, lett. f GDPR): conservazione dei log tecnici per individuare accessi anomali, tentativi di intrusione e invii automatizzati di spam. L&apos;interesse del titolare a mantenere il servizio funzionante e sicuro è stato bilanciato con i diritti degli interessati, trattandosi di dati tecnici conservati per un periodo limitato.</li>
+        <li><strong>Analisi statistica dell&apos;utilizzo del sito</strong> (base giuridica: consenso — art. 6, par. 1, lett. a GDPR): raccolta di statistiche aggregate tramite Google Analytics, attivata solo se l&apos;utente presta consenso tramite il banner cookie e revocabile in qualsiasi momento.</li>
       </ul>
+
+      <h2>3-bis. Uso di sistemi automatizzati e di intelligenza artificiale</h2>
+      <p>
+        Per trasparenza si dà conto degli strumenti automatizzati impiegati nella
+        gestione dei contenuti del portale.
+      </p>
+      <ul>
+        <li>
+          <strong>Traduzione automatica dei contenuti.</strong> I testi degli eventi
+          (titolo, descrizione, luogo) vengono tradotti dall&apos;italiano
+          all&apos;inglese tramite il servizio <strong>DeepL</strong> (DeepL SE,
+          Germania) al momento della pubblicazione, per alimentare la versione
+          inglese del portale. Vengono inviati a DeepL esclusivamente i testi
+          descrittivi degli eventi: non sono trasmessi dati di contatto, dati di
+          navigazione né dati identificativi degli utenti. Le traduzioni sono
+          generate automaticamente e possono contenere imprecisioni.
+        </li>
+        <li>
+          <strong>Ricerca automatica di eventi.</strong> Una procedura automatizzata
+          ricerca periodicamente su fonti pubbliche in rete notizie di eventi del
+          territorio e ne propone una bozza. Le bozze sono <em>sempre</em> sottoposte
+          a revisione e approvazione umana prima di essere pubblicate: nessun
+          contenuto viene pubblicato automaticamente. Su ogni evento originato da
+          questa procedura è indicata pubblicamente la fonte da cui
+          l&apos;informazione è stata tratta.
+        </li>
+      </ul>
+      <p>
+        Il portale <strong>non effettua alcun processo decisionale automatizzato
+        né profilazione</strong> che produca effetti giuridici o incida in modo
+        analogamente significativo sugli utenti, ai sensi dell&apos;art. 22 GDPR.
+        Nessun dato personale degli utenti viene utilizzato per addestrare
+        sistemi di intelligenza artificiale, né dal titolare né, per quanto a sua
+        conoscenza, dai fornitori indicati.
+      </p>
+      <p>
+        Gli strumenti impiegati non rientrano fra i sistemi di intelligenza
+        artificiale ad alto rischio di cui al Regolamento (UE) 2024/1689 (AI Act);
+        l&apos;indicazione della natura automatica delle traduzioni e delle bozze
+        di evento risponde all&apos;obbligo generale di trasparenza verso gli
+        utenti.
+      </p>
 
       <h2>4. Modalità del trattamento</h2>
       <p>
@@ -79,18 +124,62 @@ export default function PrivacyPolicy() {
       </p>
 
       <h2>6. Comunicazione dei dati a terzi</h2>
-      <p>I dati personali non sono ceduti a terzi. Sono comunicati esclusivamente a:</p>
-      <ul>
-        <li><strong>Supabase Inc.</strong> — in qualità di responsabile del trattamento, per la gestione del database e dell'autenticazione (server UE).</li>
-        <li><strong>Vercel Inc.</strong> — in qualità di responsabile del trattamento, per l'hosting del portale.</li>
-        <li><strong>Resend Inc.</strong> — in qualità di responsabile del trattamento, per l'invio di email transazionali (conferme di registrazione, notifiche agli organizzatori).</li>
-      </ul>
+      <p>
+        I dati personali non sono ceduti né venduti a terzi. Sono comunicati
+        esclusivamente ai seguenti fornitori, che agiscono in qualità di
+        responsabili del trattamento ai sensi dell&apos;art. 28 GDPR:
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>Fornitore</th>
+            <th>Finalità</th>
+            <th>Dati trattati</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Supabase Inc.</td>
+            <td>Database e autenticazione</td>
+            <td>Dati di registrazione degli organizzatori, contenuti pubblicati, immagini</td>
+          </tr>
+          <tr>
+            <td>Vercel Inc.</td>
+            <td>Hosting del portale</td>
+            <td>Dati di navigazione, log tecnici</td>
+          </tr>
+          <tr>
+            <td>Resend Inc.</td>
+            <td>Invio di email transazionali</td>
+            <td>Indirizzo email e contenuto del messaggio</td>
+          </tr>
+          <tr>
+            <td>Google Ireland Limited</td>
+            <td>Statistiche di utilizzo (solo previo consenso)</td>
+            <td>Dati di navigazione in forma aggregata, identificativi dei cookie analitici</td>
+          </tr>
+          <tr>
+            <td>DeepL SE (Germania)</td>
+            <td>Traduzione automatica dei testi degli eventi</td>
+            <td>Solo i testi descrittivi degli eventi — nessun dato personale degli utenti</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        I dati possono inoltre essere comunicati all&apos;autorità giudiziaria o
+        agli organi di polizia, su loro legittima richiesta, nei casi previsti
+        dalla legge.
+      </p>
 
       <h2>7. Trasferimento dei dati extra-UE</h2>
       <p>
-        Alcuni fornitori del portale (Vercel, Resend) possono trasferire dati al di fuori dello Spazio
-        Economico Europeo. Tali trasferimenti avvengono nel rispetto delle garanzie previste dal GDPR
-        (clausole contrattuali standard approvate dalla Commissione europea).
+        Alcuni fornitori del portale (Vercel, Resend, Google) possono trasferire dati al di fuori dello
+        Spazio Economico Europeo, in particolare negli Stati Uniti. Tali trasferimenti avvengono nel
+        rispetto delle garanzie previste dal Capo V del GDPR: clausole contrattuali standard approvate
+        dalla Commissione europea e, per i fornitori aderenti, il quadro
+        <em> EU-U.S. Data Privacy Framework</em> (decisione di adeguatezza della Commissione europea
+        del 10 luglio 2023). Supabase è configurato con server nell&apos;Unione europea; DeepL tratta i
+        dati su server situati nell&apos;Unione europea.
       </p>
 
       <h2>8. Diritti dell'interessato</h2>
@@ -107,7 +196,19 @@ export default function PrivacyPolicy() {
       </ul>
       <p>
         Per esercitare i propri diritti, l'interessato può contattare il titolare all'indirizzo email:{' '}
-        <a href="mailto:domenicograssa@gmail.com">domenicograssa@gmail.com</a>.
+        <a href="mailto:domenicograssa@gmail.com">domenicograssa@gmail.com</a>, oppure usare il{' '}
+        <a href="/contatti">modulo contatti</a> selezionando «Richiesta privacy (GDPR)».
+        Il titolare risponde senza ingiustificato ritardo e comunque entro un mese dal ricevimento
+        della richiesta, ai sensi dell'art. 12, par. 3 GDPR.
+      </p>
+
+      <h2>8-bis. Dati dei minori</h2>
+      <p>
+        Il portale non è rivolto a minori di 14 anni e non raccoglie
+        consapevolmente i loro dati personali. La registrazione come organizzatore
+        è riservata a maggiorenni o a soggetti giuridici. Qualora un genitore o
+        un tutore ritenga che un minore abbia fornito dati personali, può
+        richiederne la cancellazione ai recapiti sopra indicati.
       </p>
 
       <h2>9. Modifiche alla presente informativa</h2>

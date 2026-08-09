@@ -23,8 +23,9 @@ export default function Navbar() {
             </p>
           </Link>
 
-          {/* Nav desktop */}
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
+          {/* Nav desktop — l'etichetta distingue questa regione dalle altre
+              <nav> della pagina quando uno screen reader elenca i landmark */}
+          <nav aria-label="Navigazione principale" className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
             <Link href={href("/cosa-fare")} className="hover:text-gray-900 transition-colors">{t.nav.whatToDo}</Link>
             <Link href={href("/eventi")}    className="hover:text-gray-900 transition-colors">{t.nav.events}</Link>
             <Link href={href("/localita")}  className="hover:text-gray-900 transition-colors">{t.nav.locations}</Link>
@@ -49,7 +50,7 @@ export default function Navbar() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </Link>
-            <button className="p-2 text-gray-500 hover:text-gray-900 transition-colors" aria-label="Preferiti">
+            <button type="button" className="p-2 text-gray-500 hover:text-gray-900 transition-colors" aria-label="Preferiti">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
@@ -63,11 +64,14 @@ export default function Navbar() {
 
             {/* Mobile menu button */}
             <button
+              type="button"
               className="md:hidden p-2 text-gray-500"
               onClick={() => setMenuOpen(!menuOpen)}
-              aria-label="Menu"
+              aria-label={menuOpen ? 'Chiudi il menu' : 'Apri il menu'}
+              aria-expanded={menuOpen}
+              aria-controls="menu-mobile"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={menuOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'} />
               </svg>
             </button>
@@ -76,7 +80,7 @@ export default function Navbar() {
 
         {/* Mobile menu dropdown */}
         {menuOpen && (
-          <nav className="md:hidden border-t border-gray-100 py-4 flex flex-col gap-3 text-sm font-medium text-gray-600">
+          <nav id="menu-mobile" aria-label="Navigazione principale (mobile)" className="md:hidden border-t border-gray-100 py-4 flex flex-col gap-3 text-sm font-medium text-gray-600">
             <Link href={href("/cosa-fare")}     className="px-2 py-1 hover:text-gray-900" onClick={() => setMenuOpen(false)}>{t.nav.whatToDo}</Link>
             <Link href={href("/eventi")}        className="px-2 py-1 hover:text-gray-900" onClick={() => setMenuOpen(false)}>{t.nav.events}</Link>
             <Link href={href("/localita")}      className="px-2 py-1 hover:text-gray-900" onClick={() => setMenuOpen(false)}>{t.nav.locations}</Link>

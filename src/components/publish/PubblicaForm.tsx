@@ -6,6 +6,7 @@ import type { Categoria, GeoNodo } from '@/types'
 import ComuneCombobox from '@/components/ui/ComuneCombobox'
 import { icona } from '@/components/ui/CategoryChip'
 import { pubblicaEvento } from '@/app/actions/pubblica'
+import { sfondoConTestoBianco } from '@/lib/utils'
 
 // Ridimensiona e comprime l'immagine lato client (max 1600px, JPEG) per non appesantire il sito
 async function comprimiImmagine(file: File, maxLato = 1600, qualita = 0.82): Promise<Blob> {
@@ -459,7 +460,7 @@ export default function PubblicaForm({ comuni, categorie, tipoIniziale = 'evento
                       ? 'text-white border-transparent'
                       : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
                   }`}
-                  style={form.categorieSelezionate.includes(cat.slug) ? { backgroundColor: cat.colore, borderColor: cat.colore } : {}}
+                  style={form.categorieSelezionate.includes(cat.slug) ? { backgroundColor: sfondoConTestoBianco(cat.colore), borderColor: sfondoConTestoBianco(cat.colore) } : {}}
                 >
                   <span>{icona(cat.icona)}</span>
                   <span>{cat.nome}</span>
@@ -753,7 +754,7 @@ export default function PubblicaForm({ comuni, categorie, tipoIniziale = 'evento
                   <p className="text-xs text-gray-500">Categorie</p>
                   <div className="flex flex-wrap gap-1 mt-0.5">
                     {categorieSel.map(c => (
-                      <span key={c.id} className="text-xs text-white px-2 py-0.5 rounded-full" style={{ backgroundColor: c.colore }}>
+                      <span key={c.id} className="text-xs text-white px-2 py-0.5 rounded-full" style={{ backgroundColor: sfondoConTestoBianco(c.colore) }}>
                         {c.nome}
                       </span>
                     ))}

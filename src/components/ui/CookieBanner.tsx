@@ -6,6 +6,12 @@ import { useLang } from '@/lib/i18n/LanguageContext'
 
 const STORAGE_KEY = 'moesco_cookie_consent'
 
+// Durata della scelta prima di richiederla di nuovo. Le linee guida del Garante
+// (9 luglio 2021) chiedono di non riproporre il banner a ogni visita, ma anche
+// di non considerare il consenso valido per sempre: sei mesi è il termine
+// indicato oltre il quale la richiesta può essere ripresentata.
+const DURATA_CONSENSO_MS = 1000 * 60 * 60 * 24 * 180
+
 type ConsensoTipo = {
   tecnici: true       // sempre true, non modificabile
   analitici: boolean
@@ -16,7 +22,14 @@ function leggiConsenso(): ConsensoTipo | null {
   if (typeof window === 'undefined') return null
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : null
+    if (!raw) return null
+    const consenso: ConsensoTipo = JSON.parse(raw)
+    // Scelta scaduta: si torna a chiedere, come se non fosse mai stata espressa.
+    if (!consenso?.timestamp || Date.now() - consenso.timestamp > DURATA_CONSENSO_MS) {
+      localStorage.removeItem(STORAGE_KEY)
+      return null
+    }
+    return consenso
   } catch {
     return null
   }
@@ -59,10 +72,15 @@ export default function CookieBanner() {
   if (!visibile) return null
 
   return (
+    // role="region" e non role="dialog": il banner non blocca la pagina e non
+    // trattiene il fuoco, quindi dichiararlo come finestra modale (aria-modal)
+    // ingannerebbe gli screen reader, che annuncerebbero il resto della pagina
+    // come inaccessibile mentre invece è perfettamente navigabile.
+    // Come regione etichettata resta comunque raggiungibile dall'elenco dei
+    // landmark di qualsiasi screen reader.
     <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="Preferenze cookie"
+      role="region"
+      aria-label="Preferenze sui cookie"
       className="fixed bottom-0 left-0 right-0 z-[9999] bg-white border-t border-gray-200 shadow-2xl"
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
@@ -86,22 +104,33 @@ export default function CookieBanner() {
                 </Link>.
               </p>
             </div>
+            {/*
+              Parità grafica fra accettazione e rifiuto: le linee guida del
+              Garante (9 luglio 2021) e dell'EDPB vietano di rendere il rifiuto
+              meno immediato o meno visibile dell'accettazione. Prima "Accetta
+              tutto" era un pulsante pieno e colorato mentre "Rifiuta" era un
+              contorno grigio: adesso i due pulsanti hanno identiche dimensioni,
+              peso del testo e risalto cromatico.
+            */}
             <div className="flex flex-wrap items-center gap-2 shrink-0">
               <button
+                type="button"
                 onClick={() => setMostraDettagli(true)}
-                className="text-xs text-gray-500 hover:text-gray-700 underline px-2 py-1.5"
+                className="text-xs font-semibold text-gray-700 underline hover:text-gray-900 px-3 py-2.5"
               >
                 Personalizza
               </button>
               <button
+                type="button"
                 onClick={rifiutaNonNecessari}
-                className="text-xs font-semibold border border-gray-300 hover:border-gray-500 text-gray-700 px-4 py-2 rounded-lg transition-colors"
+                className="text-xs font-bold bg-[#1B2653] hover:bg-[#111a3c] text-white px-4 py-2.5 rounded-lg transition-colors min-w-[9.5rem]"
               >
                 Rifiuta non necessari
               </button>
               <button
+                type="button"
                 onClick={accettaTutto}
-                className="text-xs font-bold bg-amber-400 hover:bg-amber-500 text-white px-4 py-2 rounded-lg transition-colors"
+                className="text-xs font-bold bg-[#1B2653] hover:bg-[#111a3c] text-white px-4 py-2.5 rounded-lg transition-colors min-w-[9.5rem]"
               >
                 Accetta tutto
               </button>
@@ -113,11 +142,12 @@ export default function CookieBanner() {
             <div className="flex items-center justify-between">
               <p className="text-sm font-bold text-gray-900">Gestisci le preferenze sui cookie</p>
               <button
+                type="button"
                 onClick={() => setMostraDettagli(false)}
-                className="text-gray-400 hover:text-gray-600 text-lg leading-none"
-                aria-label="Chiudi"
+                className="text-gray-500 hover:text-gray-800 text-lg leading-none px-2"
+                aria-label="Torna alla vista compatta delle preferenze cookie"
               >
-                ×
+                <span aria-hidden="true">×</span>
               </button>
             </div>
 
@@ -156,14 +186,16 @@ export default function CookieBanner() {
 
             <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
               <button
+                type="button"
                 onClick={rifiutaNonNecessari}
-                className="text-xs font-semibold border border-gray-300 hover:border-gray-500 text-gray-700 px-4 py-2 rounded-lg transition-colors"
+                className="text-xs font-bold bg-[#1B2653] hover:bg-[#111a3c] text-white px-4 py-2.5 rounded-lg transition-colors min-w-[9.5rem]"
               >
                 Rifiuta non necessari
               </button>
               <button
+                type="button"
                 onClick={salvaPersonalizzato}
-                className="text-xs font-bold bg-amber-400 hover:bg-amber-500 text-white px-4 py-2 rounded-lg transition-colors"
+                className="text-xs font-bold bg-[#1B2653] hover:bg-[#111a3c] text-white px-4 py-2.5 rounded-lg transition-colors min-w-[9.5rem]"
               >
                 Salva preferenze
               </button>
@@ -192,11 +224,11 @@ export function useCookieConsent() {
 // Componente per riaprire il banner (usato nel footer)
 export function RiapriCookieBanner({ label = 'Gestisci preferenze cookie' }: { label?: string }) {
   const apri = () => {
-    localStorage.removeItem('moesco_cookie_consent')
+    localStorage.removeItem(STORAGE_KEY)
     window.location.reload()
   }
   return (
-    <button onClick={apri} className="hover:text-amber-600 transition-colors">
+    <button type="button" onClick={apri} className="hover:text-amber-600 transition-colors underline-offset-2 hover:underline">
       {label}
     </button>
   )

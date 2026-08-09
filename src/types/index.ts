@@ -65,6 +65,10 @@ export interface Evento {
   prezzoTesto: string | null
   urlBiglietti: string | null
   sitoUfficiale: string | null
+  /** URL della fonte pubblica da cui l'evento è stato individuato dalla
+   *  procedura di ricerca automatica. Null per gli eventi inseriti a mano
+   *  o pubblicati direttamente dagli organizzatori. */
+  fonteRicerca?: string | null
   emailContatto: string | null
   telefonoContatto: string | null
   urlPrenotazione: string | null

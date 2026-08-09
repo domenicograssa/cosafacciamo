@@ -89,8 +89,21 @@ export default async function RootLayout({
     <html lang={lang} translate="no" className={`h-full notranslate ${nunito.variable}`}>
       <body className="min-h-full flex flex-col bg-gray-50">
         <LanguageProvider initialLang={lang}>
+          {/*
+            "Salta al contenuto": primo elemento raggiungibile con Tab.
+            Senza di esso, chi naviga da tastiera o con screen reader deve
+            riattraversare l'intero menu a ogni cambio pagina prima di
+            arrivare al contenuto (WCAG 2.1 A, criterio 2.4.1).
+            È invisibile finché non riceve il fuoco.
+          */}
+          <a
+            href="#contenuto-principale"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[10000] focus:rounded-lg focus:bg-[#1B2653] focus:px-4 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg"
+          >
+            {lang === 'en' ? 'Skip to main content' : 'Salta al contenuto principale'}
+          </a>
           <Navbar />
-          <main className="flex-1">{children}</main>
+          <main id="contenuto-principale" tabIndex={-1} className="flex-1">{children}</main>
           <FooterClient />
           <CookieBanner />
           <Analytics />

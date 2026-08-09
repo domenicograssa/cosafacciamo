@@ -8,6 +8,47 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Chi naviga con la tastiera deve sempre vedere dove si trova il fuoco
+   (WCAG 2.1 AA, criterio 2.4.7). Il contorno di sistema varia da browser a
+   browser e su alcuni sfondi è quasi invisibile: qui se ne impone uno unico,
+   ben visibile, applicato solo alla navigazione da tastiera (:focus-visible)
+   così il mouse non fa comparire contorni indesiderati. */
+:focus-visible {
+  outline: 3px solid #1B2653;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Chi ha attivato "riduci movimento" nel sistema operativo (vestibolopatie,
+   emicrania, disturbi dell'attenzione) non deve subire animazioni e
+   scorrimenti automatici — WCAG 2.1 AA, criterio 2.3.3. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Testo visibile solo agli screen reader (es. il link "salta al contenuto"
+   finché non riceve il fuoco, o le etichette delle regioni di pagina). */
+.solo-screen-reader {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 body {
   background: #ffffff;
   color: #171717;

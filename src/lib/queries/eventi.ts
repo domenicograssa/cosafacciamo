@@ -59,6 +59,10 @@ function mapEvento(row: EventoConRelazioni, lang: Lang = 'it'): Evento {
     telefonoContatto: (row as Record<string, unknown>).telefono_contatto as string | null ?? null,
     urlPrenotazione: (row as Record<string, unknown>).url_prenotazione as string | null ?? null,
     stato: row.stato,
+    // Valorizzato solo sugli eventi individuati dalla procedura di ricerca
+    // automatica: serve a dichiarare pubblicamente la fonte dell'informazione
+    // (trasparenza sui contenuti di origine automatizzata).
+    fonteRicerca: (row as Record<string, unknown>).fonte_ricerca as string | null ?? null,
     inEvidenza: (row as Record<string, unknown>).in_evidenza as boolean ?? false,
     testoArticolo: (row as Record<string, unknown>).testo_articolo as string | null ?? null,
     geoNodo: {
