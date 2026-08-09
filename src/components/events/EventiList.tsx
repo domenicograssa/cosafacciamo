@@ -180,7 +180,15 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale, 
           <h1 className="text-2xl font-bold text-gray-900">
             {titoloIniziale ?? t.list.allEvents}
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          {/*
+            Regione "live": quando l'utente cambia un filtro o digita nella
+            ricerca, la lista si aggiorna senza ricaricare la pagina. Senza
+            questo annuncio, chi usa uno screen reader non ha modo di accorgersi
+            che i risultati sono cambiati (WCAG 2.1 AA, criterio 4.1.3).
+            aria-live="polite" fa leggere il nuovo conteggio appena l'utente
+            smette di digitare, senza interrompere quello che sta ascoltando.
+          */}
+          <p className="text-sm text-gray-500 mt-1" role="status" aria-live="polite" aria-atomic="true">
             {eventiFiltrati.length} {eventiFiltrati.length === 1 ? t.list.eventFound : t.list.eventsFound}
           </p>
         </div>

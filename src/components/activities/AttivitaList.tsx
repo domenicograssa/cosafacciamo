@@ -123,7 +123,9 @@ export default function AttivitaList({ attivita, categorie, comuni, titoloInizia
           <h1 className="text-2xl font-bold text-gray-900">
             {titoloIniziale ?? t.activity.whatToDo}
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          {/* Annuncia agli screen reader il nuovo conteggio quando cambiano i
+              filtri — vedi la nota estesa in EventiList (WCAG 4.1.3). */}
+          <p className="text-sm text-gray-500 mt-1" role="status" aria-live="polite" aria-atomic="true">
             {attivitaFiltrate.length} {attivitaFiltrate.length === 1 ? t.activity.activityFound : t.activity.activitiesFound}
           </p>
         </div>

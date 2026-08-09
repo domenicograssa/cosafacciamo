@@ -72,6 +72,11 @@ export default function DichiarazioneAccessibilita() {
           animazioni e scorrimenti automatici;
         </li>
         <li>
+          annuncio vocale del numero di risultati quando si applicano filtri o
+          si effettua una ricerca, così che chi non vede lo schermo si accorga
+          dell&apos;aggiornamento della lista;
+        </li>
+        <li>
           lingua della pagina dichiarata correttamente (italiano o inglese) sia
           nel codice sia negli header HTTP.
         </li>
@@ -98,10 +103,10 @@ export default function DichiarazioneAccessibilita() {
           un&apos;alternativa integrata: la limitazione è in corso di riesame.
         </li>
         <li>
-          <strong>Aggiornamenti dinamici.</strong> Alcuni risultati di filtro e
-          ricerca si aggiornano senza che il cambiamento venga annunciato
-          vocalmente. L&apos;introduzione degli avvisi sonori per gli screen
-          reader è pianificata.
+          <strong>Contenuti caricati progressivamente.</strong> Nelle liste di
+          eventi con il pulsante «Mostra altri», l&apos;arrivo dei nuovi elementi
+          non viene annunciato vocalmente: il conteggio complessivo è però
+          sempre annunciato.
         </li>
         <li>
           <strong>Mappe e contenuti incorporati.</strong> Eventuali contenuti di
