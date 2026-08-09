@@ -1,13 +1,12 @@
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 import { getEventoBySlug, getEventiCorrelati } from '@/lib/queries/eventi'
 import EventCard from '@/components/events/EventCard'
-import EventImagePlaceholder from '@/components/ui/EventImagePlaceholder'
+import ImmagineEvento from '@/components/ui/ImmagineEvento'
 import ShareButtons from '@/components/events/ShareButtons'
 import { formatData, formatOra, formatPrezzo, eMultiGiorno, eInCorso, formatIntervalloData } from '@/lib/utils'
-import { immagineComune } from '@/data/comuni-immagini'
+import { fotoComunePerEvento } from '@/data/comuni-immagini'
 import { getLang } from '@/lib/i18n/getLang'
 import { strings, nomeCategoria } from '@/lib/i18n/strings'
 
@@ -80,7 +79,11 @@ export default async function DettaglioEvento({ params }: Props) {
   const categoriaIds = evento.categorie.map(c => c.id)
   const correlati = await getEventiCorrelati(evento.id, categoriaIds, 4, lang)
   const prezzo = formatPrezzo(evento.prezzoMin, evento.prezzoMax, evento.gratuito, evento.prezzoTesto, lang)
-  const fotoCitta = immagineComune(evento.geoNodo.slug)
+  const fotoCitta = fotoComunePerEvento(evento.geoNodo.slug, evento.id)
+  const fontiImmagine = [
+    ...(evento.mediaAssetUrl ? [{ url: evento.mediaAssetUrl, alt: evento.mediaAssetAlt ?? evento.titolo }] : []),
+    ...(fotoCitta ? [{ url: fotoCitta.url, alt: fotoCitta.alt }] : []),
+  ]
   const paginaUrl = lang === 'en' ? `${SITE_URL}/en/eventi/${slug}` : `${SITE_URL}/eventi/${slug}`
 
   // Eventi/rassegne "multi-giorno" (es. cartelloni stagionali) non hanno un
@@ -175,17 +178,15 @@ export default async function DettaglioEvento({ params }: Props) {
         {/* Colonna principale */}
         <div className="lg:col-span-2 space-y-6">
           <div className="relative aspect-video rounded-2xl overflow-hidden bg-gray-100">
-            {evento.mediaAssetUrl ? (
-              <Image src={evento.mediaAssetUrl} alt={evento.mediaAssetAlt ?? evento.titolo} fill className="object-cover" priority />
-            ) : fotoCitta ? (
-              <Image src={fotoCitta.url} alt={fotoCitta.alt} fill className="object-cover" priority />
-            ) : (
-              <EventImagePlaceholder
-                categoriaSlug={evento.categorie[0]?.slug}
-                categoriaNome={evento.categorie[0] ? nomeCategoria(evento.categorie[0], lang) : undefined}
-                categoriaColore={evento.categorie[0]?.colore}
-              />
-            )}
+            <ImmagineEvento
+              fonti={fontiImmagine}
+              categoriaSlug={evento.categorie[0]?.slug}
+              categoriaNome={evento.categorie[0] ? nomeCategoria(evento.categorie[0], lang) : undefined}
+              categoriaColore={evento.categorie[0]?.colore}
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 66vw"
+              priority
+            />
             <div className="absolute top-4 left-4 flex gap-2">
               {evento.categorie.map(cat => (
                 <span key={cat.id} className="text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide" style={{ backgroundColor: cat.colore }}>

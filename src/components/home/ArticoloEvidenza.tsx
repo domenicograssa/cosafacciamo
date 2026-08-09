@@ -1,11 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { Evento } from '@/types'
 import { formatData, eMultiGiorno, eInCorso, formatIntervalloData } from '@/lib/utils'
-import EventImagePlaceholder from '@/components/ui/EventImagePlaceholder'
-import { immagineComune } from '@/data/comuni-immagini'
+import ImmagineEvento from '@/components/ui/ImmagineEvento'
+import { fotoComunePerEvento } from '@/data/comuni-immagini'
 import { useLang } from '@/lib/i18n/LanguageContext'
 import { nomeCategoria } from '@/lib/i18n/strings'
 
@@ -21,8 +20,11 @@ export default function ArticoloEvidenza({ evento }: Props) {
   const { t, lang } = useLang()
   const categoria = evento.categorie[0]
 
-  const immagineAutorizzata = evento.mediaAssetUrl ?? null
-  const fotoCitta = immagineComune(evento.geoNodo.slug)
+  const fotoCitta = fotoComunePerEvento(evento.geoNodo.slug, evento.id)
+  const fontiImmagine = [
+    ...(evento.mediaAssetUrl ? [{ url: evento.mediaAssetUrl, alt: evento.mediaAssetAlt ?? evento.titolo }] : []),
+    ...(fotoCitta ? [{ url: fotoCitta.url, alt: fotoCitta.alt }] : []),
+  ]
 
   const testo = (evento.testoArticolo?.trim() || evento.descrizione?.trim() || '')
 
@@ -40,27 +42,14 @@ export default function ArticoloEvidenza({ evento }: Props) {
       className="group flex flex-col rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-lg transition-shadow border border-gray-100"
     >
       <div className="relative aspect-[16/10] bg-gray-100 overflow-hidden">
-        {immagineAutorizzata ? (
-          <Image
-            src={immagineAutorizzata}
-            alt={evento.mediaAssetAlt ?? evento.titolo}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : fotoCitta ? (
-          <Image
-            src={fotoCitta.url}
-            alt={fotoCitta.alt}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <EventImagePlaceholder
-            categoriaSlug={categoria?.slug}
-            categoriaNome={categoria ? nomeCategoria(categoria, lang) : undefined}
-            categoriaColore={categoria?.colore}
-          />
-        )}
+        <ImmagineEvento
+          fonti={fontiImmagine}
+          categoriaSlug={categoria?.slug}
+          categoriaNome={categoria ? nomeCategoria(categoria, lang) : undefined}
+          categoriaColore={categoria?.colore}
+          className="object-cover group-hover:scale-105 transition-transform duration-300"
+          sizes="(max-width: 768px) 100vw, 33vw"
+        />
 
         {categoria && (
           <span

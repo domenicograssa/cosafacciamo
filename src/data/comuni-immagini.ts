@@ -1,63 +1,70 @@
-// Immagini rappresentative dei comuni — usate come hero nelle pagine /localita/[slug]
-// e come fallback eventi.
-// Licenze: Unsplash (libero uso commerciale) e Wikimedia Commons (CC BY / CC BY-SA).
+// Foto rappresentative dei comuni — usate come hero nelle pagine /localita/[slug]
+// e come fallback per gli eventi che non hanno una locandina propria.
+//
+// Licenze: Unsplash (libero uso commerciale) e Wikimedia Commons (CC BY / CC BY-SA /
+// pubblico dominio). Per le foto Wikimedia il credito rimanda SEMPRE alla pagina del
+// file su Commons, dove sono indicati autore e licenza esatti: è la forma di
+// attribuzione richiesta dalle licenze CC per il riuso online.
+//
+// REGOLA DI SELEZIONE (importante, 9/8/2026): si accettano solo file il cui nome
+// contiene il nome del comune (o di una sua frazione/monumento inequivocabile).
+// Motivo: cercando "Paceco" i motori restituiscono file di "Pachino", che è un
+// comune diverso in un'altra provincia — senza questa regola si finisce per
+// mostrare la foto della città sbagliata, che è esattamente ciò che il portale
+// non deve fare.
 
-export interface ImmagineComune {
+export interface FotoComune {
   url: string
   alt: string
   credito: string
-  /** Pagina della fonte con autore e licenza (per le foto Wikimedia Commons) */
+  /** Pagina della fonte con autore e licenza (obbligatoria per le foto Wikimedia Commons) */
   creditoUrl?: string
 }
 
-/** Array di foto per lo slideshow hero — min 1, idealmente 3–5 */
-export interface SlideComune {
-  url: string
-  alt: string
-  credito: string
-  creditoUrl?: string
+// Alias storici mantenuti per non rompere gli import esistenti
+export type ImmagineComune = FotoComune
+export type SlideComune = FotoComune
+
+/** Costruisce l'URL di un file Wikimedia Commons alla larghezza voluta. */
+function wm(file: string, width = 1400): string {
+  return `https://commons.wikimedia.org/wiki/Special:FilePath/${file}?width=${width}`
 }
 
-export const COMUNE_SLIDES: Record<string, SlideComune[]> = {
-  'marsala': [
-    {
-      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Saline_di_Marsala,_mulini_a_vento.jpg?width=1400',
-      alt: 'Le saline di Marsala con i mulini a vento dello Stagnone',
-      credito: 'Wikimedia Commons, CC BY-SA',
-      creditoUrl: 'https://commons.wikimedia.org/wiki/File:Saline_di_Marsala,_mulini_a_vento.jpg',
-    },
-    {
-      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Stagnone_di_Marsala.jpg?width=1400',
-      alt: 'Lo Stagnone di Marsala al tramonto',
-      credito: 'Wikimedia Commons, CC BY-SA',
-      creditoUrl: 'https://commons.wikimedia.org/wiki/File:Stagnone_di_Marsala.jpg',
-    },
-    {
-      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Marsala_-_Museo_del_Vino.jpg?width=1400',
-      alt: 'Il Museo del Vino Marsala',
-      credito: 'Wikimedia Commons, CC BY-SA',
-      creditoUrl: 'https://commons.wikimedia.org/wiki/File:Marsala_-_Museo_del_Vino.jpg',
-    },
-  ],
+/** Pagina descrittiva del file su Commons (autore + licenza). */
+function wmPagina(file: string): string {
+  return `https://commons.wikimedia.org/wiki/File:${file}`
+}
+
+function commons(file: string, alt: string, width = 1400): FotoComune {
+  return {
+    url: wm(file, width),
+    alt,
+    credito: 'Wikimedia Commons',
+    creditoUrl: wmPagina(file),
+  }
+}
+
+// ─── FONTE DI VERITÀ UNICA ────────────────────────────────────────────────
+// Un array di foto per comune. La prima foto è quella "di riferimento" (usata
+// come copertina nella lista località); le altre servono allo slideshow hero e
+// alla rotazione sulle card evento.
+export const COMUNE_FOTO: Record<string, FotoComune[]> = {
   'trapani': [
-    {
-      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Trapani_-_Torre_di_Ligny.jpg?width=1400',
-      alt: 'La Torre di Ligny a Trapani',
-      credito: 'Wikimedia Commons, CC BY-SA',
-      creditoUrl: 'https://commons.wikimedia.org/wiki/File:Trapani_-_Torre_di_Ligny.jpg',
-    },
-    {
-      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Saline_di_Trapani_e_Paceco.jpg?width=1400',
-      alt: 'Le saline di Trapani e Paceco con i mulini',
-      credito: 'Wikimedia Commons, CC BY-SA',
-      creditoUrl: 'https://commons.wikimedia.org/wiki/File:Saline_di_Trapani_e_Paceco.jpg',
-    },
-    {
-      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Tramonto_sulle_saline_di_Trapani.jpg?width=1400',
-      alt: 'Tramonto sulle saline di Trapani',
-      credito: 'Wikimedia Commons, CC BY-SA',
-      creditoUrl: 'https://commons.wikimedia.org/wiki/File:Tramonto_sulle_saline_di_Trapani.jpg',
-    },
+    commons('Trapani_-_Centro_Storico_-_panoramio.jpg', 'Il centro storico di Trapani'),
+    commons('Porto-Trapani-Sicilia-Italia.jpg', 'Il porto di Trapani'),
+    commons('Saline_di_Trapani_0017.JPG', 'Le saline di Trapani'),
+    commons('Saline_trapani_-_tramonto.JPG', 'Tramonto sulle saline di Trapani'),
+    commons('Saline_di_Nubia_-_Trapani.jpg', 'Le saline di Nubia a Trapani'),
+  ],
+  'marsala': [
+    commons('Porta_Garibaldi,_Marsala_TP,_Sicily,_Italy_-_panoramio.jpg', 'Porta Garibaldi a Marsala'),
+    commons('Saro_di_bartolo_saline_trapani_marsala_01.jpg', 'Le saline tra Trapani e Marsala'),
+    commons('Tramonto_alle_saline_Ettore_Infersa.jpg', 'Tramonto alle saline Ettore Infersa, Marsala'),
+  ],
+  'mazara-del-vallo': [
+    commons('Mazara_del_Vallo_-_Basilica_Cattedrale_del_Santissimo_Salvatore_-_2023-09-10_16-51-15_002.jpg', 'La Basilica Cattedrale del Santissimo Salvatore a Mazara del Vallo'),
+    commons('Mazara_del_Vallo_-_Porto_-_panoramio.jpg', 'Il porto peschereccio di Mazara del Vallo'),
+    commons('Mazara_del_Vallo_(TP)_Il_Duomo_2011_-_panoramio.jpg', 'Il Duomo di Mazara del Vallo'),
   ],
   'castellammare-del-golfo': [
     {
@@ -65,24 +72,13 @@ export const COMUNE_SLIDES: Record<string, SlideComune[]> = {
       alt: 'Il porto di Castellammare del Golfo al tramonto',
       credito: 'Gabriele Merlino / Unsplash',
     },
-    {
-      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Castellammare_del_Golfo_-_porto.jpg?width=1400',
-      alt: 'Castellammare del Golfo — il castello sul porto',
-      credito: 'Wikimedia Commons, CC BY-SA',
-      creditoUrl: 'https://commons.wikimedia.org/wiki/File:Castellammare_del_Golfo_-_porto.jpg',
-    },
+    commons('Castello_Arabo_Normanno_(Castellammare_del_Golfo)_01.jpg', 'Il castello arabo-normanno di Castellammare del Golfo'),
   ],
   'san-vito-lo-capo': [
     {
       url: 'https://images.unsplash.com/photo-1730193488340-0af0fe404306?w=1400&q=80',
       alt: 'La spiaggia di San Vito Lo Capo',
       credito: 'Paul Sebastian Saliba / Unsplash',
-    },
-    {
-      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/San_Vito_Lo_Capo_beach.jpg?width=1400',
-      alt: 'Il mare cristallino di San Vito Lo Capo',
-      credito: 'Wikimedia Commons, CC BY-SA',
-      creditoUrl: 'https://commons.wikimedia.org/wiki/File:San_Vito_Lo_Capo_beach.jpg',
     },
   ],
   'calatafimi-segesta': [
@@ -91,179 +87,99 @@ export const COMUNE_SLIDES: Record<string, SlideComune[]> = {
       alt: 'Il tempio dorico di Segesta',
       credito: 'Antonio Sessa / Unsplash',
     },
-    {
-      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Segesta_theater.jpg?width=1400',
-      alt: 'Il teatro greco di Segesta',
-      credito: 'Wikimedia Commons, CC BY-SA',
-      creditoUrl: 'https://commons.wikimedia.org/wiki/File:Segesta_theater.jpg',
-    },
   ],
   'erice': [
-    {
-      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Castello_di_Venere,_Erice,_Sicilia.jpg?width=1280',
-      alt: 'Il Castello di Venere a Erice',
-      credito: 'Ambra75, CC BY-SA 4.0, via Wikimedia Commons',
-      creditoUrl: 'https://commons.wikimedia.org/wiki/File:Castello_di_Venere,_Erice,_Sicilia.jpg',
-    },
-    {
-      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Erice_-_panorama.jpg?width=1400',
-      alt: 'Panorama di Erice tra le nuvole',
-      credito: 'Wikimedia Commons, CC BY-SA',
-      creditoUrl: 'https://commons.wikimedia.org/wiki/File:Erice_-_panorama.jpg',
-    },
+    commons('Castello_di_Venere,_Erice,_Sicilia.jpg', 'Il Castello di Venere a Erice', 1280),
   ],
   'alcamo': [
-    {
-      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Castello_di_Alcamo_0024.JPG?width=1280',
-      alt: 'Il Castello dei Conti di Modica ad Alcamo',
-      credito: 'Esculapio, CC BY-SA 3.0, via Wikimedia Commons',
-      creditoUrl: 'https://commons.wikimedia.org/wiki/File:Castello_di_Alcamo_0024.JPG',
-    },
+    commons('Castello_di_Alcamo_0024.JPG', 'Il Castello dei Conti di Modica ad Alcamo', 1280),
   ],
   'favignana': [
-    {
-      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Favignana_Cala_Rossa.JPG?width=1280',
-      alt: 'Cala Rossa a Favignana',
-      credito: 'Pizzodaniele, CC BY-SA 3.0, via Wikimedia Commons',
-      creditoUrl: 'https://commons.wikimedia.org/wiki/File:Favignana_Cala_Rossa.JPG',
-    },
-    {
-      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Favignana_-_Stabilimento_Florio.jpg?width=1400',
-      alt: "L'Ex Stabilimento Florio a Favignana",
-      credito: 'Wikimedia Commons, CC BY-SA',
-      creditoUrl: 'https://commons.wikimedia.org/wiki/File:Favignana_-_Stabilimento_Florio.jpg',
-    },
+    commons('Favignana_Cala_Rossa.JPG', 'Cala Rossa a Favignana', 1280),
   ],
   'castelvetrano': [
-    {
-      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Selinunte_Temple_C_aerial_view.jpg?width=1280',
-      alt: 'Veduta aerea del Tempio C di Selinunte',
-      credito: 'Jorre, CC BY 3.0, via Wikimedia Commons',
-      creditoUrl: 'https://commons.wikimedia.org/wiki/File:Selinunte_Temple_C_aerial_view.jpg',
-    },
-  ],
-  'mazara-del-vallo': [
-    {
-      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Mazara_del_Vallo_-_porto.jpg?width=1400',
-      alt: 'Il porto peschereccio di Mazara del Vallo',
-      credito: 'Wikimedia Commons, CC BY-SA',
-      creditoUrl: 'https://commons.wikimedia.org/wiki/File:Mazara_del_Vallo_-_porto.jpg',
-    },
-    {
-      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Mazara_del_Vallo_-_la_Casbah.jpg?width=1400',
-      alt: 'La Casbah di Mazara del Vallo',
-      credito: 'Wikimedia Commons, CC BY-SA',
-      creditoUrl: 'https://commons.wikimedia.org/wiki/File:Mazara_del_Vallo_-_la_Casbah.jpg',
-    },
+    commons('Selinunte_Temple_C_aerial_view.jpg', 'Veduta aerea del Tempio C di Selinunte', 1280),
   ],
   'pantelleria': [
-    {
-      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Dammuso_in_Pantelleria,_Sicily.JPG?width=1280',
-      alt: 'Un dammuso a Pantelleria',
-      credito: 'Michael Leithold, pubblico dominio, via Wikimedia Commons',
-      creditoUrl: 'https://commons.wikimedia.org/wiki/File:Dammuso_in_Pantelleria,_Sicily.JPG',
-    },
-    {
-      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Pantelleria_-_Lago_di_Venere.jpg?width=1400',
-      alt: 'Il Lago di Venere a Pantelleria',
-      credito: 'Wikimedia Commons, CC BY-SA',
-      creditoUrl: 'https://commons.wikimedia.org/wiki/File:Pantelleria_-_Lago_di_Venere.jpg',
-    },
+    commons('Dammuso_in_Pantelleria,_Sicily.JPG', 'Un dammuso a Pantelleria', 1280),
+    commons('Castello_di_Pantelleria.jpeg', 'Il castello di Pantelleria'),
   ],
   'gibellina': [
-    {
-      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Cretto_di_Burri_-_Gibellina.JPG?width=1280',
-      alt: 'Il Cretto di Burri a Gibellina',
-      credito: 'Fabior1984, CC BY-SA 3.0, via Wikimedia Commons',
-      creditoUrl: 'https://commons.wikimedia.org/wiki/File:Cretto_di_Burri_-_Gibellina.JPG',
-    },
+    commons('Cretto_di_Burri_-_Gibellina.JPG', 'Il Cretto di Burri a Gibellina', 1280),
   ],
   'palermo': [
-    {
-      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Il_Teatro_Massimo_di_Palermo.jpg?width=1400',
-      alt: 'Il Teatro Massimo di Palermo',
-      credito: 'Vitoparisi92, CC BY-SA 4.0, via Wikimedia Commons',
-      creditoUrl: 'https://commons.wikimedia.org/wiki/File:Il_Teatro_Massimo_di_Palermo.jpg',
-    },
-    {
-      url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Palermo_Cathedral_BW_2025-04-29_11-57-44.jpg?width=1400',
-      alt: 'La Cattedrale di Palermo',
-      credito: 'Berthold Werner, CC BY-SA 4.0, via Wikimedia Commons',
-      creditoUrl: 'https://commons.wikimedia.org/wiki/File:Palermo_Cathedral_BW_2025-04-29_11-57-44.jpg',
-    },
+    commons('Il_Teatro_Massimo_di_Palermo.jpg', 'Il Teatro Massimo di Palermo'),
+    commons('Palermo_Cathedral_BW_2025-04-29_11-57-44.jpg', 'La Cattedrale di Palermo'),
   ],
+  'salemi': [
+    commons('Castello_di_Salemi_2.jpg', 'Il castello normanno-svevo di Salemi'),
+  ],
+  'custonaci': [
+    commons('Custonaci-pan.jpg', 'Panorama di Custonaci'),
+    commons('Custonaci_-_Santuario_di_Maria_SS._di_Custonaci_-_panoramio_-_Andrea_Albini_(4).jpg', 'Il Santuario di Maria SS. di Custonaci'),
+    commons('Edicola_di_San_Nicola_-_Riserva_naturale_Monte_Cofano,_Custonaci,_Trapani_-_1_Maggio_2023.jpg', 'La riserva naturale di Monte Cofano a Custonaci'),
+  ],
+  'partanna': [
+    commons('Chiesa_madre_Partanna.jpg', 'La Chiesa Madre di Partanna'),
+  ],
+  'campobello-di-mazara': [
+    commons('Rocche-di-Cusa-bjs-1.jpg', 'Le Cave di Cusa a Campobello di Mazara'),
+    commons('Rocche-di-Cusa-bjs-4.jpg', 'I rocchi di colonna delle Cave di Cusa, Campobello di Mazara'),
+  ],
+  'poggioreale': [
+    commons('Ruderi_di_Poggioreale_30.jpg', 'I ruderi di Poggioreale antica'),
+  ],
+  'buseto-palizzolo': [
+    commons('BattagliaBuseto2.JPG', 'Buseto Palizzolo'),
+  ],
+  // ─── Comuni ancora senza foto verificata su Wikimedia Commons ───────────
+  // paceco, petrosino, santa-ninfa, salaparuta, vita, valderice, misiliscemi:
+  // la copertura di Commons per questi centri è quasi nulla (spesso esiste solo
+  // la mappa SVG del comune). Restano sul placeholder colorato per categoria,
+  // che è comunque una resa dignitosa. NON inserire qui foto "somiglianti" di
+  // altri comuni: meglio un placeholder onesto di una foto sbagliata.
 }
 
-export const COMUNE_IMMAGINI: Record<string, ImmagineComune> = {
-  // Wikimedia Commons — CC BY-SA 3.0 — autore: Esculapio
-  'alcamo': {
-    url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Castello_di_Alcamo_0024.JPG?width=1280',
-    alt: 'Il Castello dei Conti di Modica ad Alcamo',
-    credito: 'Esculapio, CC BY-SA 3.0, via Wikimedia Commons',
-    creditoUrl: 'https://commons.wikimedia.org/wiki/File:Castello_di_Alcamo_0024.JPG',
-  },
-  // photo-1756990901059-90f464223f3f — Gabriele Merlino / Unsplash (Castellammare del Golfo)
-  'castellammare-del-golfo': {
-    url: 'https://images.unsplash.com/photo-1756990901059-90f464223f3f?w=1400&q=80',
-    alt: 'Il porto di Castellammare del Golfo al tramonto',
-    credito: 'Gabriele Merlino / Unsplash',
-  },
-  // photo-1730193488340-0af0fe404306 — Paul Sebastian Saliba / Unsplash (San Vito Lo Capo)
-  'san-vito-lo-capo': {
-    url: 'https://images.unsplash.com/photo-1730193488340-0af0fe404306?w=1400&q=80',
-    alt: 'La spiaggia di San Vito Lo Capo',
-    credito: 'Paul Sebastian Saliba / Unsplash',
-  },
-  // photo-1677967062355-b951f29c66e8 — Antonio Sessa / Unsplash (Segesta)
-  'calatafimi-segesta': {
-    url: 'https://images.unsplash.com/photo-1677967062355-b951f29c66e8?w=1400&q=80',
-    alt: 'Il tempio di Segesta',
-    credito: 'Antonio Sessa / Unsplash',
-  },
-  // Wikimedia Commons — CC BY-SA 4.0 — autore: Ambra75
-  'erice': {
-    url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Castello_di_Venere,_Erice,_Sicilia.jpg?width=1280',
-    alt: 'Il Castello di Venere a Erice',
-    credito: 'Ambra75, CC BY-SA 4.0, via Wikimedia Commons',
-    creditoUrl: 'https://commons.wikimedia.org/wiki/File:Castello_di_Venere,_Erice,_Sicilia.jpg',
-  },
-  // Wikimedia Commons — CC BY-SA 3.0 — autore: Fabior1984
-  'gibellina': {
-    url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Cretto_di_Burri_-_Gibellina.JPG?width=1280',
-    alt: 'Il Cretto di Burri a Gibellina',
-    credito: 'Fabior1984, CC BY-SA 3.0, via Wikimedia Commons',
-    creditoUrl: 'https://commons.wikimedia.org/wiki/File:Cretto_di_Burri_-_Gibellina.JPG',
-  },
-  // Wikimedia Commons — CC BY 3.0 — autore: Jorre
-  'castelvetrano': {
-    url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Selinunte_Temple_C_aerial_view.jpg?width=1280',
-    alt: 'Veduta aerea del Tempio C di Selinunte',
-    credito: 'Jorre, CC BY 3.0, via Wikimedia Commons',
-    creditoUrl: 'https://commons.wikimedia.org/wiki/File:Selinunte_Temple_C_aerial_view.jpg',
-  },
-  // Wikimedia Commons — CC BY-SA 3.0 — autore: Pizzodaniele
-  'favignana': {
-    url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Favignana_Cala_Rossa.JPG?width=1280',
-    alt: 'Cala Rossa a Favignana',
-    credito: 'Pizzodaniele, CC BY-SA 3.0, via Wikimedia Commons',
-    creditoUrl: 'https://commons.wikimedia.org/wiki/File:Favignana_Cala_Rossa.JPG',
-  },
-  // Wikimedia Commons — pubblico dominio — autore: Michael Leithold
-  'pantelleria': {
-    url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Dammuso_in_Pantelleria,_Sicily.JPG?width=1280',
-    alt: 'Un dammuso a Pantelleria',
-    credito: 'Michael Leithold, pubblico dominio, via Wikimedia Commons',
-    creditoUrl: 'https://commons.wikimedia.org/wiki/File:Dammuso_in_Pantelleria,_Sicily.JPG',
-  },
-  // Wikimedia Commons — CC BY-SA 4.0 — autore: Vitoparisi92 (Wiki Loves Monuments 2017)
-  'palermo': {
-    url: 'https://commons.wikimedia.org/wiki/Special:FilePath/Il_Teatro_Massimo_di_Palermo.jpg?width=1280',
-    alt: 'Il Teatro Massimo di Palermo',
-    credito: 'Vitoparisi92, CC BY-SA 4.0, via Wikimedia Commons',
-    creditoUrl: 'https://commons.wikimedia.org/wiki/File:Il_Teatro_Massimo_di_Palermo.jpg',
-  },
-}
+// ─── Compatibilità con il codice esistente ────────────────────────────────
+// COMUNE_SLIDES (slideshow hero) e COMUNE_IMMAGINI (foto singola di riferimento)
+// sono ora derivati da COMUNE_FOTO, così non esiste più il rischio — capitato
+// davvero fino all'8/8/2026 — che un comune abbia le slide ma manchi dal
+// fallback eventi (era il caso di Marsala, Trapani e Mazara del Vallo: le loro
+// pagine località mostravano le foto, ma tutti i loro eventi mostravano l'emoji).
+export const COMUNE_SLIDES: Record<string, FotoComune[]> = COMUNE_FOTO
 
-export function immagineComune(slug: string): ImmagineComune | null {
+export const COMUNE_IMMAGINI: Record<string, FotoComune> = Object.fromEntries(
+  Object.entries(COMUNE_FOTO)
+    .filter(([, foto]) => foto.length > 0)
+    .map(([slug, foto]) => [slug, foto[0]])
+)
+
+export function immagineComune(slug: string): FotoComune | null {
   return COMUNE_IMMAGINI[slug] ?? null
+}
+
+export function fotoComune(slug: string): FotoComune[] {
+  return COMUNE_FOTO[slug] ?? []
+}
+
+// Hash stabile e deterministico (djb2) — serve a scegliere sempre la stessa foto
+// per lo stesso evento, sia sul server sia sul client: un Math.random() qui
+// causerebbe un mismatch di hydration e farebbe "saltare" l'immagine al caricamento.
+function hashStabile(s: string): number {
+  let h = 5381
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0
+  return h
+}
+
+/**
+ * Foto della città da usare per un evento specifico. Quando il comune ha più
+ * foto, ne sceglie una in base all'id dell'evento: così due eventi dello stesso
+ * comune non mostrano la stessa identica immagine (prima succedeva sempre, e la
+ * pagina di una località sembrava piena di card fotocopia).
+ */
+export function fotoComunePerEvento(slug: string, seedEvento: string): FotoComune | null {
+  const foto = COMUNE_FOTO[slug]
+  if (!foto || foto.length === 0) return null
+  if (foto.length === 1) return foto[0]
+  return foto[hashStabile(seedEvento) % foto.length]
 }

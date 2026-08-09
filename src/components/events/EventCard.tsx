@@ -1,11 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { Evento } from '@/types'
 import { formatData, formatOra, formatPrezzo, eMultiGiorno, eInCorso, formatIntervalloData } from '@/lib/utils'
-import EventImagePlaceholder from '@/components/ui/EventImagePlaceholder'
-import { immagineComune } from '@/data/comuni-immagini'
+import ImmagineEvento from '@/components/ui/ImmagineEvento'
+import { fotoComunePerEvento } from '@/data/comuni-immagini'
 import { useLang } from '@/lib/i18n/LanguageContext'
 import { nomeCategoria } from '@/lib/i18n/strings'
 
@@ -33,26 +32,28 @@ export default function EventCard({ evento, compact = false, badgeEvidenza }: Ev
     ? formatIntervalloData(evento.dataInizio, evento.dataFine!, lang)
     : `${formatData(evento.dataInizio, undefined, lang)} · ${formatOra(evento.dataInizio, lang)}`
 
-  // Priorità immagine: 1) immagine autorizzata dell'evento, 2) foto della città, 3) placeholder categoria
-  const immagineAutorizzata = evento.mediaAssetUrl ?? null
-  const fotoCitta = immagineComune(evento.geoNodo.slug)
+  // Priorità immagine: 1) locandina dell'evento, 2) foto della città (a rotazione
+  // sull'id evento, così eventi della stessa città non sono fotocopie), 3) placeholder.
+  // Se una fonte non carica si passa da sola alla successiva (vedi ImmagineEvento).
+  const fotoCitta = fotoComunePerEvento(evento.geoNodo.slug, evento.id)
+  const fontiImmagine = [
+    ...(evento.mediaAssetUrl ? [{ url: evento.mediaAssetUrl, alt: evento.mediaAssetAlt ?? evento.titolo }] : []),
+    ...(fotoCitta ? [{ url: fotoCitta.url, alt: fotoCitta.alt }] : []),
+  ]
 
   if (compact) {
     return (
       <Link href={`/eventi/${evento.slug}`} className="flex gap-3 group">
         <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-gray-100">
-          {immagineAutorizzata ? (
-            <Image src={immagineAutorizzata} alt={evento.mediaAssetAlt ?? evento.titolo} fill className="object-cover" />
-          ) : fotoCitta ? (
-            <Image src={fotoCitta.url} alt={fotoCitta.alt} fill className="object-cover" />
-          ) : (
-            <EventImagePlaceholder
-              categoriaSlug={categoria?.slug}
-              categoriaNome={categoria ? nomeCategoria(categoria, lang) : undefined}
-              categoriaColore={categoria?.colore}
-              compact
-            />
-          )}
+          <ImmagineEvento
+            fonti={fontiImmagine}
+            categoriaSlug={categoria?.slug}
+            categoriaNome={categoria ? nomeCategoria(categoria, lang) : undefined}
+            categoriaColore={categoria?.colore}
+            compact
+            className="object-cover"
+            sizes="64px"
+          />
         </div>
         <div className="flex-1 min-w-0">
           <p className={`text-xs font-semibold ${inCorso ? 'text-green-600' : 'text-amber-600'}`}>
@@ -78,27 +79,14 @@ export default function EventCard({ evento, compact = false, badgeEvidenza }: Ev
 
       {/* Immagine o placeholder */}
       <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
-        {immagineAutorizzata ? (
-          <Image
-            src={immagineAutorizzata}
-            alt={evento.mediaAssetAlt ?? evento.titolo}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : fotoCitta ? (
-          <Image
-            src={fotoCitta.url}
-            alt={fotoCitta.alt}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <EventImagePlaceholder
-            categoriaSlug={categoria?.slug}
-            categoriaNome={categoria ? nomeCategoria(categoria, lang) : undefined}
-            categoriaColore={categoria?.colore}
-          />
-        )}
+        <ImmagineEvento
+          fonti={fontiImmagine}
+          categoriaSlug={categoria?.slug}
+          categoriaNome={categoria ? nomeCategoria(categoria, lang) : undefined}
+          categoriaColore={categoria?.colore}
+          className="object-cover group-hover:scale-105 transition-transform duration-300"
+          sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
+        />
 
         {/* Badge categoria */}
         {categoria && (
