@@ -68,7 +68,14 @@ export default async function AppPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="flex items-center gap-4">
-        <Image src="/icon-192.png" alt="moesco" width={72} height={72} className="rounded-2xl shadow-sm" />
+        {/* Il badge del logo è bianco: senza bordo, su card bianca sembrerebbe un buco. */}
+        <Image
+          src="/icon-192.png"
+          alt="moesco"
+          width={72}
+          height={72}
+          className="shrink-0 rounded-2xl border border-gray-200 shadow-sm"
+        />
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900">
             {isEn ? 'moesco on your phone' : 'moesco sul tuo telefono'}
