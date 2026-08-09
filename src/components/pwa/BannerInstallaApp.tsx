@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useLang } from '@/lib/i18n/LanguageContext'
@@ -46,7 +47,12 @@ const TESTI = {
 export default function BannerInstallaApp() {
   const { lang, href } = useLang()
   const t = TESTI[lang]
+  const pathname = usePathname()
   const [visibile, setVisibile] = useState(false)
+
+  // Sulla pagina /app il banner sarebbe ridondante: lì c'è già il riquadro
+  // di installazione, e due inviti sovrapposti danno l'idea di insistenza.
+  const suPaginaApp = pathname === '/app' || pathname === '/en/app'
 
   useEffect(() => {
     const aggiorna = () => setVisibile(bannerDaMostrare())
@@ -57,7 +63,7 @@ export default function BannerInstallaApp() {
     return () => { clearTimeout(timer); annulla() }
   }, [])
 
-  if (!visibile) return null
+  if (!visibile || suPaginaApp) return null
 
   const ios = suIOS()
 
