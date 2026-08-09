@@ -67,6 +67,7 @@ export const strings = {
       organizers: 'Condizioni Organizzatori',
       contact: 'Contatti',
       manageCookies: 'Gestisci preferenze cookie',
+      app: '📱 App per il telefono',
     },
     publish: {
       title: 'Pubblica il tuo evento',
@@ -231,6 +232,7 @@ export const strings = {
       organizers: 'Organizer Terms',
       contact: 'Contact',
       manageCookies: 'Manage cookie preferences',
+      app: '📱 Phone app',
     },
     publish: {
       title: 'Publish your event',

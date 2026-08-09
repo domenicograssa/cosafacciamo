@@ -1,0 +1,48 @@
+{
+  "name": "moesco — eventi in provincia di Trapani",
+  "short_name": "moesco",
+  "description": "Scopri eventi, sagre, concerti ed esperienze in provincia di Trapani e dintorni.",
+  "lang": "it",
+  "dir": "ltr",
+  "start_url": "/?fonte=app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#1B2653",
+  "categories": ["travel", "events", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Eventi di oggi",
+      "short_name": "Eventi",
+      "url": "/eventi?fonte=app",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Cosa fare",
+      "short_name": "Cosa fare",
+      "url": "/cosa-fare?fonte=app",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Nunito } from 'next/font/google'
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
@@ -7,6 +7,7 @@ import Analytics from "@/components/Analytics";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import FooterClient from "@/components/layout/FooterClient";
 import { getLang } from "@/lib/i18n/getLang";
+import RegistraServiceWorker from "@/components/pwa/RegistraServiceWorker";
 
 const nunito = Nunito({
   subsets: ['latin'],
@@ -54,7 +55,26 @@ export async function generateMetadata(): Promise<Metadata> {
     other: {
       google: 'notranslate',
     },
+    // ─── App installabile su smartphone e tablet (PWA) ──────────────────
+    manifest: '/manifest.webmanifest',
+    appleWebApp: {
+      capable: true,
+      title: 'moesco',
+      statusBarStyle: 'default',
+    },
+    icons: {
+      icon: [
+        { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+        { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+      ],
+      apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+    },
   }
+}
+
+// Colore della barra di sistema quando il sito gira come app installata.
+export const viewport: Viewport = {
+  themeColor: '#1B2653',
 }
 
 export default async function RootLayout({
@@ -73,6 +93,7 @@ export default async function RootLayout({
           <FooterClient />
           <CookieBanner />
           <Analytics />
+          <RegistraServiceWorker />
         </LanguageProvider>
       </body>
     </html>

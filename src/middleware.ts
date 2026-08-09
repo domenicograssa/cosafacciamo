@@ -52,7 +52,7 @@ function isAdmin(email: string | undefined): boolean {
 // La lingua scelta viene passata ai Server Component tramite un header di
 // richiesta interno (LANG_HEADER), non tramite cookie.
 const PREFISSI_ESCLUSI_DA_I18N = ['/admin', '/dashboard', '/accedi', '/api', '/_next']
-const ESTENSIONI_STATICHE = /\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|txt|xml|json|woff|woff2|ttf)$/i
+const ESTENSIONI_STATICHE = /\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|txt|xml|json|webmanifest|woff|woff2|ttf)$/i
 
 function gestisciLingua(request: NextRequest): NextResponse | null {
   const { pathname } = request.nextUrl

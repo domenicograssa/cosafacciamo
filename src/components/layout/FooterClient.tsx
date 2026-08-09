@@ -19,6 +19,7 @@ export default function FooterClient() {
             <a href={href("/termini-e-condizioni")}     className="hover:text-amber-600 transition-colors">{t.footer.terms}</a>
             <a href={href("/condizioni-organizzatori")} className="hover:text-amber-600 transition-colors">{t.footer.organizers}</a>
             <a href={href("/contatti")}                 className="hover:text-amber-600 transition-colors">{t.footer.contact}</a>
+            <a href={href("/app")}                      className="font-semibold text-amber-600 hover:text-amber-700 transition-colors">{t.footer.app}</a>
             <RiapriCookieBanner label={t.footer.manageCookies} />
           </nav>
         </div>
