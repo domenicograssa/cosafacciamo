@@ -8,6 +8,7 @@ import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import FooterClient from "@/components/layout/FooterClient";
 import { getLang } from "@/lib/i18n/getLang";
 import RegistraServiceWorker from "@/components/pwa/RegistraServiceWorker";
+import BannerInstallaApp from "@/components/pwa/BannerInstallaApp";
 
 const nunito = Nunito({
   subsets: ['latin'],
@@ -94,6 +95,7 @@ export default async function RootLayout({
           <CookieBanner />
           <Analytics />
           <RegistraServiceWorker />
+          <BannerInstallaApp />
         </LanguageProvider>
       </body>
     </html>

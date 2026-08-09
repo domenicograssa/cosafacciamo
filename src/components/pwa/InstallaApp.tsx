@@ -1,90 +1,127 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { useLang } from '@/lib/i18n/LanguageContext'
-
-// Evento non standard (solo Chromium) che il browser emette quando il sito è
-// installabile: intercettandolo possiamo mostrare un pulsante nostro invece di
-// lasciare l'installazione nascosta nel menu del browser.
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
-}
+import {
+  iscriviti,
+  promptDisponibile,
+  inModalitaApp,
+  suIOS,
+  installa,
+  invitoDisattivato,
+  riattivaInvito,
+} from '@/lib/pwa/installazione'
 
 const TESTI = {
   it: {
     titolo: 'Installa moesco sul telefono',
     sottotitolo: 'Aggiungi il portale alla schermata home: si apre a schermo intero, come un’app.',
     installa: 'Installa app',
-    giaInstallata: 'App già installata su questo dispositivo ✓',
-    istruzioniIos: 'Su iPhone e iPad: tocca il pulsante Condividi in basso, poi «Aggiungi a Home».',
-    istruzioniAltro: 'Apri questa pagina dal browser del telefono per installare l’app.',
+    installaIos: 'Come installarla su iPhone',
+    giaInstallata: '✓ App già installata su questo dispositivo',
+    apriDaTelefono:
+      'Stai usando un computer: l’installazione ha senso su telefono o tablet. Apri www.moesco.it/app dal browser del dispositivo per installarla.',
+    istruzioniIos:
+      'Tocca il pulsante Condividi (il quadrato con la freccia verso l’alto) in fondo allo schermo, scorri e scegli «Aggiungi a Home», poi conferma con «Aggiungi».',
+    nonRichiesto: 'Il tuo browser non offre l’installazione automatica: puoi comunque aggiungere il sito alla schermata home dal menu del browser.',
+    invitoSpento: 'Hai scelto di non ricevere più l’invito a installare l’app.',
+    riattiva: 'Mostra di nuovo l’invito',
   },
   en: {
     titolo: 'Install moesco on your phone',
     sottotitolo: 'Add the portal to your home screen: it opens full screen, like an app.',
     installa: 'Install app',
-    giaInstallata: 'App already installed on this device ✓',
-    istruzioniIos: 'On iPhone and iPad: tap the Share button, then “Add to Home Screen”.',
-    istruzioniAltro: 'Open this page from your phone’s browser to install the app.',
+    installaIos: 'How to install it on iPhone',
+    giaInstallata: '✓ App already installed on this device',
+    apriDaTelefono:
+      'You are on a computer: installing makes sense on a phone or tablet. Open www.moesco.it/app from your device browser to install it.',
+    istruzioniIos:
+      'Tap the Share button (the square with an arrow pointing up) at the bottom of the screen, scroll and choose “Add to Home Screen”, then confirm with “Add”.',
+    nonRichiesto: 'Your browser does not offer automatic installation, but you can still add the site to your home screen from the browser menu.',
+    invitoSpento: 'You chose not to see the install invitation any more.',
+    riattiva: 'Show the invitation again',
   },
+}
+
+// Si sottoscrive al modulo condiviso: così il componente reagisce anche se
+// l'evento beforeinstallprompt è arrivato PRIMA che venisse montato.
+function usaStatoInstallazione() {
+  return useSyncExternalStore(
+    iscriviti,
+    () => `${promptDisponibile()}|${inModalitaApp()}|${invitoDisattivato()}`,
+    () => 'false|false|false' // valore lato server: nessun accesso a window
+  )
 }
 
 export default function InstallaApp() {
   const { lang } = useLang()
   const t = TESTI[lang]
+  usaStatoInstallazione()
 
-  const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null)
-  const [installata, setInstallata] = useState(false)
-  const [iOS, setIOS] = useState(false)
+  // Evita il mismatch di hydration: al primo render lato client mostriamo lo
+  // stesso markup del server, poi rileggiamo lo stato reale del dispositivo.
+  const [montato, setMontato] = useState(false)
+  useEffect(() => setMontato(true), [])
 
-  useEffect(() => {
-    // display-mode: standalone significa che stiamo già girando come app.
-    if (window.matchMedia('(display-mode: standalone)').matches) setInstallata(true)
+  const [mostraIstruzioni, setMostraIstruzioni] = useState(false)
 
-    setIOS(/iphone|ipad|ipod/i.test(navigator.userAgent))
-
-    const onPrompt = (e: Event) => {
-      // Va bloccato il mini-banner automatico di Chrome, altrimenti compare
-      // due volte (il suo e il nostro).
-      e.preventDefault()
-      setPrompt(e as BeforeInstallPromptEvent)
-    }
-    const onInstallata = () => { setInstallata(true); setPrompt(null) }
-
-    window.addEventListener('beforeinstallprompt', onPrompt)
-    window.addEventListener('appinstalled', onInstallata)
-    return () => {
-      window.removeEventListener('beforeinstallprompt', onPrompt)
-      window.removeEventListener('appinstalled', onInstallata)
-    }
-  }, [])
-
-  if (installata) {
-    return <p className="text-sm font-semibold text-green-700">{t.giaInstallata}</p>
+  if (!montato) {
+    return (
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h2 className="text-lg font-bold text-gray-900">{t.titolo}</h2>
+        <p className="mt-1 text-sm text-gray-600">{t.sottotitolo}</p>
+      </div>
+    )
   }
+
+  if (inModalitaApp()) {
+    return (
+      <div className="rounded-2xl border border-green-200 bg-green-50 p-5">
+        <p className="font-semibold text-green-800">{t.giaInstallata}</p>
+      </div>
+    )
+  }
+
+  const nativo = promptDisponibile()
+  const ios = suIOS()
+  const desktop = !ios && !/android|mobile|tablet/i.test(navigator.userAgent)
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
       <h2 className="text-lg font-bold text-gray-900">{t.titolo}</h2>
       <p className="mt-1 text-sm text-gray-600">{t.sottotitolo}</p>
 
-      {prompt ? (
-        <button
-          onClick={async () => {
-            await prompt.prompt()
-            const scelta = await prompt.userChoice
-            if (scelta.outcome === 'accepted') setInstallata(true)
-            setPrompt(null)
-          }}
-          className="mt-4 rounded-full bg-amber-400 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-amber-500"
-        >
-          {t.installa}
-        </button>
-      ) : (
-        // Safari/iOS non espone beforeinstallprompt: lì l'unica via è spiegare
-        // il gesto manuale, altrimenti l'utente iPhone resta senza istruzioni.
-        <p className="mt-4 text-sm text-gray-500">{iOS ? t.istruzioniIos : t.istruzioniAltro}</p>
+      {/* Il pulsante c'è SEMPRE. Se il browser offre l'installazione nativa la
+          lancia; altrimenti apre le istruzioni manuali. Prima il pulsante
+          compariva solo col prompt nativo disponibile e su molti dispositivi
+          non si vedeva affatto. */}
+      <button
+        onClick={async () => {
+          if (nativo) {
+            const esito = await installa()
+            if (esito === null) setMostraIstruzioni(true)
+          } else {
+            setMostraIstruzioni((v) => !v)
+          }
+        }}
+        className="mt-4 rounded-full bg-amber-400 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-amber-500"
+      >
+        {nativo ? t.installa : ios ? t.installaIos : t.installa}
+      </button>
+
+      {mostraIstruzioni && !nativo && (
+        <p className="mt-3 rounded-xl bg-amber-50 p-3 text-sm text-gray-700">
+          {ios ? t.istruzioniIos : desktop ? t.apriDaTelefono : t.nonRichiesto}
+        </p>
+      )}
+
+      {invitoDisattivato() && (
+        <p className="mt-4 border-t border-gray-100 pt-3 text-xs text-gray-500">
+          {t.invitoSpento}{' '}
+          <button onClick={riattivaInvito} className="font-semibold text-amber-600 underline hover:text-amber-700">
+            {t.riattiva}
+          </button>
+        </p>
       )}
     </div>
   )
