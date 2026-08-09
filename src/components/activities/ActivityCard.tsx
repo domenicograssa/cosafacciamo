@@ -24,12 +24,12 @@ interface ActivityCardProps {
 }
 
 export default function ActivityCard({ attivita, compact = false }: ActivityCardProps) {
-  const { t, lang } = useLang()
+  const { t, lang, href } = useLang()
   const categoria = attivita.categorie[0]
 
   if (compact) {
     return (
-      <Link href={`/cosa-fare/${attivita.slug}`} className="flex gap-3 group">
+      <Link href={href(`/cosa-fare/${attivita.slug}`)} className="flex gap-3 group">
         <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-gray-100">
           {attivita.immagineCopertura ? (
             <Image src={attivita.immagineCopertura} alt={attivita.titolo} fill className="object-cover" />
@@ -59,7 +59,7 @@ export default function ActivityCard({ attivita, compact = false }: ActivityCard
 
   return (
     <Link
-      href={`/cosa-fare/${attivita.slug}`}
+      href={href(`/cosa-fare/${attivita.slug}`)}
       className="group flex flex-col rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow border border-gray-100"
     >
       {/* Immagine */}

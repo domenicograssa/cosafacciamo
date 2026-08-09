@@ -17,7 +17,7 @@ interface Props {
 // la descrizione completa dell'evento) — usata nella sezione "In primo piano"
 // della homepage.
 export default function ArticoloEvidenza({ evento }: Props) {
-  const { t, lang } = useLang()
+  const { t, lang, href } = useLang()
   const categoria = evento.categorie[0]
 
   const fotoCitta = fotoComunePerEvento(evento.geoNodo.slug, evento.id)
@@ -38,7 +38,7 @@ export default function ArticoloEvidenza({ evento }: Props) {
 
   return (
     <Link
-      href={`/eventi/${evento.slug}`}
+      href={href(`/eventi/${evento.slug}`)}
       className="group flex flex-col rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-lg transition-shadow border border-gray-100"
     >
       <div className="relative aspect-[16/10] bg-gray-100 overflow-hidden">

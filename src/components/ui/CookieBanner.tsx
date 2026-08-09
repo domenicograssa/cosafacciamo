@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useLang } from '@/lib/i18n/LanguageContext'
 
 const STORAGE_KEY = 'moesco_cookie_consent'
 
@@ -29,6 +30,7 @@ function salvaConsenso(analitici: boolean) {
 }
 
 export default function CookieBanner() {
+  const { href } = useLang()
   const [visibile, setVisibile] = useState(false)
   const [mostraDettagli, setMostraDettagli] = useState(false)
   const [analitici, setAnalitici] = useState(false)
@@ -75,11 +77,11 @@ export default function CookieBanner() {
               <p className="text-xs text-gray-600 leading-relaxed">
                 Usiamo cookie tecnici (necessari al funzionamento del sito) e, solo con il tuo consenso, cookie analitici per migliorare il servizio.
                 Leggi la nostra{' '}
-                <Link href="/cookie-policy" className="text-amber-600 underline hover:text-amber-700">
+                <Link href={href("/cookie-policy")} className="text-amber-600 underline hover:text-amber-700">
                   Cookie Policy
                 </Link>{' '}
                 e la{' '}
-                <Link href="/privacy-policy" className="text-amber-600 underline hover:text-amber-700">
+                <Link href={href("/privacy-policy")} className="text-amber-600 underline hover:text-amber-700">
                   Privacy Policy
                 </Link>.
               </p>

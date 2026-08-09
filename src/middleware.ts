@@ -1,13 +1,10 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-// v2: rinominato da 'moesco_lang' per invalidare i cookie "en" residui
-// impostati prima della fix "italiano sempre di default" (vedi sotto) — senza
-// il bump di versione, chi aveva già il cookie vecchio a "en" (es. da un
-// browser in-app tipo Facebook/Instagram) sarebbe rimasto bloccato in inglese
-// per un anno, nonostante il fix.
-const LANG_COOKIE = 'moesco_lang_v2'
-const UN_ANNO = 60 * 60 * 24 * 365
+// Header interno con cui il middleware comunica ai Server Component quale
+// lingua servire (vedi src/lib/i18n/getLang.ts). NON è un cookie: vedi la nota
+// architetturale in gestisciLingua().
+import { LANG_HEADER } from '@/lib/i18n/lang-header'
 
 function buildSupabase(request: NextRequest, response: NextResponse) {
   return createServerClient(
@@ -34,19 +31,26 @@ function isAdmin(email: string | undefined): boolean {
 }
 
 // ─── Localizzazione (IT/EN) ──────────────────────────────────────────────
-// Pattern "rewrite + cookie" (senza cartella [locale] in app/): /en/* viene
-// riscritto internamente sulla stessa pagina italiana (stessi file, stesso
-// slug), con un cookie che dice ai Server Component quale lingua servire
-// (vedi src/lib/i18n/getLang.ts).
+// REGOLA UNICA E DEFINITIVA (9/8/2026): la lingua sta SOLO nell'indirizzo.
+//   /qualcosa     → sempre italiano
+//   /en/qualcosa  → sempre inglese
+// Nessun cookie, nessun redirect automatico, nessun auto-detect da
+// Accept-Language o geo-IP. Un indirizzo restituisce sempre la stessa lingua,
+// per chiunque, sempre.
 //
-// Italiano è SEMPRE la lingua di default alla prima visita (nessun cookie):
-// niente auto-detect basato su Accept-Language/geo IP. In passato la
-// detection mandava su /en visitatori italiani veri (header del browser non
-// affidabili, IP geolocalizzati male, tool automatizzati senza header
-// coerenti) e il cookie impostato su "en" restava fisso per un anno,
-// rompendo la navigazione in italiano finché non si passava manualmente
-// dallo switch in navbar. L'inglese resta disponibile solo tramite quello
-// switch manuale, mai come default automatico.
+// PERCHÉ (storia del bug, da non ripetere): prima la lingua era in un cookie
+// di durata annuale e il middleware reindirizzava a forza. Bastava cliccare
+// una volta lo switch EN per restare agganciati all'inglese su TUTTO il sito
+// per un anno — anche riaprendo il sito da zero, anche aprendo link italiani.
+// Il sintomo tornava "ciclicamente" e l'unico rimedio applicato era rinominare
+// il cookie (moesco_lang → moesco_lang_v2) per sganciare gli utenti: un
+// cerotto da riapplicare ogni volta. Inoltre, con la lingua in un cookie e non
+// nell'URL, l'indirizzo non identifica più univocamente il contenuto: qualsiasi
+// livello di cache (CDN, ISR, browser, anteprime social) può servire la lingua
+// sbagliata. Togliendo il cookie il problema sparisce alla radice.
+//
+// La lingua scelta viene passata ai Server Component tramite un header di
+// richiesta interno (LANG_HEADER), non tramite cookie.
 const PREFISSI_ESCLUSI_DA_I18N = ['/admin', '/dashboard', '/accedi', '/api', '/_next']
 const ESTENSIONI_STATICHE = /\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|txt|xml|json|woff|woff2|ttf)$/i
 
@@ -62,34 +66,23 @@ function gestisciLingua(request: NextRequest): NextResponse | null {
   }
 
   const isEnPath = pathname === '/en' || pathname.startsWith('/en/')
-  const cookieLang = request.cookies.get(LANG_COOKIE)?.value
-
-  if (isEnPath) {
-    const nuovoPath = pathname.replace(/^\/en/, '') || '/'
-    const rewriteUrl = request.nextUrl.clone()
-    rewriteUrl.pathname = nuovoPath
-    const res = NextResponse.rewrite(rewriteUrl)
-    if (cookieLang !== 'en') res.cookies.set(LANG_COOKIE, 'en', { path: '/', maxAge: UN_ANNO })
-    return res
+  if (!isEnPath) {
+    // Percorso italiano: nessun redirect, nessun cookie. Prosegue il middleware
+    // (auth ecc.) e i Server Component vedranno l'italiano di default.
+    return null
   }
 
-  // Percorso "italiano" (senza prefisso /en): se l'utente ha già scelto EN in
-  // precedenza (cookie), portalo sulla versione /en dello stesso percorso.
-  if (cookieLang === 'en') {
-    const redirectUrl = request.nextUrl.clone()
-    redirectUrl.pathname = '/en' + pathname
-    return NextResponse.redirect(redirectUrl)
-  }
+  // /en/* → viene servito dagli stessi file di pagina, con l'header di lingua.
+  const nuovoPath = pathname.replace(/^\/en/, '') || '/'
+  const rewriteUrl = request.nextUrl.clone()
+  rewriteUrl.pathname = nuovoPath
 
-  if (!cookieLang) {
-    // Nessuna detection: italiano di default, sempre. Fissiamo il cookie per
-    // non ripetere la logica ad ogni richiesta.
-    const res = NextResponse.next()
-    res.cookies.set(LANG_COOKIE, 'it', { path: '/', maxAge: UN_ANNO })
-    return res
-  }
+  const headersRichiesta = new Headers(request.headers)
+  headersRichiesta.set(LANG_HEADER, 'en')
 
-  return null
+  const res = NextResponse.rewrite(rewriteUrl, { request: { headers: headersRichiesta } })
+  res.headers.set('Content-Language', 'en')
+  return res
 }
 
 export async function middleware(request: NextRequest) {
@@ -99,6 +92,11 @@ export async function middleware(request: NextRequest) {
   if (rispostaLingua) return rispostaLingua
 
   const response = NextResponse.next()
+  // Percorso senza prefisso /en → italiano, dichiarato esplicitamente a livello
+  // HTTP (prima next.config.ts marcava "it" TUTTE le pagine, comprese quelle
+  // /en: era uno dei motivi per cui i browser in-app proponevano di tradurre
+  // le pagine inglesi).
+  response.headers.set('Content-Language', 'it')
 
   // Pagine admin pubbliche (non richiedono login)
   const adminPubbliche = ['/admin/login', '/admin/recupera-password', '/admin/nuova-password']

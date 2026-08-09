@@ -49,7 +49,7 @@ interface Props {
 }
 
 export default function HomepageClient({ eventiOggi, categorie, comuni, articoliInEvidenza }: Props) {
-  const { t, lang } = useLang()
+  const { t, lang, href } = useLang()
   const [slideIdx, setSlideIdx] = useState(0)
 
   useEffect(() => {
@@ -125,7 +125,7 @@ export default function HomepageClient({ eventiOggi, categorie, comuni, articoli
             {comuni.map(comune => (
               <Link
                 key={comune.id}
-                href={`/localita/${comune.slug}`}
+                href={href(`/localita/${comune.slug}`)}
                 className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors"
               >
                 <span>📍</span>
@@ -144,7 +144,7 @@ export default function HomepageClient({ eventiOggi, categorie, comuni, articoli
               <CategoryChip
                 key={cat.id}
                 categoria={cat}
-                href={`${lang === 'en' ? '/en' : ''}/eventi?categoria=${cat.slug}`}
+                href={href(`/eventi?categoria=${cat.slug}`)}
                 lang={lang}
               />
             ))}
@@ -173,7 +173,7 @@ export default function HomepageClient({ eventiOggi, categorie, comuni, articoli
             <h2 className="text-xl font-bold text-gray-900">
               {t.home.upcoming}
             </h2>
-            <Link href="/eventi" className="flex items-center gap-1.5 text-sm text-amber-600 font-semibold hover:underline">
+            <Link href={href("/eventi")} className="flex items-center gap-1.5 text-sm text-amber-600 font-semibold hover:underline">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
@@ -188,7 +188,7 @@ export default function HomepageClient({ eventiOggi, categorie, comuni, articoli
             <div className="py-12 text-center text-gray-400">
               <p className="text-4xl mb-3">📭</p>
               <p className="text-sm">{t.home.noEvents}</p>
-              <Link href="/eventi" className="mt-3 inline-block text-sm text-amber-600 font-semibold hover:underline">
+              <Link href={href("/eventi")} className="mt-3 inline-block text-sm text-amber-600 font-semibold hover:underline">
                 {t.home.cta}
               </Link>
             </div>
@@ -207,7 +207,7 @@ export default function HomepageClient({ eventiOggi, categorie, comuni, articoli
           <div>
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-xl font-bold text-gray-900">{t.event.free}</h2>
-              <Link href="/eventi?gratuiti=true" className="text-sm text-amber-600 font-semibold hover:underline">{t.home.seeAll}</Link>
+              <Link href={href("/eventi?gratuiti=true")} className="text-sm text-amber-600 font-semibold hover:underline">{t.home.seeAll}</Link>
             </div>
             {gratuiti.length > 0 ? (
               <div className="space-y-4">

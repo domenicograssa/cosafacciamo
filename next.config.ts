@@ -22,19 +22,11 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  async headers() {
-    return [
-      {
-        // Segnale esplicito di lingua a livello HTTP (oltre a <html lang>,
-        // notranslate e cookie moesco_lang) per i webview/in-app browser che
-        // ignorano i meta tag ma leggono l'header di risposta.
-        source: '/:path*',
-        headers: [
-          { key: 'Content-Language', value: 'it' },
-        ],
-      },
-    ];
-  },
+  // NB: l'header Content-Language NON si imposta qui. Fino al 9/8/2026 questo
+  // blocco marcava 'it' TUTTE le pagine, comprese quelle /en — dichiarando
+  // quindi come italiane anche le pagine inglesi, il che spingeva i browser
+  // in-app a proporne la traduzione automatica. Ora lo imposta il middleware
+  // con il valore giusto per ciascuna lingua (vedi src/middleware.ts).
   images: {
     remotePatterns: [
       {

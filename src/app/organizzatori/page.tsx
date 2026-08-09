@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { getLang } from '@/lib/i18n/getLang'
+import { localizzaPath } from '@/lib/i18n/lang-header'
 
 export const metadata = {
   title: 'Per organizzatori — moesco',
@@ -28,7 +30,8 @@ const PASSI = [
   },
 ]
 
-export default function OrganizzatoriPage() {
+export default async function OrganizzatoriPage() {
+  const lang = await getLang()
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
@@ -52,7 +55,7 @@ export default function OrganizzatoriPage() {
         <h2 className="text-xl font-bold text-gray-900 text-center">Cosa vuoi pubblicare?</h2>
         <div className="mt-6 grid sm:grid-cols-2 gap-5">
           <Link
-            href="/pubblica"
+            href={localizzaPath("/pubblica", lang)}
             className="group bg-white rounded-2xl border-2 border-gray-200 hover:border-amber-400 shadow-sm p-6 text-center transition-colors"
           >
             <span className="text-4xl">🎉</span>
@@ -65,7 +68,7 @@ export default function OrganizzatoriPage() {
             </span>
           </Link>
           <Link
-            href="/pubblica?tipo=esperienza"
+            href={localizzaPath("/pubblica?tipo=esperienza", lang)}
             className="group bg-white rounded-2xl border-2 border-gray-200 hover:border-amber-400 shadow-sm p-6 text-center transition-colors"
           >
             <span className="text-4xl">🤿</span>
@@ -79,7 +82,7 @@ export default function OrganizzatoriPage() {
           </Link>
         </div>
         <p className="text-center mt-4">
-          <Link href="/condizioni-organizzatori" className="text-sm text-gray-500 underline hover:text-gray-700">
+          <Link href={localizzaPath("/condizioni-organizzatori", lang)} className="text-sm text-gray-500 underline hover:text-gray-700">
             Leggi le condizioni per gli organizzatori
           </Link>
         </p>
@@ -136,13 +139,13 @@ export default function OrganizzatoriPage() {
         <p className="text-gray-300 mt-2">Bastano pochi minuti. Il tuo evento o la tua attività sarà online entro 24 ore.</p>
         <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
           <Link
-            href="/pubblica"
+            href={localizzaPath("/pubblica", lang)}
             className="bg-amber-400 hover:bg-amber-500 text-white font-bold px-8 py-3.5 rounded-xl transition-colors"
           >
             Pubblica un evento →
           </Link>
           <Link
-            href="/pubblica?tipo=esperienza"
+            href={localizzaPath("/pubblica?tipo=esperienza", lang)}
             className="border-2 border-amber-400 text-amber-400 hover:bg-amber-400 hover:text-white font-bold px-8 py-3.5 rounded-xl transition-colors"
           >
             Pubblica un&apos;attività →

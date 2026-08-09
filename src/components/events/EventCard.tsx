@@ -16,7 +16,7 @@ interface EventCardProps {
 }
 
 export default function EventCard({ evento, compact = false, badgeEvidenza }: EventCardProps) {
-  const { t, lang } = useLang()
+  const { t, lang, href } = useLang()
   const prezzo = formatPrezzo(evento.prezzoMin, evento.prezzoMax, evento.gratuito, evento.prezzoTesto, lang)
   const categoria = evento.categorie[0]
 
@@ -43,7 +43,7 @@ export default function EventCard({ evento, compact = false, badgeEvidenza }: Ev
 
   if (compact) {
     return (
-      <Link href={`/eventi/${evento.slug}`} className="flex gap-3 group">
+      <Link href={href(`/eventi/${evento.slug}`)} className="flex gap-3 group">
         <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-gray-100">
           <ImmagineEvento
             fonti={fontiImmagine}
@@ -75,7 +75,7 @@ export default function EventCard({ evento, compact = false, badgeEvidenza }: Ev
   }
 
   return (
-    <Link href={`/eventi/${evento.slug}`} className="group flex flex-col rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow border border-gray-100">
+    <Link href={href(`/eventi/${evento.slug}`)} className="group flex flex-col rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow border border-gray-100">
 
       {/* Immagine o placeholder */}
       <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">

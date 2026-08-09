@@ -4,7 +4,7 @@ import { useLang } from '@/lib/i18n/LanguageContext'
 import { RiapriCookieBanner } from '@/components/ui/CookieBanner'
 
 export default function FooterClient() {
-  const { t } = useLang()
+  const { t, href } = useLang()
 
   return (
     <footer className="bg-white border-t border-gray-100 py-10 text-sm text-gray-500">
@@ -14,11 +14,11 @@ export default function FooterClient() {
             <span className="text-amber-500">moesco</span> — {t.footer.tagline}
           </p>
           <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2">
-            <a href="/privacy-policy"           className="hover:text-amber-600 transition-colors">{t.footer.privacy}</a>
-            <a href="/cookie-policy"            className="hover:text-amber-600 transition-colors">{t.footer.cookie}</a>
-            <a href="/termini-e-condizioni"     className="hover:text-amber-600 transition-colors">{t.footer.terms}</a>
-            <a href="/condizioni-organizzatori" className="hover:text-amber-600 transition-colors">{t.footer.organizers}</a>
-            <a href="/contatti"                 className="hover:text-amber-600 transition-colors">{t.footer.contact}</a>
+            <a href={href("/privacy-policy")}           className="hover:text-amber-600 transition-colors">{t.footer.privacy}</a>
+            <a href={href("/cookie-policy")}            className="hover:text-amber-600 transition-colors">{t.footer.cookie}</a>
+            <a href={href("/termini-e-condizioni")}     className="hover:text-amber-600 transition-colors">{t.footer.terms}</a>
+            <a href={href("/condizioni-organizzatori")} className="hover:text-amber-600 transition-colors">{t.footer.organizers}</a>
+            <a href={href("/contatti")}                 className="hover:text-amber-600 transition-colors">{t.footer.contact}</a>
             <RiapriCookieBanner label={t.footer.manageCookies} />
           </nav>
         </div>

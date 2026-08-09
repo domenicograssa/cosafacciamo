@@ -2,6 +2,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getComuni } from '@/lib/queries/geo'
 import { COMUNE_IMMAGINI } from '@/data/comuni-immagini'
+import { getLang } from '@/lib/i18n/getLang'
+import { localizzaPath } from '@/lib/i18n/lang-header'
 
 export const revalidate = 3600
 
@@ -18,6 +20,7 @@ export const metadata = {
 }
 
 export default async function LocalitaIndexPage() {
+  const lang = await getLang()
   const comuni = await getComuni()
   const conFoto = comuni.filter(c => COMUNE_IMMAGINI[c.slug])
   const senzaFoto = comuni.filter(c => !COMUNE_IMMAGINI[c.slug])
@@ -38,7 +41,7 @@ export default async function LocalitaIndexPage() {
             return (
               <Link
                 key={c.id}
-                href={`/localita/${c.slug}`}
+                href={localizzaPath(`/localita/${c.slug}`, lang)}
                 className="group relative aspect-[4/3] rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
               >
                 <Image
@@ -62,7 +65,7 @@ export default async function LocalitaIndexPage() {
         {senzaFoto.map(c => (
           <Link
             key={c.id}
-            href={`/localita/${c.slug}`}
+            href={localizzaPath(`/localita/${c.slug}`, lang)}
             className="flex items-center gap-2.5 bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 hover:shadow-md hover:border-amber-200 transition-all group"
           >
             <span className="text-lg">📍</span>
