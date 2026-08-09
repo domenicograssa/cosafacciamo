@@ -13,7 +13,7 @@ export default function CondizioniOrganizzatori() {
 
       <p>
         Le presenti Condizioni disciplinano il rapporto tra il Gestore del portale{' '}
-        <strong>moesco</strong> e i soggetti (di seguito «Organizzatori») che si registrano
+        <strong>moesco</strong>{' '}e i soggetti (di seguito «Organizzatori») che si registrano
         per pubblicare eventi, attività o esperienze. Si applicano congiuntamente ai{' '}
         <a href="/termini-e-condizioni">Termini e Condizioni generali</a> e all'
         <a href="/privacy-policy">Informativa Privacy</a>.
@@ -43,7 +43,7 @@ export default function CondizioniOrganizzatori() {
       </ul>
 
       <h2>3. Responsabilità dell'Organizzatore per i contenuti</h2>
-      <p>L'Organizzatore è l'<strong>unico responsabile</strong> dei contenuti pubblicati e garantisce che:</p>
+      <p>L'Organizzatore è l'<strong>unico responsabile</strong>{' '}dei contenuti pubblicati e garantisce che:</p>
       <ul>
         <li>le informazioni sull'evento (titolo, descrizione, data, luogo, prezzo, ecc.) siano veritiere, complete e aggiornate;</li>
         <li>i contenuti non violino la normativa vigente (italiana ed europea) né diritti di terzi;</li>
@@ -137,7 +137,7 @@ export default function CondizioniOrganizzatori() {
       <h2>11. Contatti</h2>
       <p>
         Per qualsiasi comunicazione relativa alle presenti Condizioni:{' '}
-        <a href="mailto:domenicograssa@gmail.com">domenicograssa@gmail.com</a>
+        <a href="mailto:info@moesco.it">info@moesco.it</a>
       </p>
     </article>
   )

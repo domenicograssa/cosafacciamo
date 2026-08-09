@@ -13,7 +13,7 @@ export default function CookiePolicy() {
 
       <p>
         Il presente documento descrive le modalità di utilizzo dei cookie e di tecnologie simili
-        sul portale <strong>moesco</strong> (di seguito «il Portale»), ai sensi dell'art. 122
+        sul portale <strong>moesco</strong>{' '}(di seguito «il Portale»), ai sensi dell'art. 122
         del D.Lgs. 196/2003 e delle Linee Guida del Garante per la protezione dei dati personali.
       </p>
 
@@ -68,7 +68,7 @@ export default function CookiePolicy() {
 
       <h3>2.2 Cookie analitici</h3>
       <p>
-        Il Portale utilizza <strong>Google Analytics 4</strong> (Google Ireland Limited), uno
+        Il Portale utilizza <strong>Google Analytics 4</strong>{' '}(Google Ireland Limited), uno
         strumento di analisi statistica che raccoglie informazioni in forma aggregata sulla
         navigazione degli utenti (pagine visitate, provenienza, durata della visita, dispositivo
         utilizzato). Questi cookie vengono installati solo previo consenso esplicito dell'utente,
@@ -99,7 +99,7 @@ export default function CookiePolicy() {
         </tbody>
       </table>
       <p>
-        I cookie analitici <strong>non vengono installati</strong> finché l&apos;utente non presta il
+        I cookie analitici <strong>non vengono installati</strong>{' '}finché l&apos;utente non presta il
         proprio consenso: fino a quel momento nessuno script di Google viene caricato dal browser.
         Google Analytics 4 è configurato con l&apos;anonimizzazione degli indirizzi IP attiva per
         impostazione predefinita. Il consenso può essere revocato in qualsiasi momento dal link
@@ -130,11 +130,11 @@ export default function CookiePolicy() {
         L'utente può gestire le proprie preferenze sui cookie:
       </p>
       <ul>
-        <li><strong>tramite il banner</strong> mostrato al primo accesso al Portale;</li>
+        <li><strong>tramite il banner</strong>{' '}mostrato al primo accesso al Portale;</li>
         <li><strong>tramite le impostazioni del browser</strong>: ogni browser consente di eliminare,
         bloccare o ricevere notifiche per i cookie. Le istruzioni sono disponibili nella guida
         del browser utilizzato (Chrome, Firefox, Safari, Edge, ecc.);</li>
-        <li><strong>tramite il link nel footer</strong> del Portale («Gestisci preferenze cookie») per modificare la scelta in qualsiasi momento.</li>
+        <li><strong>tramite il link nel footer</strong>{' '}del Portale («Gestisci preferenze cookie») per modificare la scelta in qualsiasi momento.</li>
       </ul>
       <p>
         La disabilitazione dei soli cookie tecnici potrebbe compromettere alcune funzionalità
@@ -150,7 +150,7 @@ export default function CookiePolicy() {
       <h2>6. Contatti</h2>
       <p>
         Per qualsiasi domanda relativa alla presente Cookie Policy:{' '}
-        <a href="mailto:domenicograssa@gmail.com">domenicograssa@gmail.com</a>
+        <a href="mailto:info@moesco.it">info@moesco.it</a>
       </p>
     </article>
   )

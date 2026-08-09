@@ -16,7 +16,7 @@ export default function PrivacyPolicy() {
         Il titolare del trattamento dei dati personali è:<br />
         <strong>Domenico Grassa</strong><br />
         Via Roma n. 53, 91014 Castellammare del Golfo (TP); c.f. GRSDNC83H20G273G<br />
-        Email: <a href="mailto:domenicograssa@gmail.com">domenicograssa@gmail.com</a>
+        Email: <a href="mailto:info@moesco.it">info@moesco.it</a>
       </p>
 
       <h2>2. Tipologie di dati trattati</h2>
@@ -57,11 +57,11 @@ export default function PrivacyPolicy() {
       <h2>3. Finalità e base giuridica del trattamento</h2>
       <p>I dati personali sono trattati per le seguenti finalità:</p>
       <ul>
-        <li><strong>Erogazione del servizio</strong> (base giuridica: esecuzione del contratto — art. 6, par. 1, lett. b GDPR): gestione della registrazione degli organizzatori, pubblicazione degli eventi, risposta a richieste, invio di comunicazioni transazionali via email.</li>
-        <li><strong>Adempimento di obblighi legali</strong> (base giuridica: obbligo legale — art. 6, par. 1, lett. c GDPR): conservazione dei log di consenso ai sensi della normativa vigente.</li>
-        <li><strong>Risposta alle richieste inviate tramite il modulo contatti</strong> (base giuridica: consenso — art. 6, par. 1, lett. a GDPR): i dati inseriti nel modulo sono usati unicamente per rispondere e non per altre finalità.</li>
-        <li><strong>Sicurezza del portale e prevenzione degli abusi</strong> (base giuridica: legittimo interesse — art. 6, par. 1, lett. f GDPR): conservazione dei log tecnici per individuare accessi anomali, tentativi di intrusione e invii automatizzati di spam. L&apos;interesse del titolare a mantenere il servizio funzionante e sicuro è stato bilanciato con i diritti degli interessati, trattandosi di dati tecnici conservati per un periodo limitato.</li>
-        <li><strong>Analisi statistica dell&apos;utilizzo del sito</strong> (base giuridica: consenso — art. 6, par. 1, lett. a GDPR): raccolta di statistiche aggregate tramite Google Analytics, attivata solo se l&apos;utente presta consenso tramite il banner cookie e revocabile in qualsiasi momento.</li>
+        <li><strong>Erogazione del servizio</strong>{' '}(base giuridica: esecuzione del contratto — art. 6, par. 1, lett. b GDPR): gestione della registrazione degli organizzatori, pubblicazione degli eventi, risposta a richieste, invio di comunicazioni transazionali via email.</li>
+        <li><strong>Adempimento di obblighi legali</strong>{' '}(base giuridica: obbligo legale — art. 6, par. 1, lett. c GDPR): conservazione dei log di consenso ai sensi della normativa vigente.</li>
+        <li><strong>Risposta alle richieste inviate tramite il modulo contatti</strong>{' '}(base giuridica: consenso — art. 6, par. 1, lett. a GDPR): i dati inseriti nel modulo sono usati unicamente per rispondere e non per altre finalità.</li>
+        <li><strong>Sicurezza del portale e prevenzione degli abusi</strong>{' '}(base giuridica: legittimo interesse — art. 6, par. 1, lett. f GDPR): conservazione dei log tecnici per individuare accessi anomali, tentativi di intrusione e invii automatizzati di spam. L&apos;interesse del titolare a mantenere il servizio funzionante e sicuro è stato bilanciato con i diritti degli interessati, trattandosi di dati tecnici conservati per un periodo limitato.</li>
+        <li><strong>Analisi statistica dell&apos;utilizzo del sito</strong>{' '}(base giuridica: consenso — art. 6, par. 1, lett. a GDPR): raccolta di statistiche aggregate tramite Google Analytics, attivata solo se l&apos;utente presta consenso tramite il banner cookie e revocabile in qualsiasi momento.</li>
       </ul>
 
       <h2>3-bis. Uso di sistemi automatizzati e di intelligenza artificiale</h2>
@@ -71,9 +71,9 @@ export default function PrivacyPolicy() {
       </p>
       <ul>
         <li>
-          <strong>Traduzione automatica dei contenuti.</strong> I testi degli eventi
+          <strong>Traduzione automatica dei contenuti.</strong>{' '}I testi degli eventi
           (titolo, descrizione, luogo) vengono tradotti dall&apos;italiano
-          all&apos;inglese tramite il servizio <strong>DeepL</strong> (DeepL SE,
+          all&apos;inglese tramite il servizio <strong>DeepL</strong>{' '}(DeepL SE,
           Germania) al momento della pubblicazione, per alimentare la versione
           inglese del portale. Vengono inviati a DeepL esclusivamente i testi
           descrittivi degli eventi: non sono trasmessi dati di contatto, dati di
@@ -81,9 +81,9 @@ export default function PrivacyPolicy() {
           generate automaticamente e possono contenere imprecisioni.
         </li>
         <li>
-          <strong>Ricerca automatica di eventi.</strong> Una procedura automatizzata
+          <strong>Ricerca automatica di eventi.</strong>{' '}Una procedura automatizzata
           ricerca periodicamente su fonti pubbliche in rete notizie di eventi del
-          territorio e ne propone una bozza. Le bozze sono <em>sempre</em> sottoposte
+          territorio e ne propone una bozza. Le bozze sono <em>sempre</em>{' '}sottoposte
           a revisione e approvazione umana prima di essere pubblicate: nessun
           contenuto viene pubblicato automaticamente. Su ogni evento originato da
           questa procedura è indicata pubblicamente la fonte da cui
@@ -92,7 +92,7 @@ export default function PrivacyPolicy() {
       </ul>
       <p>
         Il portale <strong>non effettua alcun processo decisionale automatizzato
-        né profilazione</strong> che produca effetti giuridici o incida in modo
+        né profilazione</strong>{' '}che produca effetti giuridici o incida in modo
         analogamente significativo sugli utenti, ai sensi dell&apos;art. 22 GDPR.
         Nessun dato personale degli utenti viene utilizzato per addestrare
         sistemi di intelligenza artificiale, né dal titolare né, per quanto a sua
@@ -177,7 +177,7 @@ export default function PrivacyPolicy() {
         Spazio Economico Europeo, in particolare negli Stati Uniti. Tali trasferimenti avvengono nel
         rispetto delle garanzie previste dal Capo V del GDPR: clausole contrattuali standard approvate
         dalla Commissione europea e, per i fornitori aderenti, il quadro
-        <em> EU-U.S. Data Privacy Framework</em> (decisione di adeguatezza della Commissione europea
+        <em> EU-U.S. Data Privacy Framework</em>{' '}(decisione di adeguatezza della Commissione europea
         del 10 luglio 2023). Supabase è configurato con server nell&apos;Unione europea; DeepL tratta i
         dati su server situati nell&apos;Unione europea.
       </p>
@@ -196,7 +196,7 @@ export default function PrivacyPolicy() {
       </ul>
       <p>
         Per esercitare i propri diritti, l'interessato può contattare il titolare all'indirizzo email:{' '}
-        <a href="mailto:domenicograssa@gmail.com">domenicograssa@gmail.com</a>, oppure usare il{' '}
+        <a href="mailto:info@moesco.it">info@moesco.it</a>, oppure usare il{' '}
         <a href="/contatti">modulo contatti</a> selezionando «Richiesta privacy (GDPR)».
         Il titolare risponde senza ingiustificato ritardo e comunque entro un mese dal ricevimento
         della richiesta, ai sensi dell'art. 12, par. 3 GDPR.

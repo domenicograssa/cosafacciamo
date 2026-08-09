@@ -37,7 +37,7 @@ export default function Contatti() {
 
         <h2>Email</h2>
         <p>
-          <a href="mailto:domenicograssa@gmail.com">domenicograssa@gmail.com</a>
+          <a href="mailto:info@moesco.it">info@moesco.it</a>
         </p>
 
         <hr />

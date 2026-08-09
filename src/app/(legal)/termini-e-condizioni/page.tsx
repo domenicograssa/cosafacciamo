@@ -13,10 +13,10 @@ export default function TerminiCondizioni() {
 
       <h2>1. Il Gestore</h2>
       <p>
-        Il portale <strong>moesco</strong> (di seguito «il Portale») è gestito da:<br />
+        Il portale <strong>moesco</strong>{' '}(di seguito «il Portale») è gestito da:<br />
         <strong>Domenico Grassa</strong><br />
         Via Roma n. 53, 91014 Castellammare del Golfo (TP); c.f. GRSDNC83H20G273G<br />
-        Email: <a href="mailto:domenicograssa@gmail.com">domenicograssa@gmail.com</a>
+        Email: <a href="mailto:info@moesco.it">info@moesco.it</a>
       </p>
 
       <h2>2. Oggetto e natura del servizio</h2>
@@ -122,7 +122,7 @@ export default function TerminiCondizioni() {
       <h2>11. Contatti</h2>
       <p>
         Per qualsiasi questione relativa alle presenti Condizioni:{' '}
-        <a href="mailto:domenicograssa@gmail.com">domenicograssa@gmail.com</a>
+        <a href="mailto:info@moesco.it">info@moesco.it</a>
       </p>
     </article>
   )

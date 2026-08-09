@@ -13,14 +13,14 @@ export default function DichiarazioneAccessibilita() {
       <p className="text-sm text-gray-500">Versione 1.0 — in vigore dal 9 agosto 2026</p>
 
       <p>
-        <strong>moesco</strong> si impegna a rendere il proprio portale accessibile
+        <strong>moesco</strong>{' '}si impegna a rendere il proprio portale accessibile
         al maggior numero possibile di persone, comprese quelle che navigano con
         screen reader, ingranditori di schermo, sola tastiera o comandi vocali.
       </p>
 
       <h2>1. Stato di conformità</h2>
       <p>
-        Il portale è <strong>parzialmente conforme</strong> alle{' '}
+        Il portale è <strong>parzialmente conforme</strong>{' '}alle{' '}
         <a
           href="https://www.w3.org/Translations/WCAG21-it/"
           target="_blank"
@@ -86,7 +86,7 @@ export default function DichiarazioneAccessibilita() {
       <p>Sono note le seguenti limitazioni, sulle quali è in corso il lavoro:</p>
       <ul>
         <li>
-          <strong>Contenuti inseriti dagli organizzatori.</strong> Le descrizioni
+          <strong>Contenuti inseriti dagli organizzatori.</strong>{' '}Le descrizioni
           e le immagini degli eventi sono caricate da soggetti terzi. Le immagini
           delle locandine possono contenere informazioni testuali (date, orari,
           prezzi) non riportate nel testo alternativo. Le informazioni essenziali
@@ -94,7 +94,7 @@ export default function DichiarazioneAccessibilita() {
           dell&apos;evento, indipendentemente dalla locandina.
         </li>
         <li>
-          <strong>Traduzione automatica del sito.</strong> Le pagine dichiarano
+          <strong>Traduzione automatica del sito.</strong>{' '}Le pagine dichiarano
           l&apos;attributo <code>translate=&quot;no&quot;</code>, che impedisce ai
           browser di offrire la traduzione automatica. La scelta nasce da problemi
           ricorrenti di traduzione errata dei contenuti; il portale offre in
@@ -103,13 +103,13 @@ export default function DichiarazioneAccessibilita() {
           un&apos;alternativa integrata: la limitazione è in corso di riesame.
         </li>
         <li>
-          <strong>Contenuti caricati progressivamente.</strong> Nelle liste di
+          <strong>Contenuti caricati progressivamente.</strong>{' '}Nelle liste di
           eventi con il pulsante «Mostra altri», l&apos;arrivo dei nuovi elementi
           non viene annunciato vocalmente: il conteggio complessivo è però
           sempre annunciato.
         </li>
         <li>
-          <strong>Mappe e contenuti incorporati.</strong> Eventuali contenuti di
+          <strong>Mappe e contenuti incorporati.</strong>{' '}Eventuali contenuti di
           terze parti incorporati nelle pagine possono non rispettare i medesimi
           criteri di accessibilità.
         </li>
@@ -133,7 +133,7 @@ export default function DichiarazioneAccessibilita() {
       </p>
       <p>
         Email:{' '}
-        <a href="mailto:domenicograssa@gmail.com">domenicograssa@gmail.com</a>
+        <a href="mailto:info@moesco.it">info@moesco.it</a>
         <br />
         Oppure tramite il{' '}
         <a href="/contatti">modulo contatti</a>, selezionando «Segnalazione
