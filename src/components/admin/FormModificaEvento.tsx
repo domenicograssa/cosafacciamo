@@ -253,14 +253,28 @@ export default function FormModificaEvento({
 
       {/* Immagine */}
       <div>
-        <label className={labelCls}>URL immagine di copertina</label>
+        <label className={labelCls}>Immagine di copertina</label>
+        {/*
+          type="text" e non type="url": il campo deve accettare anche i percorsi
+          relativi tipo /eventi/nome-file.jpg, che sono il formato usato dalle
+          locandine committate in public/eventi/ ed è uno dei due soli formati
+          che queries/eventi.ts accetta di mostrare.
+          Con type="url" il browser considerava "/eventi/…" un valore non valido
+          e bloccava l'invio del form senza mostrare alcun errore: le modifiche
+          sembravano salvate e invece non partivano. (Bug trovato l'11/8/2026
+          inserendo la locandina di TIME90.)
+        */}
         <input
-          type="url"
+          type="text"
           value={immagine}
           onChange={e => setImmagine(e.target.value)}
-          placeholder="https://…"
+          placeholder="/eventi/nome-file.jpg oppure https://…"
           className={inputCls}
         />
+        <p className="mt-1 text-xs text-gray-500">
+          Percorso di una locandina caricata nel sito (es. <code>/eventi/nome-file.jpg</code>)
+          oppure indirizzo completo di un&apos;immagine su Supabase Storage.
+        </p>
         {immagine && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
