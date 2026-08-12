@@ -268,17 +268,35 @@ export async function getEventiInEvidenza(limit = 3, lang: Lang = 'it'): Promise
       .eq('stato', 'approvato')
       .gte('data_inizio', inizioOggi)
       .order('data_inizio', { ascending: true })
-      .limit(spazio + idsEsclusi.length) // margine per poter escludere lato client
+      // Si pesca più largo del necessario: fra i candidati si sceglie poi in
+      // base alla ricchezza del testo (vedi sotto).
+      .limit(spazio + idsEsclusi.length + 25)
 
     const { data: auto, error: errAuto } = await queryAuto
     if (errAuto) {
       console.error('getEventiInEvidenza (auto):', errAuto)
     } else {
-      const extra = (auto ?? [])
+      const candidati = (auto ?? [])
         .map(r => mapEvento(flattenCategorie(r as Record<string, unknown>), lang))
         .filter(e => !idsEsclusi.includes(e.id))
-        .slice(0, spazio)
-      risultato.push(...extra)
+
+      // "In primo piano" è una vetrina redazionale: la card mostra un estratto
+      // di quattro righe, quindi un evento con due frasi ci fa una figura
+      // magra. Prima venivano presi i primi tre per data, qualunque testo
+      // avessero; ora si privilegiano quelli con una descrizione sostanziosa,
+      // restando comunque fra gli eventi imminenti.
+      const testoDi = (e: Evento) => (e.testoArticolo?.trim() || e.descrizione?.trim() || '')
+      const SOGLIA_TESTO = 260   // circa quattro righe piene nella card
+
+      const raccontabili = candidati.filter(e => testoDi(e).length >= SOGLIA_TESTO)
+      const scarni = candidati.filter(e => testoDi(e).length < SOGLIA_TESTO)
+
+      // Se gli eventi ben descritti non bastano a riempire la vetrina si
+      // completa con gli altri, i più corposi per primi: meglio una card
+      // scarna che uno spazio vuoto.
+      scarni.sort((a, b) => testoDi(b).length - testoDi(a).length)
+
+      risultato.push(...[...raccontabili, ...scarni].slice(0, spazio))
     }
   }
 
@@ -297,6 +315,30 @@ export async function getEventoBySlug(slug: string, lang: Lang = 'it'): Promise<
 
   if (error || !data) return null
   return mapEvento(flattenCategorie(data as Record<string, unknown>), lang)
+}
+
+/**
+ * Cerca un evento fra i suoi indirizzi passati.
+ * Serve quando un evento viene rinominato in admin: lo slug si aggiorna per
+ * rispecchiare il nuovo titolo, ma i link già condivisi (post Facebook,
+ * messaggi, risultati Google) puntano ancora a quello vecchio. Invece di un
+ * 404, la pagina risponde con un redirect permanente al nuovo indirizzo.
+ * Restituisce solo lo slug attuale: alla pagina serve unicamente sapere dove
+ * mandare l'utente.
+ */
+export async function getSlugAttualeDaSlugStorico(slug: string): Promise<string | null> {
+  const sb = createClient()
+
+  const { data, error } = await sb
+    .from('eventi')
+    .select('slug')
+    .contains('slug_precedenti', [slug])
+    .eq('stato', 'approvato')
+    .limit(1)
+    .maybeSingle()
+
+  if (error || !data) return null
+  return (data as { slug: string }).slug
 }
 
 export async function getEventiCorrelati(eventoId: string, categoriaIds: string[], limit = 4, lang: Lang = 'it'): Promise<Evento[]> {

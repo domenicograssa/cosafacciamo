@@ -7,6 +7,21 @@ function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
+// Trasforma un titolo nella parte testuale dell'indirizzo. Stessa logica di
+// actions/pubblica.ts e api/proponi-eventi, così un evento ha lo stesso tipo di
+// indirizzo da qualunque strada sia entrato nel sito.
+const SEGNI_DIACRITICI = /[̀-ͯ]/g
+function slugifyTitolo(testo: string): string {
+  return testo
+    .normalize('NFD')
+    .replace(SEGNI_DIACRITICI, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80)
+    .replace(/-+$/, '')   // evita di chiudere con un trattino dopo il taglio
+}
+
 async function inviaEmail(to: string, subject: string, html: string) {
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) return
@@ -269,6 +284,23 @@ export async function modificaEvento(
     await richiedeLogin()
     const sb = await createAdminClient()
 
+    // ── Slug: si rigenera se il titolo è cambiato ────────────────────────────
+    // Prima non veniva mai ricalcolato, così un evento rinominato restava su un
+    // indirizzo che parlava d'altro (es. «Stelle sopra il Tempio» pubblicato su
+    // /eventi/lella-costa-segesta-teatro-festival-2026-08-12). Il vecchio slug
+    // viene conservato in slug_precedenti: la pagina evento lo riconosce e fa un
+    // redirect permanente, così i link già condivisi — compresi quelli dei post
+    // Facebook già programmati — continuano a funzionare.
+    // slug_precedenti è aggiunto dalla migrazione slug-precedenti-migration.sql.
+    // Finché non viene eseguita la colonna non esiste: in quel caso la lettura
+    // fallisce, `attuale` resta null e lo slug non viene toccato — il sito si
+    // comporta esattamente come prima, senza errori per chi salva un evento.
+    const { data: attuale } = await sb
+      .from('eventi')
+      .select('titolo, slug, slug_precedenti, data_inizio')
+      .eq('id', eventoId)
+      .maybeSingle()
+
     const aggiornamento: Record<string, unknown> = {
       titolo: dati.titolo.trim(),
       descrizione: dati.descrizione.trim(),
@@ -297,6 +329,24 @@ export async function modificaEvento(
       aggiornamento.testo_articolo = dati.testo_articolo?.trim() || null
     }
 
+    // Se il titolo è cambiato, il nuovo slug lo rispecchia e il vecchio viene
+    // archiviato per il redirect (vedi la nota sopra).
+    let slugPrecedente: string | null = null
+    if (attuale && attuale.titolo?.trim() !== dati.titolo.trim()) {
+      const anno = new Date(dati.data_inizio || attuale.data_inizio).getFullYear()
+      const nuovo = `${slugifyTitolo(dati.titolo)}-${anno}`
+      if (nuovo && nuovo !== attuale.slug) {
+        // Se lo slug è già occupato da un altro evento si aggiunge un suffisso.
+        const { data: occupato } = await sb
+          .from('eventi').select('id').eq('slug', nuovo).neq('id', eventoId).maybeSingle()
+        const definitivo = occupato ? `${nuovo}-${Date.now().toString(36)}` : nuovo
+        aggiornamento.slug = definitivo
+        slugPrecedente = attuale.slug
+        const storici: string[] = attuale.slug_precedenti ?? []
+        aggiornamento.slug_precedenti = Array.from(new Set([...storici, attuale.slug]))
+      }
+    }
+
     const { data: evento, error } = await sb
       .from('eventi')
       .update(aggiornamento)
@@ -304,6 +354,10 @@ export async function modificaEvento(
       .select('slug, geo_nodi(slug)')
       .single()
     if (error) return { ok: false, errore: error.message }
+
+    // La vecchia pagina va rigenerata, altrimenti resta in cache con il
+    // contenuto precedente invece di reindirizzare.
+    if (slugPrecedente) revalidatePath(`/eventi/${slugPrecedente}`)
 
     // Aggiorna categorie se fornite
     if (dati.categorie_ids !== undefined) {

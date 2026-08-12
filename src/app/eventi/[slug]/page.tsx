@@ -1,7 +1,7 @@
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
-import { getEventoBySlug, getEventiCorrelati } from '@/lib/queries/eventi'
+import { getEventoBySlug, getEventiCorrelati, getSlugAttualeDaSlugStorico } from '@/lib/queries/eventi'
 import EventCard from '@/components/events/EventCard'
 import ImmagineEvento from '@/components/ui/ImmagineEvento'
 import ShareButtons from '@/components/events/ShareButtons'
@@ -74,7 +74,18 @@ export default async function DettaglioEvento({ params }: Props) {
   const lang = await getLang()
   const t = strings[lang]
   const evento = await getEventoBySlug(slug, lang)
-  if (!evento) notFound()
+  if (!evento) {
+    // L'evento potrebbe essere stato rinominato: prima di rispondere 404 si
+    // controlla se questo indirizzo è uno dei suoi precedenti. In tal caso si
+    // manda l'utente al nuovo con un redirect permanente, così i link già
+    // condivisi (post Facebook, messaggi, risultati di ricerca) continuano a
+    // funzionare e Google trasferisce il posizionamento al nuovo indirizzo.
+    const slugAttuale = await getSlugAttualeDaSlugStorico(slug)
+    if (slugAttuale) {
+      permanentRedirect(lang === 'en' ? `/en/eventi/${slugAttuale}` : `/eventi/${slugAttuale}`)
+    }
+    notFound()
+  }
 
   const categoriaIds = evento.categorie.map(c => c.id)
   const correlati = await getEventiCorrelati(evento.id, categoriaIds, 4, lang)
