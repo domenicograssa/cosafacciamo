@@ -228,6 +228,27 @@ export default async function DettaglioEvento({ params }: Props) {
             )}
 
             {/*
+              Testo redazionale. Fino all'11/8/2026 il campo testo_articolo
+              esisteva solo per alimentare l'estratto di quattro righe della card
+              "In primo piano" in homepage: scritto un pezzo, se ne leggevano le
+              prime righe e il resto non era visibile da nessuna parte. Qui il
+              testo trova la sua sede naturale — la scheda dell'evento — mentre
+              in home continua a fare da richiamo.
+              La descrizione sopra resta il riassunto dei fatti (cosa, dove,
+              quando); questo è il racconto.
+            */}
+            {evento.testoArticolo?.trim() && (
+              <div className="mt-8 border-t border-gray-100 pt-6">
+                <h2 className="text-lg font-bold text-gray-900 mb-3">
+                  {lang === 'en' ? 'The story' : 'Il racconto'}
+                </h2>
+                <div className="text-gray-700 leading-relaxed whitespace-pre-line space-y-4">
+                  {evento.testoArticolo.trim()}
+                </div>
+              </div>
+            )}
+
+            {/*
               Trasparenza sui contenuti di origine automatizzata: gli eventi
               individuati dalla procedura di ricerca automatica dichiarano
               pubblicamente la fonte da cui l'informazione è stata tratta, così
