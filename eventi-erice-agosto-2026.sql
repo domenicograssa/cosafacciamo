@@ -4,7 +4,7 @@
 -- 1. Festa di Maria SS. di Custonaci — Erice 2026 (evento "ombrello")
 INSERT INTO eventi (
   organizzatore_id, geo_nodo_id, titolo, slug, descrizione, descrizione_breve,
-  luogo_nome, data_inizio, data_fine, ora_inizio, ora_fine, gratuito,
+  luogo_nome, data_inizio, data_fine, ora_inizio, gratuito,
   sito_ufficiale, fonte_url, stato
 ) VALUES (
   '3b75ff49-9797-4738-87a6-335f0c3387fb', '9bc61c88-69c7-4f80-a1e1-cbb9a7d9360a',
@@ -13,7 +13,7 @@ INSERT INTO eventi (
   'Dal 16 al 27 agosto Erice vive undici giorni di fede, musica e tradizione per i festeggiamenti di Maria Santissima di Custonaci, patrona della città, organizzati dal Real Duomo di Erice. Si apre domenica 16 agosto alle 21:30 con la rievocazione storica dell''arrivo della Madonna e la fiaccolata verso il Duomo; dal 17 al 24 agosto si tiene la Novena in Chiesa Madre, guidata da Don Antonello Sacco della Diocesi di Roma (scampanìo alle 9:00 e alle 19:30, Rosario alle 18:30, Messa alle 19:00). Sabato 22 agosto, alle 21:00, l''Associazione Musicale "Nuova Banda Ericina" accompagna la benedizione degli altarini votivi nei cortili del centro storico. Martedì 25 agosto, vigilia della festa, si susseguono il corteo dei Sindaci dell''Agro Ericino dal Municipio al Duomo, la consegna delle chiavi d''oro della "Civitas Erycina" e la Soirée dédiée à la Vierge Marie, itinerario musicale a cura di MeMA tra le chiese del centro storico. Il giorno solenne, mercoledì 26 agosto, prevede le Sante Messe (quella delle 11:00 presieduta da Mons. Alessandro Damiano, arcivescovo di Agrigento) e, alle 18:00, la processione della venerata immagine accompagnata dalla Banda Musicale M° Pietro Mascagni e dai Tamburi dell''Unione Maestranze di Trapani. Giovedì 27 agosto, alle 10:00, la Messa di ringraziamento e la distribuzione dei fiori chiudono il programma.',
   'Undici giorni di fede e tradizione a Erice per la patrona Maria SS. di Custonaci: novena, corteo dei Sindaci, processione del 26 agosto e Soirée musicale a cura di MeMA.',
   'Real Duomo di Erice e Chiesa Madre, Erice',
-  '2026-08-16', '2026-08-27', '21:30', '10:00', true,
+  '2026-08-16', '2026-08-27', '21:30', true,
   'https://www.comune.erice.tp.it',
   'https://www.trapanisi.it/erice-si-prepara-a-festeggiare-la-patrona-con-eventi-imperdibili/',
   'approvato'
