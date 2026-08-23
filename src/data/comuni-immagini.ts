@@ -100,6 +100,17 @@ export const COMUNE_FOTO: Record<string, FotoComune[]> = {
   'castelvetrano': [
     commons('Selinunte_Temple_C_aerial_view.jpg', 'Veduta aerea del Tempio C di Selinunte', 1280),
   ],
+  // Sotto-zona "Castelvetrano - Selinunte" (geo_nodi tipo 'quartiere', dal
+  // 23/8/2026): gli eventi al Parco Archeologico non sono più agganciati al
+  // comune ma a questo nodo, e senza una voce propria qui restavano tutti sul
+  // placeholder colorato. Quattro foto perché gli eventi al parco sono ~30:
+  // con una sola, la pagina località sarebbe una fila di card fotocopia.
+  'castelvetrano-selinunte': [
+    commons('Selinunte_Temple_C_aerial_view.jpg', 'Veduta aerea del Tempio C di Selinunte', 1280),
+    commons('Selinunte,_Tempio_G.jpg', 'Il Tempio G di Selinunte'),
+    commons('Selinunte-_Tempio_di_Hera.jpg', 'Il Tempio di Hera (Tempio E) a Selinunte'),
+    commons('Selinunte_-_Templi_Orientali_(Temple_E)_18.JPG', 'I templi orientali di Selinunte'),
+  ],
   'pantelleria': [
     commons('Dammuso_in_Pantelleria,_Sicily.JPG', 'Un dammuso a Pantelleria', 1280),
     commons('Castello_di_Pantelleria.jpeg', 'Il castello di Pantelleria'),
@@ -158,8 +169,31 @@ export function immagineComune(slug: string): FotoComune | null {
   return COMUNE_IMMAGINI[slug] ?? null
 }
 
+/**
+ * Foto di un nodo geografico, con ripiego sul comune genitore.
+ *
+ * Perché il ripiego: le sotto-zone (geo_nodi di tipo 'quartiere', es.
+ * `castelvetrano-selinunte`) hanno per convenzione slug `<comune>-<frazione>`.
+ * Quando gli eventi del Parco di Selinunte sono stati spostati sul nuovo nodo,
+ * il 23/8/2026, sono rimasti di colpo tutti senza foto: la chiave non esisteva
+ * in COMUNE_FOTO e nessuno se n'era accorto finché non è andato in produzione.
+ * Ora una sotto-zona senza foto proprie mostra almeno quelle del suo comune,
+ * invece del placeholder — e la prossima frazione che aggiungiamo non ripete
+ * lo stesso incidente.
+ *
+ * Il ripiego cerca la chiave più lunga di COMUNE_FOTO che sia prefisso dello
+ * slug seguito da un trattino, quindi non può accendersi per sbaglio su un
+ * comune vero (nessuno slug di comune è prefisso di un altro).
+ */
 export function fotoComune(slug: string): FotoComune[] {
-  return COMUNE_FOTO[slug] ?? []
+  const dirette = COMUNE_FOTO[slug]
+  if (dirette?.length) return dirette
+
+  const genitore = Object.keys(COMUNE_FOTO)
+    .filter(k => slug.startsWith(`${k}-`))
+    .sort((a, b) => b.length - a.length)[0]
+
+  return genitore ? COMUNE_FOTO[genitore] : []
 }
 
 // Hash stabile e deterministico (djb2) — serve a scegliere sempre la stessa foto
@@ -178,7 +212,9 @@ function hashStabile(s: string): number {
  * pagina di una località sembrava piena di card fotocopia).
  */
 export function fotoComunePerEvento(slug: string, seedEvento: string): FotoComune | null {
-  const foto = COMUNE_FOTO[slug]
+  // fotoComune (non COMUNE_FOTO diretto) per ereditare il ripiego sul comune
+  // genitore quando l'evento è agganciato a una sotto-zona.
+  const foto = fotoComune(slug)
   if (!foto || foto.length === 0) return null
   if (foto.length === 1) return foto[0]
   return foto[hashStabile(seedEvento) % foto.length]
