@@ -12,7 +12,10 @@ export default async function ModificaEventoPage({
 
   const [{ data: evento }, { data: comuniRaw }, { data: categorieRaw }, { data: catEvento }] = await Promise.all([
     sb.from('eventi').select('*').eq('slug', slug).maybeSingle(),
-    sb.from('geo_nodi').select('id, nome').eq('tipo', 'comune').order('nome'),
+    // 'quartiere' include le sotto-zone turistiche note (es. Selinunte sotto
+    // Castelvetrano, nome già "Castelvetrano - Selinunte"): comparire qui
+    // permette di riassegnare un evento alla sotto-zona in fase di modifica.
+    sb.from('geo_nodi').select('id, nome').in('tipo', ['comune', 'quartiere']).order('nome'),
     sb.from('categorie').select('id, nome, icona').eq('attiva', true).order('ordinamento'),
     sb.from('eventi').select('id, eventi_categorie(categoria_id)').eq('slug', slug).maybeSingle(),
   ])

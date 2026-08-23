@@ -46,7 +46,17 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale, 
         if (!campi.some(campo => normalizzaTesto(campo).includes(q))) return false
       }
       if (filtri.categorie.length > 0 && !e.categorie.some(c => filtri.categorie.includes(c.slug))) return false
-      if (filtri.comune && e.geoNodo.slug !== filtri.comune) return false
+      if (filtri.comune) {
+        // Confronto per prefisso di path, non solo per slug esatto: un evento
+        // agganciato a una sotto-zona (es. il "quartiere" Selinunte sotto il
+        // comune Castelvetrano) deve continuare a comparire quando si filtra
+        // per il comune genitore, non solo scegliendo la sotto-zona stessa.
+        const nodoFiltro = comuni.find(c => c.slug === filtri.comune)
+        const match = nodoFiltro
+          ? e.geoNodo.path === nodoFiltro.path || e.geoNodo.path.startsWith(nodoFiltro.path)
+          : e.geoNodo.slug === filtri.comune
+        if (!match) return false
+      }
       if (filtri.soloGratuiti && !e.gratuito) return false
       if (filtri.data) {
         const dataEvento = new Date(e.dataInizio).toISOString().split('T')[0]

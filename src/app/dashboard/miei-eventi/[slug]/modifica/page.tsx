@@ -25,7 +25,9 @@ export default async function ModificaEventoDashboard({
 
   const [{ data: evento }, { data: comuniRaw }, { data: categorieRaw }, { data: catEvento }] = await Promise.all([
     sbAdmin.from('eventi').select('*').eq('slug', slug).eq('organizzatore_id', organizzatore.id).maybeSingle(),
-    sbAdmin.from('geo_nodi').select('id, nome').eq('tipo', 'comune').order('nome'),
+    // 'quartiere' include le sotto-zone turistiche note (es. Selinunte sotto
+    // Castelvetrano, nome già "Castelvetrano - Selinunte").
+    sbAdmin.from('geo_nodi').select('id, nome').in('tipo', ['comune', 'quartiere']).order('nome'),
     sbAdmin.from('categorie').select('id, nome, icona').eq('attiva', true).order('ordinamento'),
     sbAdmin.from('eventi').select('id, eventi_categorie(categoria_id)').eq('slug', slug).maybeSingle(),
   ])
