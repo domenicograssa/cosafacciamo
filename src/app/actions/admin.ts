@@ -256,6 +256,32 @@ export async function aggiornaStatoAttivita(
   }
 }
 
+// Aggiorna solo l'immagine di copertina di un'attività — usato dal riquadro
+// rapido in admin/attivita/[slug], finché non esiste un form di modifica
+// completo per le attività (a differenza di modificaEvento per gli eventi).
+export async function aggiornaImmagineAttivita(
+  attivitaId: string,
+  url: string
+): Promise<{ ok: boolean; errore?: string }> {
+  try {
+    await richiedeLogin()
+    const sb = await createAdminClient()
+
+    const { error } = await sb
+      .from('attivita')
+      .update({ immagine_copertina: url.trim() || null })
+      .eq('id', attivitaId)
+
+    if (error) return { ok: false, errore: error.message }
+
+    ricaricaPagine()
+    revalidatePath('/admin/attivita')
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, errore: e instanceof Error ? e.message : 'Errore imprevisto' }
+  }
+}
+
 export async function modificaEvento(
   eventoId: string,
   dati: {

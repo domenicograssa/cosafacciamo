@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/server'
 import { formatData, formatOra, formatPrezzo } from '@/lib/utils'
-import { AzioniAttivita } from '@/components/admin/AzioniRevisione'
+import { AzioniAttivita, ModificaImmagineAttivita } from '@/components/admin/AzioniRevisione'
 
 const BADGE: Record<string, string> = {
   pubblicato: 'bg-green-100 text-green-700',
@@ -102,6 +102,10 @@ export default async function AdminAttivitaDettaglio({
             className="mt-4 rounded-xl max-h-72 w-full object-cover"
           />
         )}
+
+        <div className="mt-4">
+          <ModificaImmagineAttivita attivitaId={attivita.id} urlAttuale={attivita.immagine_copertina} />
+        </div>
 
         {/* Descrizione completa */}
         {attivita.descrizione && (
