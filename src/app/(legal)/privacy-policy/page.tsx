@@ -9,7 +9,7 @@ export default function PrivacyPolicy() {
   return (
     <article className="prose prose-gray max-w-none">
       <h1>Privacy Policy</h1>
-      <p className="text-sm text-gray-500">Versione 1.3 — in vigore dal 9 agosto 2026</p>
+      <p className="text-sm text-gray-500">Versione 1.4 — in vigore dal 29 agosto 2026</p>
 
       <h2>1. Titolare del trattamento</h2>
       <p>
@@ -100,10 +100,15 @@ export default function PrivacyPolicy() {
       </p>
       <p>
         Gli strumenti impiegati non rientrano fra i sistemi di intelligenza
-        artificiale ad alto rischio di cui al Regolamento (UE) 2024/1689 (AI Act);
-        l&apos;indicazione della natura automatica delle traduzioni e delle bozze
-        di evento risponde all&apos;obbligo generale di trasparenza verso gli
-        utenti.
+        artificiale ad alto rischio di cui al Regolamento (UE) 2024/1689 (AI Act).
+        L&apos;indicazione pubblica, su ogni evento originato da ricerca
+        automatica, della natura automatica della bozza e della fonte da cui è
+        tratta è resa anche <strong>ai sensi dell&apos;art. 50 del Regolamento
+        (UE) 2024/1689</strong>, che impone obblighi di trasparenza sui
+        contenuti testuali generati o manipolati dall&apos;intelligenza
+        artificiale. Le bozze sono in ogni caso sempre sottoposte, prima della
+        pubblicazione, a un esame redazionale sostanziale da parte di una
+        persona fisica che ne assume la responsabilità editoriale.
       </p>
 
       <h2>4. Modalità del trattamento</h2>

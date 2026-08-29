@@ -65,6 +65,7 @@ export default async function AdminAttivitaDettaglio({
     ['Telefono contatto', a.telefono_contatto as string | null],
     ['Inviata il', attivita.created_at ? `${formatData(attivita.created_at)} ${formatOra(attivita.created_at)}` : null],
   ]
+  const fonteUrl = a.fonte_url as string | null
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -117,6 +118,22 @@ export default async function AdminAttivitaDettaglio({
           ))}
         </dl>
       </div>
+
+      {/* Fonte ricerca automatica: attività proposta dal task settimanale, va
+          verificata controllando la fonte prima di pubblicare */}
+      {fonteUrl && (
+        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
+          <p className="text-xs font-semibold text-blue-500 uppercase tracking-wide">Proposto da ricerca automatica — verificare la fonte</p>
+          <a
+            href={fonteUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-blue-700 underline mt-1 inline-block break-all"
+          >
+            {fonteUrl}
+          </a>
+        </div>
+      )}
 
       {/* Organizzatore */}
       {org && (

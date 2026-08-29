@@ -31,13 +31,27 @@ export interface Attivita {
   quando: string | null
   target: string | null
   gratuito: boolean
+  prezzoMin: number | null
+  prezzoMax: number | null
   durata: string | null
   livello: LivelloAttivita | null
+  sitoUfficiale: string | null
+  emailContatto: string | null
+  telefonoContatto: string | null
+  urlPrenotazione: string | null
+  /** URL della fonte pubblica da cui l'attività è stata individuata dalla
+   *  procedura di ricerca automatica. Null per le attività inserite a mano
+   *  o proposte direttamente dagli organizzatori. */
   fonteUrl: string | null
   immagineCopertura: string | null
   stato: StatoAttivita
   geoNodo: GeoNodo
   categorie: Categoria[]
+  organizzatore: {
+    id: string
+    nome: string
+    slug: string
+  } | null
 }
 
 export interface Evento {

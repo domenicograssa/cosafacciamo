@@ -168,6 +168,9 @@ export type EventoConRelazioni = Database['public']['Tables']['eventi']['Row'] &
 
 export type AttivitaRow = {
   id: string
+  // Nullable: le attività "editoriali" seedate storicamente non hanno un
+  // organizzatore; quelle proposte via /pubblica o /api/proponi-attivita sì.
+  organizzatore_id: string | null
   geo_nodo_id: string
   titolo: string
   slug: string
@@ -176,8 +179,14 @@ export type AttivitaRow = {
   quando: string | null
   target: string | null
   gratuito: boolean
+  prezzo_min: number | null
+  prezzo_max: number | null
   durata: string | null
   livello: 'facile' | 'medio' | 'esperto' | null
+  sito_ufficiale: string | null
+  email_contatto: string | null
+  telefono_contatto: string | null
+  url_prenotazione: string | null
   fonte_url: string | null
   immagine_copertina: string | null
   stato: 'bozza' | 'pubblicato' | 'archiviato'
@@ -188,5 +197,6 @@ export type AttivitaRow = {
 
 export type AttivitaConRelazioni = AttivitaRow & {
   geo_nodi: Database['public']['Tables']['geo_nodi']['Row']
+  organizzatori: Pick<Database['public']['Tables']['organizzatori']['Row'], 'id' | 'nome' | 'slug'> | null
   categorie: Database['public']['Tables']['categorie']['Row'][]
 }

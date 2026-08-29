@@ -10,6 +10,12 @@ function createClient() {
 }
 
 function mapAttivita(row: AttivitaConRelazioni): Attivita {
+  // Colonne aggiunte alla tabella dopo la generazione di AttivitaRow (vedi
+  // pubblica.ts e admin/attivita/[slug]): lette qui con lo stesso pattern
+  // "cast a Record" già usato in queries/eventi.ts per fonte_ricerca ecc.
+  const r = row as unknown as Record<string, unknown>
+  const org = r.organizzatori as { id: string; nome: string; slug: string } | null
+
   return {
     id: row.id,
     titolo: row.titolo,
@@ -19,8 +25,14 @@ function mapAttivita(row: AttivitaConRelazioni): Attivita {
     quando: row.quando,
     target: row.target,
     gratuito: row.gratuito,
+    prezzoMin: (r.prezzo_min as number | null) ?? null,
+    prezzoMax: (r.prezzo_max as number | null) ?? null,
     durata: row.durata,
     livello: row.livello,
+    sitoUfficiale: (r.sito_ufficiale as string | null) ?? null,
+    emailContatto: (r.email_contatto as string | null) ?? null,
+    telefonoContatto: (r.telefono_contatto as string | null) ?? null,
+    urlPrenotazione: (r.url_prenotazione as string | null) ?? null,
     fonteUrl: row.fonte_url,
     immagineCopertura: row.immagine_copertina,
     stato: row.stato,
@@ -40,12 +52,14 @@ function mapAttivita(row: AttivitaConRelazioni): Attivita {
       colore: c.colore ?? '#6366F1',
       ordinamento: c.ordinamento,
     })),
+    organizzatore: org ? { id: org.id, nome: org.nome, slug: org.slug } : null,
   }
 }
 
 const ATTIVITA_SELECT = `
   *,
   geo_nodi(*),
+  organizzatori(id, nome, slug),
   categorie:attivita_categorie(categorie(*))
 `
 
