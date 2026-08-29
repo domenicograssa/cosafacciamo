@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { aggiornaStatoEvento, aggiornaStatoAttivita, aggiornaStatoOrganizzatore, togglePubblicazioneDiretta, aggiornaImmagineAttivita } from '@/app/actions/admin'
+import { aggiornaStatoEvento, aggiornaStatoAttivita, aggiornaStatoOrganizzatore, togglePubblicazioneDiretta, aggiornaImmagineAttivita, caricaImmagineAttivita } from '@/app/actions/admin'
 
 // Bottoni Approva / Rifiuta per un evento (con nota facoltativa per il rifiuto)
 export function AzioniEvento({ eventoId, stato }: { eventoId: string; stato: string }) {
@@ -151,10 +151,28 @@ export function ModificaImmagineAttivita({
     })
   }
 
+  const [caricamento, startCaricamento] = useTransition()
+
+  const caricaFile = (fileList: FileList | null) => {
+    const file = fileList?.[0]
+    if (!file) return
+    setErrore(null)
+    setSalvato(false)
+    const fd = new FormData()
+    fd.set('immagine', file)
+    startCaricamento(async () => {
+      const res = await caricaImmagineAttivita(attivitaId, fd)
+      if (!res.ok) { setErrore(res.errore ?? 'Errore'); return }
+      if (res.url) setUrl(res.url)
+      setSalvato(true)
+      router.refresh()
+    })
+  }
+
   return (
     <div className="space-y-2">
       <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide">
-        URL immagine di copertina
+        Immagine di copertina
       </label>
       <div className="flex flex-wrap gap-2">
         <input
@@ -169,11 +187,21 @@ export function ModificaImmagineAttivita({
           disabled={pending}
           className="bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors"
         >
-          Salva immagine
+          Salva URL
         </button>
       </div>
-      {pending && <p className="text-xs text-gray-400">Salvataggio…</p>}
-      {salvato && !pending && <p className="text-xs text-green-600">Immagine salvata.</p>}
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-gray-400">oppure carica un file (JPG, PNG, WebP, SVG — max 4 MB):</span>
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/svg+xml"
+          onChange={e => caricaFile(e.target.files)}
+          disabled={caricamento}
+          className="text-xs"
+        />
+      </div>
+      {(pending || caricamento) && <p className="text-xs text-gray-400">Salvataggio…</p>}
+      {salvato && !pending && !caricamento && <p className="text-xs text-green-600">Immagine salvata.</p>}
       {errore && <p className="text-xs text-red-600">{errore}</p>}
     </div>
   )

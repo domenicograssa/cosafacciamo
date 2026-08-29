@@ -282,6 +282,57 @@ export async function aggiornaImmagineAttivita(
   }
 }
 
+const MAX_IMMAGINE_ATTIVITA_BYTES = 4 * 1024 * 1024 // 4 MB — copre anche loghi/foto non compresse
+const TIPI_IMMAGINE_ACCETTATI = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml']
+
+// Carica un file immagine (o logo) dal computer dell'admin e lo imposta come
+// copertina dell'attività, riusando lo stesso bucket pubblico 'eventi-immagini'
+// già usato dal form di pubblicazione organizzatori (vedi actions/pubblica.ts).
+export async function caricaImmagineAttivita(
+  attivitaId: string,
+  formData: FormData
+): Promise<{ ok: boolean; errore?: string; url?: string }> {
+  try {
+    await richiedeLogin()
+    const sb = await createAdminClient()
+
+    const file = formData.get('immagine')
+    if (!(file instanceof File) || file.size === 0) {
+      return { ok: false, errore: 'Nessun file selezionato.' }
+    }
+    if (file.size > MAX_IMMAGINE_ATTIVITA_BYTES) {
+      return { ok: false, errore: 'Il file supera la dimensione massima di 4 MB.' }
+    }
+    if (!TIPI_IMMAGINE_ACCETTATI.includes(file.type)) {
+      return { ok: false, errore: 'Formato non supportato (usa JPG, PNG, WebP o SVG).' }
+    }
+
+    const { data: attivita } = await sb.from('attivita').select('slug').eq('id', attivitaId).maybeSingle()
+    const estensione = file.type === 'image/svg+xml' ? 'svg' : file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg'
+    const percorso = `attivita/${(attivita?.slug ?? attivitaId)}-${Date.now().toString(36)}.${estensione}`
+    const buffer = Buffer.from(await file.arrayBuffer())
+
+    const { error: errUp } = await sb.storage
+      .from('eventi-immagini')
+      .upload(percorso, buffer, { contentType: file.type, upsert: false })
+    if (errUp) return { ok: false, errore: `Errore nel caricamento: ${errUp.message}` }
+
+    const { data: pub } = sb.storage.from('eventi-immagini').getPublicUrl(percorso)
+
+    const { error } = await sb
+      .from('attivita')
+      .update({ immagine_copertina: pub.publicUrl })
+      .eq('id', attivitaId)
+    if (error) return { ok: false, errore: error.message }
+
+    ricaricaPagine()
+    revalidatePath('/admin/attivita')
+    return { ok: true, url: pub.publicUrl }
+  } catch (e) {
+    return { ok: false, errore: e instanceof Error ? e.message : 'Errore imprevisto' }
+  }
+}
+
 export async function modificaEvento(
   eventoId: string,
   dati: {
