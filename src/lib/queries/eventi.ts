@@ -341,27 +341,69 @@ export async function getSlugAttualeDaSlugStorico(slug: string): Promise<string 
   return (data as { slug: string }).slug
 }
 
-export async function getEventiCorrelati(eventoId: string, categoriaIds: string[], limit = 4, lang: Lang = 'it'): Promise<Evento[]> {
+// Eventi correlati mostrati in fondo alla scheda evento: sono uno dei pochi
+// punti di link interno tra pagine evento (importante per la scansione di
+// Google, vedi indagine indicizzazione di settembre 2026). Prima si
+// cercavano solo eventi con una categoria in comune, e se nessuno ne
+// condivideva una la sezione spariva del tutto — pagina orfana, zero link in
+// uscita verso altre schede. Ora, se la categoria non basta a riempire
+// `limit` risultati, si completa con altri eventi approvati dello stesso
+// comune (i più vicini nel tempo), così la sezione è (quasi) sempre presente.
+export async function getEventiCorrelati(
+  eventoId: string,
+  categoriaIds: string[],
+  limit = 4,
+  lang: Lang = 'it',
+  geoNodoId?: string
+): Promise<Evento[]> {
   const sb = createClient()
+  const righe: Record<string, unknown>[] = []
+  const idsVisti = new Set<string>([eventoId])
 
-  const { data: eventiIds } = await sb
-    .from('eventi_categorie')
-    .select('evento_id')
-    .in('categoria_id', categoriaIds)
-    .neq('evento_id', eventoId)
-    .limit(limit * 2)
+  // 1) Stessa categoria
+  if (categoriaIds.length) {
+    const { data: eventiIds } = await sb
+      .from('eventi_categorie')
+      .select('evento_id')
+      .in('categoria_id', categoriaIds)
+      .neq('evento_id', eventoId)
+      .limit(limit * 3)
 
-  if (!eventiIds?.length) return []
-  const ids = [...new Set(eventiIds.map(e => e.evento_id))].slice(0, limit)
+    const idsCategoria = [...new Set((eventiIds ?? []).map(e => e.evento_id))]
+    if (idsCategoria.length) {
+      const { data, error } = await sb
+        .from('eventi')
+        .select(EVENTO_SELECT)
+        .in('id', idsCategoria)
+        .eq('stato', 'approvato')
+        .limit(limit)
 
-  const { data, error } = await sb
-    .from('eventi')
-    .select(EVENTO_SELECT)
-    .in('id', ids)
-    .eq('stato', 'approvato')
+      if (error) console.error('getEventiCorrelati (categoria):', error)
+      for (const r of data ?? []) {
+        righe.push(r as Record<string, unknown>)
+        idsVisti.add((r as Record<string, unknown>).id as string)
+      }
+    }
+  }
 
-  if (error || !data) return []
-  return data.map(r => mapEvento(flattenCategorie(r as Record<string, unknown>), lang))
+  // 2) Se non bastano, completa con altri eventi dello stesso comune —
+  // esclusi quelli già trovati — ordinati per data più vicina.
+  if (righe.length < limit && geoNodoId) {
+    const mancano = limit - righe.length
+    const { data, error } = await sb
+      .from('eventi')
+      .select(EVENTO_SELECT)
+      .eq('geo_nodo_id', geoNodoId)
+      .eq('stato', 'approvato')
+      .not('id', 'in', `(${[...idsVisti].join(',')})`)
+      .order('data_inizio', { ascending: true })
+      .limit(mancano)
+
+    if (error) console.error('getEventiCorrelati (comune):', error)
+    for (const r of data ?? []) righe.push(r as Record<string, unknown>)
+  }
+
+  return righe.map(r => mapEvento(flattenCategorie(r), lang))
 }
 
 // ─── Query admin ────────────────────────────────────────────────────────────
