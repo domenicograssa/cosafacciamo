@@ -5,6 +5,7 @@ import { getEventoBySlug, getEventiCorrelati, getSlugAttualeDaSlugStorico } from
 import EventCard from '@/components/events/EventCard'
 import ImmagineEvento from '@/components/ui/ImmagineEvento'
 import ShareButtons from '@/components/events/ShareButtons'
+import LinkTracciato from '@/components/events/LinkTracciato'
 import { formatData, formatOra, formatPrezzo, eMultiGiorno, eInCorso, formatIntervalloData } from '@/lib/utils'
 import { fotoComunePerEvento } from '@/data/comuni-immagini'
 import { getLang } from '@/lib/i18n/getLang'
@@ -316,27 +317,27 @@ export default async function DettaglioEvento({ params }: Props) {
           {(evento.sitoUfficiale || evento.urlPrenotazione) && (
             <div className="flex flex-col sm:flex-row gap-3">
               {evento.sitoUfficiale && (
-                <a
+                <LinkTracciato
                   href={evento.sitoUfficiale}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  evento="evento_clic_sito_ufficiale"
+                  parametri={{ evento_slug: evento.slug, evento_titolo: evento.titolo, comune: evento.geoNodo.nome }}
                   className="flex-1 flex items-center justify-center gap-2 bg-amber-400 hover:bg-amber-500 text-white font-bold py-3 px-6 rounded-xl transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                   </svg>
                   {t.event.visitOfficialSite}
-                </a>
+                </LinkTracciato>
               )}
               {evento.urlPrenotazione && (
-                <a
+                <LinkTracciato
                   href={evento.urlPrenotazione}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  evento="evento_clic_biglietti"
+                  parametri={{ evento_slug: evento.slug, evento_titolo: evento.titolo, comune: evento.geoNodo.nome }}
                   className="flex-1 flex items-center justify-center gap-2 border-2 border-amber-400 text-amber-600 hover:bg-amber-50 font-bold py-3 px-6 rounded-xl transition-colors"
                 >
                   🎟️ {t.event.bookOrBuyTickets}
-                </a>
+                </LinkTracciato>
               )}
             </div>
           )}
@@ -380,23 +381,23 @@ export default async function DettaglioEvento({ params }: Props) {
               </p>
             </div>
             {(evento.urlPrenotazione || evento.urlBiglietti) ? (
-              <a
+              <LinkTracciato
                 href={(evento.urlPrenotazione ?? evento.urlBiglietti)!}
-                target="_blank"
-                rel="noopener noreferrer"
+                evento="evento_clic_biglietti"
+                parametri={{ evento_slug: evento.slug, evento_titolo: evento.titolo, comune: evento.geoNodo.nome, posizione: 'sidebar' }}
                 className="block text-center w-full bg-amber-400 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition-colors"
               >
                 🎟️ {t.event.bookTicketsShort}
-              </a>
+              </LinkTracciato>
             ) : evento.sitoUfficiale ? (
-              <a
+              <LinkTracciato
                 href={evento.sitoUfficiale}
-                target="_blank"
-                rel="noopener noreferrer"
+                evento="evento_clic_sito_ufficiale"
+                parametri={{ evento_slug: evento.slug, evento_titolo: evento.titolo, comune: evento.geoNodo.nome, posizione: 'sidebar' }}
                 className="block text-center w-full bg-amber-400 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition-colors"
               >
                 {t.event.infoOnOfficialSite}
-              </a>
+              </LinkTracciato>
             ) : (
               <p className="text-xs text-center text-gray-400">
                 {t.event.contactOrganizerForInfo}
@@ -427,14 +428,14 @@ export default async function DettaglioEvento({ params }: Props) {
           <p className="text-xs text-gray-500 mt-0.5 truncate">{etichettaDataBreve}</p>
         </div>
         {(evento.urlPrenotazione || evento.urlBiglietti || evento.sitoUfficiale) && (
-          <a
+          <LinkTracciato
             href={(evento.urlPrenotazione ?? evento.urlBiglietti ?? evento.sitoUfficiale)!}
-            target="_blank"
-            rel="noopener noreferrer"
+            evento={evento.urlPrenotazione || evento.urlBiglietti ? 'evento_clic_biglietti' : 'evento_clic_sito_ufficiale'}
+            parametri={{ evento_slug: evento.slug, evento_titolo: evento.titolo, comune: evento.geoNodo.nome, posizione: 'sticky_mobile' }}
             className="bg-amber-400 hover:bg-amber-500 text-white font-bold py-3 px-6 rounded-xl transition-colors shrink-0"
           >
             {evento.urlPrenotazione || evento.urlBiglietti ? t.event.book : t.event.info}
-          </a>
+          </LinkTracciato>
         )}
       </div>
 

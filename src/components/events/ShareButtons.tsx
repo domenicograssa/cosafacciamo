@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useLang } from '@/lib/i18n/LanguageContext'
+import { tracciaEventoGA } from '@/lib/analytics/traccia'
 
 interface ShareButtonsProps {
   titolo: string
@@ -12,10 +13,14 @@ export default function ShareButtons({ titolo, url }: ShareButtonsProps) {
   const { t } = useLang()
   const [copiato, setCopiato] = useState(false)
 
+  const traccia = (canale: string) =>
+    tracciaEventoGA('evento_condivisione', { canale, evento_titolo: titolo })
+
   const encodedUrl  = encodeURIComponent(url)
   const encodedTesto = encodeURIComponent(`${titolo} — ${url}`)
 
   const copiLink = async () => {
+    traccia('copia_link')
     try {
       await navigator.clipboard.writeText(url)
     } catch {
@@ -42,6 +47,7 @@ export default function ShareButtons({ titolo, url }: ShareButtonsProps) {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Condividi su WhatsApp"
+          onClick={() => traccia('whatsapp')}
           className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-green-50 transition-colors"
         >
           <svg className="w-7 h-7 text-green-500" viewBox="0 0 24 24" fill="currentColor">
@@ -56,6 +62,7 @@ export default function ShareButtons({ titolo, url }: ShareButtonsProps) {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Condividi su Facebook"
+          onClick={() => traccia('facebook')}
           className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-blue-50 transition-colors"
         >
           <svg className="w-7 h-7 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
@@ -70,6 +77,7 @@ export default function ShareButtons({ titolo, url }: ShareButtonsProps) {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Condividi su X"
+          onClick={() => traccia('x')}
           className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-gray-100 transition-colors"
         >
           <svg className="w-7 h-7 text-gray-900" viewBox="0 0 24 24" fill="currentColor">
