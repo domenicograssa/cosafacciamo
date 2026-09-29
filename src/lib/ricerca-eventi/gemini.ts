@@ -59,23 +59,42 @@ export async function cercaEventiConGemini(ctx: ContestoRicerca, segnale?: Abort
   if (!apiKey) throw new Error('GEMINI_API_KEY non impostata.')
   const modello = process.env.GEMINI_MODEL?.trim() || MODELLO_DEFAULT
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modello)}:generateContent`,
-    {
-      method: 'POST',
-      signal: segnale,
-      headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: promptDiSistema() }] },
-        contents: [{ role: 'user', parts: [{ text: promptUtente(ctx) }] }],
-        tools: [{ google_search: {} }],
-        generationConfig: { temperature: 0.2, maxOutputTokens: 16000 },
-      }),
-    },
-  )
+  // Gemini decide da solo se usare la ricerca Google e, senza un'istruzione
+  // esplicita, a volte risponde "a memoria" (visto il 30/9/2026: 0 ricerche).
+  // Per questo: istruzione obbligatoria in testa al prompt e, se la risposta
+  // arriva comunque senza ricerche, un secondo tentativo ancora più esplicito.
+  const obbligoRicerca = (insistente: boolean) =>
+    `ISTRUZIONE OBBLIGATORIA: prima di rispondere DEVI usare lo strumento di ricerca Google ` +
+    `ed eseguire almeno 6 ricerche distinte (una per ciascuna categoria: musica, food & wine, cultura, ` +
+    `sport, feste patronali/tradizioni, famiglie), più eventuali ricerche di approfondimento sui singoli eventi. ` +
+    `Non rispondere MAI dalla tua memoria: ogni evento deve provenire da un risultato di ricerca di questa sessione.` +
+    (insistente ? ' Il tentativo precedente è stato scartato perché non hai effettuato ricerche: questa volta cerca davvero.' : '') +
+    `\n\n`
 
-  const dati = (await res.json().catch(() => ({}))) as RispostaGemini
-  if (!res.ok) throw new Error(`API Gemini ${res.status}: ${dati.error?.message ?? 'errore sconosciuto'}`)
+  const chiama = async (insistente: boolean) => {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modello)}:generateContent`,
+      {
+        method: 'POST',
+        signal: segnale,
+        headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: promptDiSistema() }] },
+          contents: [{ role: 'user', parts: [{ text: obbligoRicerca(insistente) + promptUtente(ctx) }] }],
+          tools: [{ google_search: {} }],
+          generationConfig: { temperature: 0.2, maxOutputTokens: 16000 },
+        }),
+      },
+    )
+    const d = (await res.json().catch(() => ({}))) as RispostaGemini
+    if (!res.ok) throw new Error(`API Gemini ${res.status}: ${d.error?.message ?? 'errore sconosciuto'}`)
+    return d
+  }
+
+  let dati = await chiama(false)
+  const haCercato = (d: RispostaGemini) =>
+    (d.candidates?.[0]?.groundingMetadata?.groundingChunks?.length ?? 0) > 0
+  if (!haCercato(dati)) dati = await chiama(true)
 
   const cand = dati.candidates?.[0]
   const testo = (cand?.content?.parts ?? []).map(p => p.text ?? '').join('')
