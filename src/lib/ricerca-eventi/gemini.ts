@@ -1,38 +1,44 @@
 import type { EventoCandidato } from '@/lib/eventi-proposti'
 import { promptDiSistema, promptUtente, estraiJson, type ContestoRicerca, type EsitoRicercaClaude } from './claude'
 
-// Motore GRATUITO: API Gemini di Google con "Grounding with Google Search".
-// Il piano gratuito di Google AI Studio include un numero di richieste con
-// ricerca al giorno ampiamente sufficiente (~15 comuni a settimana).
+// Motore economico: API Gemini di Google con "Grounding with Google Search",
+// tramite la Interactions API (POST /v1beta/interactions).
+//
+// STORIA (30/9/2026): la prima versione usava generateContent con
+// tools: [{ google_search: {} }]. Con i modelli 3.x quella API (ora "Legacy")
+// accettava la richiesta ma NON eseguiva mai la ricerca: Gemini rispondeva a
+// memoria e scriveva nelle note di aver cercato. La Interactions API invece
+// restituisce i passaggi "google_search_call" e le citazioni "url_citation"
+// con gli URL reali delle fonti.
+//
+// Costi: la ricerca Google è inclusa fino a 5.000 query/mese (condivise tra i
+// modelli 3.x) SOLO con fatturazione attiva; nel piano gratuito non è disponibile.
 //
 // Variabili d'ambiente:
-//   GEMINI_API_KEY  (obbligatoria)  da aistudio.google.com → Get API key
-//   GEMINI_MODEL    (facoltativa)   default "gemini-2.5-flash"
-//
-// Differenza con Claude: Gemini restituisce le fonti come link di
-// reindirizzamento di Google (vertexaisearch.cloud.google.com/grounding-api-redirect/...).
-// Qui li risolviamo negli URL originali, così il controllo "fonte vista
-// davvero" della route resta valido e in admin compare il link vero.
+//   GEMINI_API_KEY  (obbligatoria)  da aistudio.google.com → Chiavi API
+//   GEMINI_MODEL    (facoltativa)   default "gemini-3.5-flash-lite"
 
-const MODELLO_DEFAULT = 'gemini-2.5-flash'
+const API_URL = 'https://generativelanguage.googleapis.com/v1beta/interactions'
+const MODELLO_DEFAULT = 'gemini-3.5-flash-lite'
 
-interface Chunk { web?: { uri?: string; title?: string } }
-interface Support { segment?: { text?: string }; groundingChunkIndices?: number[] }
-interface RispostaGemini {
-  candidates?: Array<{
-    content?: { parts?: Array<{ text?: string }> }
-    finishReason?: string
-    groundingMetadata?: {
-      groundingChunks?: Chunk[]
-      groundingSupports?: Support[]
-      webSearchQueries?: string[]
-    }
-  }>
-  usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number }
-  error?: { message?: string }
+interface Annotazione { type?: string; url?: string; title?: string; start_index?: number; end_index?: number }
+interface BloccoContenuto { type?: string; text?: string; annotations?: Annotazione[] }
+interface Passo {
+  type?: string
+  arguments?: { queries?: string[] }
+  content?: BloccoContenuto[]
+  result?: Array<{ url?: string; title?: string }>
+}
+interface RispostaInteraction {
+  id?: string
+  status?: string
+  model?: string
+  steps?: Passo[]
+  usage?: { total_input_tokens?: number; total_output_tokens?: number; total_tokens?: number }
+  error?: { message?: string; code?: number }
 }
 
-/** Segue il reindirizzamento di Google e restituisce l'URL originale. */
+/** Se Google restituisce un link di reindirizzamento, lo risolve nell'URL originale. */
 async function risolviRedirect(uri: string): Promise<string> {
   if (!uri.includes('grounding-api-redirect')) return uri
   try {
@@ -59,10 +65,6 @@ export async function cercaEventiConGemini(ctx: ContestoRicerca, segnale?: Abort
   if (!apiKey) throw new Error('GEMINI_API_KEY non impostata.')
   const modello = modelloForzato || process.env.GEMINI_MODEL?.trim() || MODELLO_DEFAULT
 
-  // Gemini decide da solo se usare la ricerca Google e, senza un'istruzione
-  // esplicita, a volte risponde "a memoria" (visto il 30/9/2026: 0 ricerche).
-  // Per questo: istruzione obbligatoria in testa al prompt e, se la risposta
-  // arriva comunque senza ricerche, un secondo tentativo ancora più esplicito.
   const obbligoRicerca = (insistente: boolean) =>
     `ISTRUZIONE OBBLIGATORIA: prima di rispondere DEVI usare lo strumento di ricerca Google ` +
     `ed eseguire almeno 6 ricerche distinte (una per ciascuna categoria: musica, food & wine, cultura, ` +
@@ -71,69 +73,84 @@ export async function cercaEventiConGemini(ctx: ContestoRicerca, segnale?: Abort
     (insistente ? ' Il tentativo precedente è stato scartato perché non hai effettuato ricerche: questa volta cerca davvero.' : '') +
     `\n\n`
 
-  const chiama = async (insistente: boolean) => {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modello)}:generateContent`,
-      {
-        method: 'POST',
-        signal: segnale,
-        headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: promptDiSistema() }] },
-          contents: [{ role: 'user', parts: [{ text: obbligoRicerca(insistente) + promptUtente(ctx) }] }],
-          tools: [{ google_search: {} }],
-          generationConfig: { temperature: 0.2, maxOutputTokens: 16000 },
-        }),
-      },
-    )
-    const d = (await res.json().catch(() => ({}))) as RispostaGemini
+  const chiama = async (insistente: boolean): Promise<RispostaInteraction> => {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      signal: segnale,
+      headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
+      body: JSON.stringify({
+        model: modello,
+        system_instruction: promptDiSistema(),
+        input: obbligoRicerca(insistente) + promptUtente(ctx),
+        tools: [{ type: 'google_search' }],
+      }),
+    })
+    const d = (await res.json().catch(() => ({}))) as RispostaInteraction
     if (!res.ok) throw new Error(`API Gemini ${res.status}: ${d.error?.message ?? 'errore sconosciuto'}`)
+    if (d.status && d.status !== 'completed') throw new Error(`API Gemini: interazione in stato "${d.status}"`)
     return d
   }
 
+  const querDi = (d: RispostaInteraction) =>
+    (d.steps ?? []).filter(s => s.type === 'google_search_call').flatMap(s => s.arguments?.queries ?? [])
+
   let dati = await chiama(false)
   let tentativi = 1
-  const haCercato = (d: RispostaGemini) =>
-    (d.candidates?.[0]?.groundingMetadata?.groundingChunks?.length ?? 0) > 0
-  if (!haCercato(dati)) { dati = await chiama(true); tentativi = 2 }
+  if (querDi(dati).length === 0) { dati = await chiama(true); tentativi = 2 }
 
-  const cand = dati.candidates?.[0]
-  const testo = (cand?.content?.parts ?? []).map(p => p.text ?? '').join('')
-  const meta = cand?.groundingMetadata ?? {}
-  const chunks = meta.groundingChunks ?? []
-  const supports = meta.groundingSupports ?? []
+  const passi = dati.steps ?? []
+  const query = querDi(dati)
 
-  // Risolve i link di reindirizzamento in parallelo: indice chunk → URL originale.
-  const urlChunk = await Promise.all(chunks.map(c => risolviRedirect(c.web?.uri ?? '')))
-  const urlVisti = new Set<string>(urlChunk.filter(Boolean))
+  // Testo finale e citazioni: dall'ultimo passo "model_output" che contiene testo.
+  const uscite = passi.filter(s => s.type === 'model_output')
+  const blocchi = uscite.flatMap(s => s.content ?? []).filter(b => b.type === 'text')
+  const testo = blocchi.map(b => b.text ?? '').join('')
 
-  // Diagnostica (solo nomi di campi e contatori, nessun contenuto): serve a
-  // capire se Gemini ha davvero usato la ricerca Google.
-  const grezzo = dati as unknown as Record<string, unknown>
+  // Citazioni: ogni annotazione indica il tratto del blocco di testo che cita.
+  const citazioni: Array<{ url: string; testoCitato: string }> = []
+  for (const b of blocchi) {
+    for (const a of b.annotations ?? []) {
+      if (a.type === 'url_citation' && a.url) {
+        const s = a.start_index ?? 0, e = a.end_index ?? 0
+        citazioni.push({ url: a.url, testoCitato: (b.text ?? '').slice(s, e) })
+      }
+    }
+  }
+  // Eventuali URL nei risultati di ricerca (se l'API li espone).
+  const urlRisultati = passi
+    .filter(s => s.type === 'google_search_result')
+    .flatMap(s => (Array.isArray(s.result) ? s.result : []).map(r => r?.url).filter((u): u is string => !!u))
+
+  const urlCitati = await Promise.all(citazioni.map(c => risolviRedirect(c.url)))
+  const urlRisolti = await Promise.all(urlRisultati.map(risolviRedirect))
+  const urlVisti = new Set<string>([...urlCitati, ...urlRisolti].filter(Boolean))
+
+  // Diagnostica (solo nomi e contatori, nessun contenuto).
   const diagnostica = {
+    api: 'interactions',
     modello,
-    modelVersion: grezzo.modelVersion,
+    modelloRisposta: dati.model,
     tentativi,
-    finishReason: cand?.finishReason,
-    campiRisposta: Object.keys(grezzo),
-    campiCandidato: cand ? Object.keys(cand) : [],
-    campiGrounding: Object.keys(meta),
-    nChunks: chunks.length,
-    nQuery: meta.webSearchQueries?.length ?? 0,
-    usage: dati.usageMetadata,
+    stato: dati.status,
+    tipiPassi: passi.map(p => p.type),
+    nQuery: query.length,
+    query: query.slice(0, 20),
+    nCitazioni: citazioni.length,
+    nUrlVisti: urlVisti.size,
+    usage: dati.usage,
   }
 
   const base = {
     diagnostica,
     urlVisti,
-    ricercheWeb: meta.webSearchQueries?.length ?? 0,
-    tokenInput: dati.usageMetadata?.promptTokenCount ?? 0,
-    tokenOutput: dati.usageMetadata?.candidatesTokenCount ?? 0,
+    ricercheWeb: query.length,
+    tokenInput: dati.usage?.total_input_tokens ?? 0,
+    tokenOutput: dati.usage?.total_output_tokens ?? 0,
   }
 
   const json = estraiJson(testo)
   if (!json) {
-    return { ...base, candidati: [], note: `Risposta non interpretabile (${cand?.finishReason ?? '?'}): ${testo.slice(0, 300)}` }
+    return { ...base, candidati: [], note: `Risposta non interpretabile: ${testo.slice(0, 300)}` }
   }
 
   const candidati: EventoCandidato[] = []
@@ -142,26 +159,18 @@ export async function cercaEventiConGemini(ctx: ContestoRicerca, segnale?: Abort
     const c = { ...(e as Record<string, unknown>), comuneSlug: ctx.comune.slug } as unknown as EventoCandidato
     const fonte = String(c.fonteRicerca ?? '')
 
-    // 1) Se Gemini ha scritto il link di reindirizzamento, lo sostituiamo con quello risolto.
-    const idxRedirect = chunks.findIndex(ch => ch.web?.uri && norm(ch.web.uri) === norm(fonte))
-    if (idxRedirect >= 0) c.fonteRicerca = urlChunk[idxRedirect]
-
-    // 2) Se l'URL non coincide con nessuna fonte vista, ma il sito sì, usiamo la
-    //    pagina di quel sito effettivamente consultata (preferendo quella che
-    //    Gemini collega al testo che contiene il titolo dell'evento).
-    const visto = [...urlVisti].some(u => norm(u) === norm(c.fonteRicerca ?? ''))
+    // Se l'URL indicato non coincide con nessuna fonte citata ma il sito sì,
+    // usa la pagina di quel sito effettivamente citata (preferendo quella la
+    // cui citazione contiene il titolo dell'evento).
+    const visto = [...urlVisti].some(u => norm(u) === norm(fonte))
     if (!visto) {
-      const h = host(c.fonteRicerca ?? '') || (chunks.find(ch => ch.web?.title && fonte.includes(ch.web.title))?.web?.title ?? '')
-      const stessoSito = urlChunk.map((u, i) => ({ u, i })).filter(x => h && host(x.u) === h)
+      const h = host(fonte)
+      const titolo = String(c.titolo ?? '').toLowerCase().slice(0, 30)
+      const stessoSito = citazioni
+        .map((cit, i) => ({ url: urlCitati[i], testo: cit.testoCitato.toLowerCase() }))
+        .filter(x => h && host(x.url) === h)
       if (stessoSito.length) {
-        const titolo = String(c.titolo ?? '').toLowerCase().slice(0, 30)
-        const collegati = new Set(
-          supports
-            .filter(s => titolo && s.segment?.text?.toLowerCase().includes(titolo))
-            .flatMap(s => s.groundingChunkIndices ?? []),
-        )
-        const scelto = stessoSito.find(x => collegati.has(x.i)) ?? stessoSito[0]
-        c.fonteRicerca = scelto.u
+        c.fonteRicerca = (stessoSito.find(x => titolo && x.testo.includes(titolo)) ?? stessoSito[0]).url
       }
     }
     candidati.push(c)
