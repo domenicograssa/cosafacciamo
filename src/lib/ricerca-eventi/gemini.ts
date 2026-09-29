@@ -21,6 +21,35 @@ import { promptDiSistema, promptUtente, estraiJson, type ContestoRicerca, type E
 const API_URL = 'https://generativelanguage.googleapis.com/v1beta/interactions'
 const MODELLO_DEFAULT = 'gemini-3.5-flash-lite'
 
+const S = { type: 'string' }
+const SCHEMA_RISPOSTA = {
+  type: 'object',
+  properties: {
+    eventi: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          titolo: S, descrizione: S, descrizioneBreve: S,
+          dataInizio: { type: 'string', description: 'YYYY-MM-DD' },
+          oraInizio: { type: 'string', description: 'HH:MM' },
+          dataFine: { type: 'string', description: 'YYYY-MM-DD' },
+          oraFine: { type: 'string', description: 'HH:MM' },
+          luogoNome: S, indirizzo: S,
+          gratuito: { type: 'boolean' },
+          prezzoMin: { type: 'number' }, prezzoMax: { type: 'number' },
+          sitoUfficiale: S, urlBiglietti: S,
+          categorieSlugs: { type: 'array', items: S },
+          fonteRicerca: { type: 'string', description: 'URL esatto della pagina fonte trovata con la ricerca' },
+        },
+        required: ['titolo', 'descrizione', 'dataInizio', 'fonteRicerca'],
+      },
+    },
+    note: S,
+  },
+  required: ['eventi', 'note'],
+}
+
 interface Annotazione { type?: string; url?: string; title?: string; start_index?: number; end_index?: number }
 interface BloccoContenuto { type?: string; text?: string; annotations?: Annotazione[] }
 interface Passo {
@@ -73,8 +102,13 @@ export async function cercaEventiConGemini(ctx: ContestoRicerca, segnale?: Abort
     (insistente ? ' Il tentativo precedente è stato scartato perché non hai effettuato ricerche: questa volta cerca davvero.' : '') +
     `\n\n`
 
+  // JSON garantito tramite schema (response_format). Se l'API rifiuta lo
+  // schema insieme alla ricerca Google, si riprova senza e ci si affida al
+  // parser tollerante di estraiJson.
+  let usaSchema = true
+  let schemaRifiutato: string | undefined
   const chiama = async (insistente: boolean): Promise<RispostaInteraction> => {
-    const res = await fetch(API_URL, {
+    const invia = (conSchema: boolean) => fetch(API_URL, {
       method: 'POST',
       signal: segnale,
       headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
@@ -83,9 +117,17 @@ export async function cercaEventiConGemini(ctx: ContestoRicerca, segnale?: Abort
         system_instruction: promptDiSistema(),
         input: obbligoRicerca(insistente) + promptUtente(ctx),
         tools: [{ type: 'google_search' }],
+        ...(conSchema ? { response_format: { type: 'text', mime_type: 'application/json', schema: SCHEMA_RISPOSTA } } : {}),
       }),
     })
-    const d = (await res.json().catch(() => ({}))) as RispostaInteraction
+    let res = await invia(usaSchema)
+    let d = (await res.json().catch(() => ({}))) as RispostaInteraction
+    if (res.status === 400 && usaSchema) {
+      schemaRifiutato = d.error?.message?.slice(0, 200)
+      usaSchema = false
+      res = await invia(false)
+      d = (await res.json().catch(() => ({}))) as RispostaInteraction
+    }
     if (!res.ok) throw new Error(`API Gemini ${res.status}: ${d.error?.message ?? 'errore sconosciuto'}`)
     if (d.status && d.status !== 'completed') throw new Error(`API Gemini: interazione in stato "${d.status}"`)
     return d
@@ -135,6 +177,14 @@ export async function cercaEventiConGemini(ctx: ContestoRicerca, segnale?: Abort
     tipiPassi: passi.map(p => p.type),
     nQuery: query.length,
     query: query.slice(0, 20),
+    schema: usaSchema ? 'usato' : `rifiutato: ${schemaRifiutato ?? '?'}`,
+    // Struttura dei risultati di ricerca (solo nomi dei campi) per capire se contengono URL.
+    campiRisultatoRicerca: [...new Set(passi
+      .filter(p => p.type === 'google_search_result')
+      .flatMap(p => [
+        ...Object.keys(p as object),
+        ...(Array.isArray(p.result) ? p.result.flatMap(r => Object.keys(r ?? {}).map(k => `result.${k}`)) : []),
+      ]))],
     nCitazioni: citazioni.length,
     nUrlVisti: urlVisti.size,
     usage: dati.usage,

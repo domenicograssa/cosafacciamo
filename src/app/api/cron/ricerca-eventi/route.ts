@@ -71,14 +71,44 @@ function distanzaGiorni(a: string, b: string): number {
 
 interface Scarto { titolo: string; motivo: string }
 
-function valida(
+/**
+ * Verifica indipendente della fonte: il server apre la pagina e controlla che
+ * esista (HTTP 200), che parli del 2026 e che contenga buona parte delle
+ * parole significative del titolo. Serve quando il motore di ricerca non
+ * restituisce gli URL visti (es. Gemini) e blocca comunque le fonti inventate.
+ * Pagine non leggibili dal server (es. Facebook/Instagram) non passano: in
+ * dubbio si scarta.
+ */
+async function verificaPaginaFonte(url: string, titolo: string): Promise<string | null> {
+  try {
+    const res = await fetch(url, {
+      redirect: 'follow',
+      signal: AbortSignal.timeout(10000),
+      headers: { 'user-agent': 'Mozilla/5.0 (compatible; moesco-verifica-fonti/1.0; +https://www.moesco.it)' },
+    })
+    if (!res.ok) return `pagina fonte non raggiungibile (HTTP ${res.status})`
+    const html = (await res.text()).slice(0, 2_000_000)
+    const testo = slugify(html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' '))
+    if (!testo.includes('2026')) return 'la pagina fonte non menziona il 2026'
+    const parole = [...paroleTitolo(titolo)]
+    if (parole.length) {
+      const trovate = parole.filter(p => testo.includes(p)).length
+      if (trovate / parole.length < 0.6) return `la pagina fonte non contiene il titolo (${trovate}/${parole.length} parole)`
+    }
+    return null
+  } catch (e) {
+    return `pagina fonte non leggibile (${e instanceof Error ? e.name : 'errore'})`
+  }
+}
+
+async function valida(
   c: EventoCandidato,
   oggi: string,
   fine: string,
   urlVisti: Set<string>,
   esistenti: Array<{ titolo: string; data: string }>,
   giaAccettati: EventoCandidato[],
-): string | null {
+): Promise<string | null> {
   if (!c.titolo?.trim()) return 'titolo mancante'
   if (!/^\d{4}-\d{2}-\d{2}$/.test(c.dataInizio || '')) return 'dataInizio non valida'
   if (c.dataFine && !/^\d{4}-\d{2}-\d{2}$/.test(c.dataFine)) return 'dataFine non valida'
@@ -88,15 +118,6 @@ function valida(
   if (c.dataFine && c.dataFine < c.dataInizio) return 'dataFine precedente a dataInizio'
   if ((c.descrizione?.length ?? 0) < LUNGHEZZA_MINIMA_DESCRIZIONE) return 'descrizione troppo corta'
   if (!/^https?:\/\//.test(c.fonteRicerca || '')) return 'fonteRicerca mancante o non è un URL'
-
-  // La fonte deve essere un URL effettivamente visto nei risultati di ricerca:
-  // blocca le fonti inventate.
-  const fonte = normalizzaUrl(c.fonteRicerca)
-  const vista = [...urlVisti].some(u => {
-    const n = normalizzaUrl(u)
-    return n === fonte || n.split('?')[0] === fonte.split('?')[0]
-  })
-  if (!vista) return 'fonte non presente tra i risultati di ricerca'
 
   for (const e of esistenti) {
     const sim = similarita(c.titolo, e.titolo)
@@ -108,6 +129,19 @@ function valida(
     if (similarita(c.titolo, a.titolo) >= 0.6 && distanzaGiorni(c.dataInizio, a.dataInizio) <= 3) {
       return `doppione interno di "${a.titolo}"`
     }
+  }
+
+  // La fonte deve essere un URL effettivamente visto nei risultati di ricerca
+  // oppure una pagina reale che il server riesce ad aprire e che parla
+  // davvero dell'evento: blocca le fonti inventate.
+  const fonte = normalizzaUrl(c.fonteRicerca)
+  const vista = [...urlVisti].some(u => {
+    const n = normalizzaUrl(u)
+    return n === fonte || n.split('?')[0] === fonte.split('?')[0]
+  })
+  if (!vista) {
+    const problema = await verificaPaginaFonte(c.fonteRicerca, c.titolo)
+    if (problema) return problema
   }
   return null
 }
@@ -185,7 +219,7 @@ export async function GET(req: NextRequest) {
   const accettati: EventoCandidato[] = []
   const scartati: Scarto[] = []
   for (const c of esito.candidati) {
-    const motivo = valida(c, oggi, fine, esito.urlVisti, esistenti, accettati)
+    const motivo = await valida(c, oggi, fine, esito.urlVisti, esistenti, accettati)
     if (motivo) { scartati.push({ titolo: c.titolo || '(senza titolo)', motivo }); continue }
     if (c.categorieSlugs) c.categorieSlugs = c.categorieSlugs.filter(s => slugValidi.has(s))
     accettati.push(c)

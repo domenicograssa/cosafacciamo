@@ -108,11 +108,39 @@ export function estraiJson(testo: string): { eventi?: unknown[]; note?: string }
   const inizio = grezzo.indexOf('{')
   const fine = grezzo.lastIndexOf('}')
   if (inizio === -1 || fine <= inizio) return null
+  const pezzo = grezzo.slice(inizio, fine + 1)
   try {
-    return JSON.parse(grezzo.slice(inizio, fine + 1))
+    return JSON.parse(pezzo)
   } catch {
-    return null
+    // Riparazione minima: a capo e tabulazioni letterali dentro le stringhe
+    // (errore frequente dei modelli nei testi lunghi) vengono protetti.
+    try {
+      return JSON.parse(riparaJson(pezzo))
+    } catch {
+      return null
+    }
   }
+}
+
+function riparaJson(s: string): string {
+  let out = ''
+  let inStringa = false
+  let escape = false
+  for (const ch of s) {
+    if (inStringa) {
+      if (escape) { out += ch; escape = false; continue }
+      if (ch === '\\') { out += ch; escape = true; continue }
+      if (ch === '"') { out += ch; inStringa = false; continue }
+      if (ch === '\n') { out += '\\n'; continue }
+      if (ch === '\r') { continue }
+      if (ch === '\t') { out += '\\t'; continue }
+      out += ch
+    } else {
+      if (ch === '"') inStringa = true
+      out += ch
+    }
+  }
+  return out
 }
 
 /** Raccoglie tutti gli URL che Claude ha visto nei risultati di ricerca o citato. */
