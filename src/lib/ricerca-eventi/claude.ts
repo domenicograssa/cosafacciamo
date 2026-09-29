@@ -33,6 +33,7 @@ export interface EsitoRicercaClaude {
   ricercheWeb: number
   tokenInput: number
   tokenOutput: number
+  diagnostica?: Record<string, unknown>
 }
 
 export interface ContestoRicerca {

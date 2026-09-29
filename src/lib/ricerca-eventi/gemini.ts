@@ -54,10 +54,10 @@ function norm(u: string): string {
   return u.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/#.*$/, '').replace(/\/+$/, '')
 }
 
-export async function cercaEventiConGemini(ctx: ContestoRicerca, segnale?: AbortSignal): Promise<EsitoRicercaClaude> {
+export async function cercaEventiConGemini(ctx: ContestoRicerca, segnale?: AbortSignal, modelloForzato?: string): Promise<EsitoRicercaClaude> {
   const apiKey = process.env.GEMINI_API_KEY?.trim()
   if (!apiKey) throw new Error('GEMINI_API_KEY non impostata.')
-  const modello = process.env.GEMINI_MODEL?.trim() || MODELLO_DEFAULT
+  const modello = modelloForzato || process.env.GEMINI_MODEL?.trim() || MODELLO_DEFAULT
 
   // Gemini decide da solo se usare la ricerca Google e, senza un'istruzione
   // esplicita, a volte risponde "a memoria" (visto il 30/9/2026: 0 ricerche).
@@ -92,9 +92,10 @@ export async function cercaEventiConGemini(ctx: ContestoRicerca, segnale?: Abort
   }
 
   let dati = await chiama(false)
+  let tentativi = 1
   const haCercato = (d: RispostaGemini) =>
     (d.candidates?.[0]?.groundingMetadata?.groundingChunks?.length ?? 0) > 0
-  if (!haCercato(dati)) dati = await chiama(true)
+  if (!haCercato(dati)) { dati = await chiama(true); tentativi = 2 }
 
   const cand = dati.candidates?.[0]
   const testo = (cand?.content?.parts ?? []).map(p => p.text ?? '').join('')
@@ -106,7 +107,24 @@ export async function cercaEventiConGemini(ctx: ContestoRicerca, segnale?: Abort
   const urlChunk = await Promise.all(chunks.map(c => risolviRedirect(c.web?.uri ?? '')))
   const urlVisti = new Set<string>(urlChunk.filter(Boolean))
 
+  // Diagnostica (solo nomi di campi e contatori, nessun contenuto): serve a
+  // capire se Gemini ha davvero usato la ricerca Google.
+  const grezzo = dati as unknown as Record<string, unknown>
+  const diagnostica = {
+    modello,
+    modelVersion: grezzo.modelVersion,
+    tentativi,
+    finishReason: cand?.finishReason,
+    campiRisposta: Object.keys(grezzo),
+    campiCandidato: cand ? Object.keys(cand) : [],
+    campiGrounding: Object.keys(meta),
+    nChunks: chunks.length,
+    nQuery: meta.webSearchQueries?.length ?? 0,
+    usage: dati.usageMetadata,
+  }
+
   const base = {
+    diagnostica,
     urlVisti,
     ricercheWeb: meta.webSearchQueries?.length ?? 0,
     tokenInput: dati.usageMetadata?.promptTokenCount ?? 0,

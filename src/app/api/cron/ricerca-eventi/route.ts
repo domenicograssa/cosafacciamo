@@ -31,6 +31,7 @@ import { cercaEventiConGemini } from '@/lib/ricerca-eventi/gemini'
 //   gruppo=N      forza il gruppo (0-4) invece di quello calcolato
 //   prova=1       dry-run: esegue la ricerca ma NON inserisce nulla
 //   motore=gemini|claude  forza il motore di ricerca
+//   modello=...   forza il modello Gemini (solo per prove)
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // secondi (massimo consentito sul piano Hobby con Fluid compute)
@@ -164,13 +165,15 @@ export async function GET(req: NextRequest) {
   // ── Ricerca (timeout interno per restare sotto maxDuration) ──
   const motore = (params.get('motore') || process.env.MOTORE_RICERCA_EVENTI?.trim()
     || (process.env.GEMINI_API_KEY ? 'gemini' : 'claude')) === 'claude' ? 'claude' : 'gemini'
+  const modelloParam = params.get('modello')?.trim()
+  const modelloForzato = modelloParam && /^[a-z0-9.\-]{3,60}$/.test(modelloParam) ? modelloParam : undefined
   const timeout = AbortSignal.timeout((maxDuration - 25) * 1000)
   const contesto = { comune, oggiIso: oggi, fineFinestraIso: fine, eventiEsistenti: esistenti, categorie }
   let esito
   try {
     esito = motore === 'claude'
       ? await cercaEventiConClaude(contesto, timeout)
-      : await cercaEventiConGemini(contesto, timeout)
+      : await cercaEventiConGemini(contesto, timeout, modelloForzato)
   } catch (e) {
     const errore = e instanceof Error ? e.message : String(e)
     console.error(`[ricerca-eventi] ${motore} ${comune.slug}: ${errore}`)
@@ -215,6 +218,7 @@ export async function GET(req: NextRequest) {
     proposti: prova ? accettati.map(a => ({ titolo: a.titolo, data: a.dataInizio, fonte: a.fonteRicerca })) : risultati,
     scartati,
     note: esito.note,
+    diagnostica: esito.diagnostica,
   }
   console.log(`[ricerca-eventi] ${JSON.stringify(report)}`)
   return NextResponse.json(report)
