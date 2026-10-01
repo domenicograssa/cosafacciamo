@@ -151,6 +151,9 @@ Sostituisce il vecchio task pianificato di Cowork. File:
   se li compili via browser automatizzato, simula digitazione vera, non impostare il valore.
 - Il cambio del titolo di un evento rigenera lo slug e salva il vecchio in `slug_precedenti`:
   i post Facebook usano slug scritti a mano, quindi i vecchi link devono continuare a funzionare.
+- `/llms.txt` (`src/app/llms.txt/route.ts`): presentazione del sito per gli assistenti AI
+  (ChatGPT porta visite: 11 utenti su 37 a settembre 2026), con comuni, categorie e
+  prossimi eventi approvati presi dal DB. Se cambiano le sezioni del sito, aggiornalo.
 - Accessibilità: barriere note e non ancora risolte sono elencate in
   `/dichiarazione-accessibilita` (aria-live sui filtri, alt delle locandine). Se ne risolvi
   una, aggiorna anche quella pagina.
