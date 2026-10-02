@@ -39,6 +39,30 @@ Modello di riferimento: `.env.local.example`. Dopo aver cambiato una variabile s
 serve un nuovo deploy (Redeploy o push). Attenzione agli "a capo" finali nei valori:
 Vercel li rifiuta nelle intestazioni HTTP (successo il 29/9/2026 con `CRON_SECRET`).
 
+### Sessioni cloud di Claude Code (claude.ai/code, dal 1/10/2026)
+
+- Ambiente cloud **"Moesco"**: rete *Personalizzata* con `www.moesco.it` e
+  `irtewoirgrberzlvsxso.supabase.co` (+ elenco predefinito dei gestori di pacchetti).
+  Altri siti (es. `gibellina2026.it`) sono bloccati finché Domenico non li aggiunge.
+- Le chiavi sono **Credenziali API** dell'ambiente: il proxy le aggiunge da solo alle
+  richieste, Claude non le vede e non ci sono variabili d'ambiente da leggere.
+  - `moesco CRON` → host `www.moesco.it`, `Authorization: Bearer <CRON_SECRET>`.
+    Basta chiamare gli endpoint di servizio senza header.
+  - `Supabase moesco` → host Supabase, `Authorization: Bearer <service_role legacy JWT>`.
+    L'header `apikey` va passato a mano con la chiave **anon pubblica** (è nel bundle JS
+    del sito, es. pagina `/accedi`): con le due insieme la richiesta gira come service role.
+    La chiave nuova `sb_secret_…` NON funziona qui: il modulo forza il prefisso "Bearer".
+- I valori dei segreti su Vercel sono di tipo *Secret*: non si possono rileggere. Se
+  serve un valore, va rigenerato (es. `openssl rand -hex 32 | tr -d '\n' | pbcopy`),
+  messo su Vercel + credenziale Claude, poi Redeploy. `CRON_SECRET` è stata rigenerata il 1/10/2026.
+- In modalità "Auto" il classificatore blocca letture/scritture sul DB di produzione:
+  Domenico deve passare ad "Accetta modifiche" e approvare i comandi.
+- Vercel Hobby: **le anteprime falliscono se il commit è firmato da un autore non
+  membro del team** (es. "Claude"). Il merge della PR su GitHub crea un commit firmato
+  da Domenico e la produzione si pubblica regolarmente.
+- Vercel Hobby: i **log runtime durano 1 ora**. Per vedere l'esito della ricerca
+  automatica: Settings → Cron Jobs → Run sullo slot, poi Logs entro l'ora.
+
 ## Pubblicare il codice (git)
 
 - **Mai `git add -A` / `git add .`**: nella cartella restano file di lavoro da non
@@ -74,7 +98,13 @@ Vercel li rifiuta nelle intestazioni HTTP (successo il 29/9/2026 con `CRON_SECRE
   Il sito pubblico mostra solo `approvato`. `slug_precedenti` conserva i vecchi slug
   (redirect permanente da `/eventi/[slug]`). `descrizione` = i fatti; `testo_articolo` =
   il racconto redazionale (sezione «Il racconto» e vetrina in homepage).
-  Categorie via tabella ponte `eventi_categorie`.
+  Categorie via tabella ponte `eventi_categorie`. La categoria famiglie è `famiglie`:
+  il doppione `per-famiglie` è stato unito e disattivato il 2/10/2026.
+- Doppioni: il 2/10/2026 ne sono stati tolti 9 (stato `rifiutato` via
+  `/api/approva-eventi`, nota "Doppione rimosso nella pulizia del 2/10/2026"). Nascono
+  quando la ricerca propone lo stesso evento con un titolo diverso: in revisione
+  controlla sempre luogo + data prima di approvare. Rifiutare un evento manda
+  un'email all'organizzatore (anche a quello tecnico "Redazione moesco").
 - **`attivita`**: esperienze/cose da fare (`/cosa-fare`), stato pubblico `pubblicato`.
 - **RLS**: con la chiave anon si vedono solo gli eventi `approvato`. Per leggere o
   modificare righe in altri stati serve la service role (`SUPABASE_SERVICE_ROLE_KEY` in
