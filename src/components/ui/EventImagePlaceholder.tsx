@@ -14,6 +14,7 @@ const CATEGORIA_CONFIG: Record<string, { icon: string; bg: string; label: string
   'sport':           { icon: '🏆', bg: 'from-emerald-500 to-green-700',   label: 'Sport' },
   'food-wine':       { icon: '🍽️', bg: 'from-red-400 to-rose-700',        label: 'Food & Wine' },
   'escursioni':      { icon: '🗺️', bg: 'from-teal-500 to-cyan-700',       label: 'Escursioni' },
+  'famiglie':        { icon: '👨‍👩‍👧', bg: 'from-sky-400 to-blue-600',        label: 'Famiglie' },
   'per-famiglie':    { icon: '👨‍👩‍👧', bg: 'from-sky-400 to-blue-600',        label: 'Famiglie' },
   'mare':            { icon: '🌊', bg: 'from-cyan-400 to-blue-700',       label: 'Mare' },
   'nightlife':       { icon: '🌙', bg: 'from-indigo-600 to-slate-900',    label: 'Nightlife' },
