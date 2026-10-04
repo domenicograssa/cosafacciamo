@@ -6,6 +6,7 @@ import { inserisciCandidati, slugify, type EventoCandidato } from '@/lib/eventi-
 import { GRUPPI, TUTTI_I_COMUNI, gruppoDiOggi, oggiRoma, type Comune } from '@/lib/ricerca-eventi/rotazione'
 import { cercaEventiConClaude } from '@/lib/ricerca-eventi/claude'
 import { cercaEventiConGemini } from '@/lib/ricerca-eventi/gemini'
+import { paroleTitolo, similarita } from '@/lib/ricerca-eventi/similarita'
 
 // ─── Ricerca automatica eventi (sostituisce il task pianificato di Cowork) ───
 //
@@ -51,18 +52,6 @@ function normalizzaUrl(u: string): string {
     .replace(/^www\./, '')
     .replace(/#.*$/, '')
     .replace(/\/+$/, '')
-}
-
-function paroleTitolo(t: string): Set<string> {
-  return new Set(slugify(t).split('-').filter(p => p.length > 2 && !/^20\d\d$/.test(p)))
-}
-
-function similarita(a: string, b: string): number {
-  const A = paroleTitolo(a), B = paroleTitolo(b)
-  if (!A.size || !B.size) return 0
-  let comuni = 0
-  for (const p of A) if (B.has(p)) comuni++
-  return comuni / Math.min(A.size, B.size)
 }
 
 function distanzaGiorni(a: string, b: string): number {
