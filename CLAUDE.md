@@ -116,7 +116,8 @@ Vercel li rifiuta nelle intestazioni HTTP (successo il 29/9/2026 con `CRON_SECRE
 
 - `POST /api/proponi-eventi` — inserisce eventi candidati, **sempre** `in_revisione`,
   organizzatore tecnico `ricerca-automatica-moesco`, `fonteRicerca` obbligatoria.
-  Logica condivisa in `src/lib/eventi-proposti.ts`.
+  Logica condivisa in `src/lib/eventi-proposti.ts`. Ogni voce di `risultati` riporta
+  `id` e `slug` dell'evento inserito (anche nella risposta di `/api/cron/ricerca-eventi`).
 - `POST /api/approva-eventi` — cambia stato a eventi elencati per id.
 - `POST /api/proponi-attivita` — come proponi-eventi ma per `attivita` (stato `bozza`).
 - `POST /api/revalidate` — invalida la cache ISR.
@@ -150,6 +151,11 @@ Sostituisce il vecchio task pianificato di Cowork. File:
   `gruppo=`, `slot=`, `motore=`, `modello=`. La risposta contiene `proposti`, `scartati`
   con motivo e `diagnostica`.
 - I risultati si approvano a mano su `/admin/eventi?stato=in_revisione`.
+- **Approvazione automatica prudente (dal 10/10/2026)**: l'attività programmata
+  "Moesco verifica eventi" (lun/mer) approva da sola, con `/api/approva-eventi` e l'`id`
+  restituito all'inserimento, solo gli eventi che rispettano la regola di pubblicazione
+  diretta (fonte primaria letta direttamente + descrizione ricca, vedi Regole editoriali).
+  Tutto il resto resta in revisione. Non rifiuta mai in automatico (il rifiuto manda email).
 
 ## Regole editoriali (valgono per qualunque inserimento di eventi/attività)
 
