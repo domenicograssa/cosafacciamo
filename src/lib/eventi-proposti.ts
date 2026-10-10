@@ -32,6 +32,9 @@ export interface EventoCandidato {
 export interface EsitoCandidato {
   titolo: string
   ok: boolean
+  // id restituito per permettere all'automazione di approvare l'evento
+  // con /api/approva-eventi (che lavora per id) senza leggere il DB.
+  id?: string
   slug?: string
   errore?: string
 }
@@ -137,7 +140,7 @@ export async function inserisciCandidati(
         }
       }
 
-      risultati.push({ titolo: c.titolo, ok: true, slug: ev.slug })
+      risultati.push({ titolo: c.titolo, ok: true, id: ev.id, slug: ev.slug })
       almenoUnoOk = true
     } catch (e) {
       risultati.push({ titolo: c.titolo || '(senza titolo)', ok: false, errore: e instanceof Error ? e.message : 'Errore imprevisto.' })
