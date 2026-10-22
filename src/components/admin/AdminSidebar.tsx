@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 
 const NAV = [
   { href: '/admin',              label: 'Dashboard',     icon: '📊' },
+  { href: '/admin/da-approvare', label: 'Da approvare',  icon: '✅' },
   { href: '/admin/eventi',       label: 'Eventi',        icon: '🗓️' },
   { href: '/admin/in-evidenza',  label: 'In primo piano', icon: '⭐' },
   { href: '/admin/attivita',     label: 'Attività',      icon: '🤿' },

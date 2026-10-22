@@ -37,7 +37,7 @@ export default async function AdminDashboard() {
   ])
 
   const kpi = [
-    { label: 'Eventi in revisione', valore: inRevisione ?? 0,  colore: 'bg-amber-50 text-amber-700 border-amber-200', icon: '🔍', href: '/admin/eventi?stato=in_revisione' },
+    { label: 'Eventi in revisione', valore: inRevisione ?? 0,  colore: 'bg-amber-50 text-amber-700 border-amber-200', icon: '🔍', href: '/admin/da-approvare' },
     { label: 'Eventi approvati',    valore: approvati ?? 0,    colore: 'bg-green-50 text-green-700 border-green-200', icon: '✅', href: '/admin/eventi?stato=approvato' },
     { label: 'Eventi rifiutati',    valore: rifiutati ?? 0,    colore: 'bg-red-50 text-red-700 border-red-200',       icon: '❌', href: '/admin/eventi?stato=rifiutato' },
     { label: 'Attività da pubblicare', valore: attivitaBozza ?? 0, colore: 'bg-blue-50 text-blue-700 border-blue-200', icon: '🤿', href: '/admin/attivita' },
@@ -81,7 +81,7 @@ export default async function AdminDashboard() {
                 <span className="ml-1 bg-amber-400 text-white text-xs font-bold px-2 py-0.5 rounded-full">{daRevisionare!.length}</span>
               )}
             </h2>
-            <Link href="/admin/eventi?stato=in_revisione" className="text-xs text-amber-600 font-semibold hover:underline">Vedi tutti</Link>
+            <Link href="/admin/da-approvare" className="text-xs text-amber-600 font-semibold hover:underline">Vedi tutti</Link>
           </div>
           {!daRevisionare?.length ? (
             <div className="px-5 py-10 text-center text-gray-400 text-sm">Nessun evento in attesa 🎉</div>

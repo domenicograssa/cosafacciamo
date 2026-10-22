@@ -149,7 +149,8 @@ Sostituisce il vecchio task pianificato di Cowork. File:
   (header, oppure `&secret=` solo per prove manuali dal browser). Parametri utili:
   `gruppo=`, `slot=`, `motore=`, `modello=`. La risposta contiene `proposti`, `scartati`
   con motivo e `diagnostica`.
-- I risultati si approvano a mano su `/admin/eventi?stato=in_revisione`.
+- I risultati si approvano a mano su `/admin/da-approvare` (dal 4/10/2026): una scheda per
+  evento con fonte, avvisi di doppione/evento passato e bottoni Approva/Rifiuta.
 
 ## Regole editoriali (valgono per qualunque inserimento di eventi/attività)
 
