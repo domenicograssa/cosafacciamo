@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": { "deploymentEnabled": { "claude/*": false } },
   "crons": [
     { "path": "/api/cron/ricerca-eventi?slot=0", "schedule": "0 4 * * 1,3,5" },
     { "path": "/api/cron/ricerca-eventi?slot=1", "schedule": "0 5 * * 1,3,5" },
