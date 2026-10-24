@@ -59,7 +59,10 @@ Vercel li rifiuta nelle intestazioni HTTP (successo il 29/9/2026 con `CRON_SECRE
   Domenico deve passare ad "Accetta modifiche" e approvare i comandi.
 - Vercel Hobby: **le anteprime falliscono se il commit è firmato da un autore non
   membro del team** (es. "Claude"). Il merge della PR su GitHub crea un commit firmato
-  da Domenico e la produzione si pubblica regolarmente.
+  da Domenico e la produzione si pubblica regolarmente. Per evitare le email di errore,
+  `vercel.json` disattiva le anteprime dei rami `claude/*` (`git.deploymentEnabled`).
+- Il repository è ancora collegato a un vecchio sito Netlify (`shiny-parfait-4e68fd`) che
+  costruisce anteprime delle PR: è un residuo, da scollegare su app.netlify.com.
 - Vercel Hobby: i **log runtime durano 1 ora**. Per vedere l'esito della ricerca
   automatica: Settings → Cron Jobs → Run sullo slot, poi Logs entro l'ora.
 
@@ -119,7 +122,7 @@ Vercel li rifiuta nelle intestazioni HTTP (successo il 29/9/2026 con `CRON_SECRE
   Logica condivisa in `src/lib/eventi-proposti.ts`.
 - `POST /api/approva-eventi` — cambia stato a eventi elencati per id.
 - `POST /api/proponi-attivita` — come proponi-eventi ma per `attivita` (stato `bozza`).
-- `POST /api/revalidate` — invalida la cache ISR.
+- `GET /api/revalidate?path=…` — invalida la cache ISR (`path` ripetibile; in POST risponde 405).
 - `GET /api/cron/ricerca-eventi` — ricerca automatica eventi (sotto).
 
 ## Ricerca automatica eventi (dal 30/9/2026)
@@ -138,8 +141,9 @@ Sostituisce il vecchio task pianificato di Cowork. File:
   Claude (`ANTHROPIC_API_KEY`) resta come alternativa: `?motore=claude` o
   `MOTORE_RICERCA_EVENTI=claude`.
 - **Costi**: la ricerca Google con i modelli Gemini 3.x NON è nel piano gratuito. Domenico
-  ha attivato la fatturazione su Google AI Studio con 5 € prepagati e ricarica automatica
-  spenta; 5.000 ricerche/mese sono incluse. Controllo spesa: aistudio.google.com → Spesa.
+  ha attivato la fatturazione su Google AI Studio: account a consumo (Tier 1, pagamento
+  posticipato, tetto di spesa 220 €), non prepagato; 5.000 ricerche/mese sono incluse.
+  Controllo spesa: aistudio.google.com → Spesa.
 - **Controlli prima dell'inserimento** (non allentarli): data nella finestra di 42 giorni,
   descrizione ≥ 400 caratteri, dedup contro tutti gli eventi del comune (tutti gli stati)
   e interno al lotto, e fonte verificata: o URL citato dal motore, oppure la pagina
@@ -151,6 +155,21 @@ Sostituisce il vecchio task pianificato di Cowork. File:
   con motivo e `diagnostica`.
 - I risultati si approvano a mano su `/admin/da-approvare` (dal 4/10/2026): una scheda per
   evento con fonte, avvisi di doppione/evento passato e bottoni Approva/Rifiuta.
+- Gli scartati per fonte («non menziona il 2026», «non raggiungibile») vanno ricontrollati
+  a mano: spesso l'evento è vero. Ma verifica sempre il **giorno della settimana**: il
+  22/10/2026 «sabato 25 ottobre» era un articolo del 2025 (nel 2026 il 25/10 è domenica).
+
+## Facebook (Metricool)
+
+- La pagina Facebook di moesco è collegata a Metricool (brand `7344883`, fuso Europe/Rome),
+  raggiungibile dal connettore Metricool delle sessioni Claude.
+- Piano **gratuito: 20 pubblicazioni al mese**. Superato il limite i post vanno in errore
+  fino al mese dopo (successo il 24/10/2026). Programma al massimo 18 post al mese.
+- **Prima di programmare, leggi il calendario** (`getScheduledPosts`): il 10/10 e il
+  20/10/2026 erano stati caricati due calendari uguali e sono usciti post doppi. I doppioni
+  non si possono cancellare dal connettore: si trasformano in bozza (`draft: true`).
+- Nei testi, link completi `https://www.moesco.it/...`; solo fatti presenti nella scheda
+  dell'evento.
 
 ## Regole editoriali (valgono per qualunque inserimento di eventi/attività)
 
