@@ -7,6 +7,7 @@ import { GRUPPI, TUTTI_I_COMUNI, gruppoDiOggi, oggiRoma, type Comune } from '@/l
 import { cercaEventiConClaude } from '@/lib/ricerca-eventi/claude'
 import { cercaEventiConGemini } from '@/lib/ricerca-eventi/gemini'
 import { paroleTitolo, similarita } from '@/lib/ricerca-eventi/similarita'
+import { registraRicerca } from '@/lib/ricerca-eventi/registro'
 
 // ─── Ricerca automatica eventi (sostituisce il task pianificato di Cowork) ───
 //
@@ -140,14 +141,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, errore: 'Non autorizzato.' }, { status: 401 })
   }
 
+  const inizio = Date.now()
   const params = new URL(req.url).searchParams
   const prova = params.get('prova') === '1'
   const oggi = oggiRoma().iso
   const fine = aggiungiGiorni(oggi, GIORNI_FINESTRA)
+  // Vercel Cron si presenta con user-agent "vercel-cron/1.0".
+  const origine = req.headers.get('user-agent')?.toLowerCase().startsWith('vercel-cron') ? 'cron' : 'manuale'
 
   // ── Scelta del comune ──
   let comune: Comune | undefined
   let gruppo: number | null = null
+  let slot: number | null = null
   const slugForzato = params.get('comune')
   if (slugForzato) {
     comune = TUTTI_I_COMUNI.find(c => c.slug === slugForzato)
@@ -158,10 +163,14 @@ export async function GET(req: NextRequest) {
     if (!Number.isInteger(gruppo) || gruppo < 0 || gruppo >= GRUPPI.length) {
       return NextResponse.json({ ok: false, errore: 'Parametro gruppo non valido.' }, { status: 400 })
     }
-    const slot = Number(params.get('slot') ?? '0')
+    slot = Number(params.get('slot') ?? '0')
     comune = GRUPPI[gruppo][slot]
     if (!comune) {
-      // Il gruppo di oggi ha meno comuni di questo slot: niente da fare.
+      // Il gruppo di oggi ha meno comuni di questo slot: niente da fare,
+      // ma si registra comunque che il cron è passato.
+      await registraRicerca(await createAdminClient(), {
+        origine, esito: 'nessun_comune', gruppo, slot, prova, durata_ms: Date.now() - inizio,
+      })
       return NextResponse.json({ ok: true, gruppo, slot, messaggio: 'Nessun comune per questo slot oggi.' })
     }
   }
@@ -200,6 +209,10 @@ export async function GET(req: NextRequest) {
   } catch (e) {
     const errore = e instanceof Error ? e.message : String(e)
     console.error(`[ricerca-eventi] ${motore} ${comune.slug}: ${errore}`)
+    await registraRicerca(sb, {
+      origine, esito: 'errore', comune: comune.slug, gruppo, slot, motore, prova,
+      durata_ms: Date.now() - inizio, errore,
+    })
     return NextResponse.json({ ok: false, motore, comune: comune.slug, errore }, { status: 502 })
   }
 
@@ -225,7 +238,13 @@ export async function GET(req: NextRequest) {
         revalidatePath('/admin')
       }
     } catch (e) {
-      return NextResponse.json({ ok: false, comune: comune.slug, errore: e instanceof Error ? e.message : String(e) }, { status: 500 })
+      const errore = e instanceof Error ? e.message : String(e)
+      await registraRicerca(sb, {
+        origine, esito: 'errore', comune: comune.slug, gruppo, slot, motore, prova,
+        ricerche_web: esito.ricercheWeb, proposti: accettati.length, scartati: scartati.length,
+        durata_ms: Date.now() - inizio, errore: `inserimento: ${errore}`,
+      })
+      return NextResponse.json({ ok: false, comune: comune.slug, errore }, { status: 500 })
     }
   }
 
@@ -244,5 +263,14 @@ export async function GET(req: NextRequest) {
     diagnostica: esito.diagnostica,
   }
   console.log(`[ricerca-eventi] ${JSON.stringify(report)}`)
+  await registraRicerca(sb, {
+    origine, esito: 'ok', comune: comune.slug, gruppo, slot, motore, prova,
+    ricerche_web: esito.ricercheWeb,
+    proposti: accettati.length,
+    inseriti: prova ? 0 : risultati.filter(r => r.ok).length,
+    scartati: scartati.length,
+    durata_ms: Date.now() - inizio,
+    dettaglio: { proposti: report.proposti, scartati, note: esito.note, query: (esito.diagnostica as { query?: unknown } | undefined)?.query },
+  })
   return NextResponse.json(report)
 }

@@ -155,6 +155,11 @@ Sostituisce il vecchio task pianificato di Cowork. File:
   con motivo e `diagnostica`.
 - I risultati si approvano a mano su `/admin/da-approvare` (dal 4/10/2026): una scheda per
   evento con fonte, avvisi di doppione/evento passato e bottoni Approva/Rifiuta.
+- **Registro ricerche** (dal 1/11/2026): ogni chiamata alla route lascia una riga in
+  `ricerche_eventi_log` (tabella creata da `registro-ricerche.sql`, solo service role),
+  visibile su `/admin/registro-ricerche` con origine `cron` (user-agent `vercel-cron`) o
+  `manuale`. È l'unico modo per sapere se il cron gira: i log di Vercel durano un'ora.
+  Se la scrittura fallisce la ricerca prosegue comunque (`src/lib/ricerca-eventi/registro.ts`).
 - Gli scartati per fonte («non menziona il 2026», «non raggiungibile») vanno ricontrollati
   a mano: spesso l'evento è vero. Ma verifica sempre il **giorno della settimana**: il
   22/10/2026 «sabato 25 ottobre» era un articolo del 2025 (nel 2026 il 25/10 è domenica).
