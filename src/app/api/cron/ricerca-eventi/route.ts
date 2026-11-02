@@ -200,7 +200,11 @@ export async function GET(req: NextRequest) {
   const modelloParam = params.get('modello')?.trim()
   const modelloForzato = modelloParam && /^[a-z0-9.\-]{3,60}$/.test(modelloParam) ? modelloParam : undefined
   const timeout = AbortSignal.timeout((maxDuration - 25) * 1000)
-  const contesto = { comune, oggiIso: oggi, fineFinestraIso: fine, eventiEsistenti: esistenti, categorie }
+  // Al modello si passano solo gli eventi da oggi in poi: con l'elenco completo
+  // (Palermo ne ha ~90 negli ultimi 60 giorni) Gemini concludeva che non c'era
+  // nulla da cercare e rispondeva senza fare ricerche (2/11/2026). Il controllo
+  // dei doppioni in valida() usa comunque l'elenco completo.
+  const contesto = { comune, oggiIso: oggi, fineFinestraIso: fine, eventiEsistenti: esistenti.filter(e => e.data >= oggi), categorie }
   let esito
   try {
     esito = motore === 'claude'
@@ -270,7 +274,11 @@ export async function GET(req: NextRequest) {
     inseriti: prova ? 0 : risultati.filter(r => r.ok).length,
     scartati: scartati.length,
     durata_ms: Date.now() - inizio,
-    dettaglio: { proposti: report.proposti, scartati, note: esito.note, query: (esito.diagnostica as { query?: unknown } | undefined)?.query },
+    dettaglio: {
+      proposti: report.proposti, scartati, note: esito.note,
+      query: (esito.diagnostica as { query?: unknown } | undefined)?.query,
+      tentativi: (esito.diagnostica as { tentativi?: unknown } | undefined)?.tentativi,
+    },
   })
   return NextResponse.json(report)
 }

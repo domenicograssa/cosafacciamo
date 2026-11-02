@@ -107,7 +107,8 @@ export async function cercaEventiConGemini(ctx: ContestoRicerca, segnale?: Abort
   // parser tollerante di estraiJson.
   let usaSchema = true
   let schemaRifiutato: string | undefined
-  const chiama = async (insistente: boolean): Promise<RispostaInteraction> => {
+  const chiama = async (insistente: boolean, senzaSchema = false): Promise<RispostaInteraction> => {
+    if (senzaSchema) usaSchema = false
     const invia = (conSchema: boolean) => fetch(API_URL, {
       method: 'POST',
       signal: segnale,
@@ -136,9 +137,14 @@ export async function cercaEventiConGemini(ctx: ContestoRicerca, segnale?: Abort
   const querDi = (d: RispostaInteraction) =>
     (d.steps ?? []).filter(s => s.type === 'google_search_call').flatMap(s => s.arguments?.queries ?? [])
 
+  // Fino a tre tentativi se il modello risponde senza cercare. Il terzo è senza
+  // schema JSON: con l'output strutturato Gemini a volte salta lo strumento di
+  // ricerca (successo su Palermo il 2/11/2026); il parser di estraiJson
+  // tollera il testo libero.
   let dati = await chiama(false)
   let tentativi = 1
   if (querDi(dati).length === 0) { dati = await chiama(true); tentativi = 2 }
+  if (querDi(dati).length === 0) { dati = await chiama(true, true); tentativi = 3 }
 
   const passi = dati.steps ?? []
   const query = querDi(dati)
