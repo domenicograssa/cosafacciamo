@@ -130,8 +130,8 @@ export default async function DettaglioAttivita({ params }: Props) {
                 <p>
                   <span aria-hidden="true">ℹ️ </span>
                   {lang === 'en'
-                    ? 'This listing was compiled from public sources by an automated search and reviewed by our team before publication. Please check the official source for last-minute changes.'
-                    : 'Questa scheda è stata compilata a partire da fonti pubbliche tramite una ricerca automatica ed è stata verificata dalla redazione prima della pubblicazione. Ti consigliamo di controllare la fonte ufficiale per eventuali variazioni dell’ultimo momento.'}
+                    ? 'This listing was drafted with the help of artificial intelligence from public sources and reviewed by our team before publication. Please check the official source for last-minute changes.'
+                    : 'Questa scheda è stata redatta con l’ausilio dell’intelligenza artificiale a partire da fonti pubbliche ed è stata verificata dalla redazione prima della pubblicazione. Ti consigliamo di controllare la fonte ufficiale per eventuali variazioni dell’ultimo momento.'}
                 </p>
                 <p className="mt-1.5 break-words">
                   {lang === 'en' ? 'Source: ' : 'Fonte: '}

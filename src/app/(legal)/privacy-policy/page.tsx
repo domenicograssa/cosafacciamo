@@ -9,7 +9,7 @@ export default function PrivacyPolicy() {
   return (
     <article className="prose prose-gray max-w-none">
       <h1>Privacy Policy</h1>
-      <p className="text-sm text-gray-500">Versione 1.4 — in vigore dal 29 agosto 2026</p>
+      <p className="text-sm text-gray-500">Versione 1.5 — in vigore dal 2 novembre 2026</p>
 
       <h2>1. Titolare del trattamento</h2>
       <p>
@@ -81,34 +81,48 @@ export default function PrivacyPolicy() {
           generate automaticamente e possono contenere imprecisioni.
         </li>
         <li>
-          <strong>Ricerca automatica di eventi.</strong>{' '}Una procedura automatizzata
-          ricerca periodicamente su fonti pubbliche in rete notizie di eventi del
-          territorio e ne propone una bozza. Le bozze sono <em>sempre</em>{' '}sottoposte
-          a revisione e approvazione umana prima di essere pubblicate: nessun
-          contenuto viene pubblicato automaticamente. Su ogni evento originato da
-          questa procedura è indicata pubblicamente la fonte da cui
+          <strong>Ricerca automatica di eventi.</strong>{' '}Una procedura automatizzata,
+          basata su un sistema di intelligenza artificiale (modello Gemini di
+          Google, con ricerca Google), ricerca periodicamente su fonti pubbliche in
+          rete notizie di eventi del territorio e ne redige una bozza. Al sistema
+          vengono inviati soltanto il nome del comune, il periodo di ricerca e i
+          titoli degli eventi già presenti sul portale: nessun dato personale
+          degli utenti. Le bozze sono <em>sempre</em>{' '}sottoposte a revisione e
+          approvazione umana prima di essere pubblicate: nessun contenuto viene
+          pubblicato automaticamente. Su ogni evento originato da questa procedura
+          è indicato pubblicamente che la scheda è stata redatta con l&apos;ausilio
+          dell&apos;intelligenza artificiale, insieme alla fonte da cui
           l&apos;informazione è stata tratta.
+        </li>
+        <li>
+          <strong>Assistenza alla redazione.</strong>{' '}Nella verifica delle fonti,
+          nella stesura dei testi e nella manutenzione tecnica del portale la
+          redazione si avvale anche dell&apos;assistente di intelligenza
+          artificiale Claude (Anthropic). Ogni contenuto è controllato e
+          approvato da una persona della redazione prima della pubblicazione.
         </li>
       </ul>
       <p>
         Il portale <strong>non effettua alcun processo decisionale automatizzato
         né profilazione</strong>{' '}che produca effetti giuridici o incida in modo
         analogamente significativo sugli utenti, ai sensi dell&apos;art. 22 GDPR.
-        Nessun dato personale degli utenti viene utilizzato per addestrare
-        sistemi di intelligenza artificiale, né dal titolare né, per quanto a sua
-        conoscenza, dai fornitori indicati.
+        Nessun dato personale degli utenti è utilizzato per addestrare sistemi
+        di intelligenza artificiale, né dal titolare né, per quanto a sua
+        conoscenza, dai fornitori indicati, i cui termini contrattuali per i
+        servizi utilizzati escludono tale uso.
       </p>
       <p>
         Gli strumenti impiegati non rientrano fra i sistemi di intelligenza
         artificiale ad alto rischio di cui al Regolamento (UE) 2024/1689 (AI Act).
-        L&apos;indicazione pubblica, su ogni evento originato da ricerca
-        automatica, della natura automatica della bozza e della fonte da cui è
-        tratta è resa anche <strong>ai sensi dell&apos;art. 50 del Regolamento
-        (UE) 2024/1689</strong>, che impone obblighi di trasparenza sui
-        contenuti testuali generati o manipolati dall&apos;intelligenza
-        artificiale. Le bozze sono in ogni caso sempre sottoposte, prima della
-        pubblicazione, a un esame redazionale sostanziale da parte di una
-        persona fisica che ne assume la responsabilità editoriale.
+        Le schede degli eventi individuati tramite ricerca automatica sono
+        redatte con l&apos;ausilio di sistemi di intelligenza artificiale e sono
+        sempre sottoposte, prima della pubblicazione, a un esame redazionale
+        sostanziale da parte di una persona fisica che ne assume la
+        responsabilità editoriale. Pur ricorrendo pertanto l&apos;esenzione
+        prevista dall&apos;<strong>art. 50, par. 4, del Regolamento (UE)
+        2024/1689</strong>, il titolare indica comunque su ciascuna di tali
+        schede, per scelta di trasparenza, l&apos;origine automatizzata della
+        bozza e la fonte da cui è tratta.
       </p>
 
       <h2>4. Modalità del trattamento</h2>
@@ -167,6 +181,11 @@ export default function PrivacyPolicy() {
             <td>DeepL SE (Germania)</td>
             <td>Traduzione automatica dei testi degli eventi</td>
             <td>Solo i testi descrittivi degli eventi — nessun dato personale degli utenti</td>
+          </tr>
+          <tr>
+            <td>Google Ireland Limited (Gemini API)</td>
+            <td>Ricerca automatica di eventi su fonti pubbliche</td>
+            <td>Nome del comune, periodo di ricerca e titoli degli eventi già pubblicati — nessun dato personale degli utenti</td>
           </tr>
         </tbody>
       </table>
