@@ -144,7 +144,10 @@ export default async function RegistroRicerchePage() {
                         {r.esito === 'nessun_comune' ? 'Nessun comune in questo turno' : nomeComune(r.comune)}
                       </span>
                       {r.esito === 'errore' && <span className="text-red-600 font-semibold">❌ errore</span>}
-                      {r.esito === 'ok' && (
+                      {r.esito === 'ok' && !r.ricerche_web && (
+                        <span className="text-amber-700 font-semibold">⚠️ Gemini non ha fatto ricerche</span>
+                      )}
+                      {r.esito === 'ok' && !!r.ricerche_web && (
                         <span className="text-gray-500">
                           {r.ricerche_web ?? 0} ricerche Google ·{' '}
                           <span className={r.inseriti ? 'text-green-700 font-semibold' : ''}>
@@ -156,6 +159,12 @@ export default async function RegistroRicerchePage() {
                     </summary>
                     <div className="mt-2 pl-1 space-y-2 text-xs text-gray-600">
                       {r.errore && <p className="text-red-700">{r.errore}</p>}
+                      {r.esito === 'ok' && !r.ricerche_web && (
+                        <p className="text-amber-800">
+                          Gemini ha risposto senza cercare su Google, quindi per questo comune non è stato trovato nulla.
+                          {r.dettaglio?.note && <> Nota del modello: «{r.dettaglio.note}»</>}
+                        </p>
+                      )}
                       {(r.dettaglio?.proposti?.length ?? 0) > 0 && (
                         <div>
                           <p className="font-semibold text-gray-700">Inseriti in revisione</p>
