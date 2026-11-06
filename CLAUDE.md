@@ -63,6 +63,11 @@ Vercel li rifiuta nelle intestazioni HTTP (successo il 29/9/2026 con `CRON_SECRE
   `vercel.json` disattiva le anteprime dei rami `claude/*` (`git.deploymentEnabled`).
 - Il repository è ancora collegato a un vecchio sito Netlify (`shiny-parfait-4e68fd`) che
   costruisce anteprime delle PR: è un residuo, da scollegare su app.netlify.com.
+- Vercel Hobby: **4 ore di CPU al mese** (Fluid Active CPU), oltre il limite il sito viene
+  sospeso. Tutte le pagine sono dinamiche (il layout legge la lingua con `headers()`), quindi
+  dal 6/11/2026 `next.config.ts` mette in cache sul CDN di Vercel le pagine pubbliche per
+  5 minuti (`Vercel-CDN-Cache-Control`): le modifiche dall'admin possono comparire con
+  fino a 5 minuti di ritardo. Non aggiungere a quell'elenco pagine con contenuti per utente.
 - Vercel Hobby: i **log runtime durano 1 ora**. Per vedere l'esito della ricerca
   automatica: Settings → Cron Jobs → Run sullo slot, poi Logs entro l'ora.
 
