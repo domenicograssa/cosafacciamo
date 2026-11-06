@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath } from '@/lib/cache'
 import { richiestaAutorizzata } from '@/lib/api-auth'
 import { aggiornaStatoEventoCore } from '@/lib/eventi-stato'
 

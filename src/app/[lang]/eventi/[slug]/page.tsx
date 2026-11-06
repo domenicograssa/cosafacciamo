@@ -8,7 +8,7 @@ import ShareButtons from '@/components/events/ShareButtons'
 import LinkTracciato from '@/components/events/LinkTracciato'
 import { formatData, formatOra, formatPrezzo, eMultiGiorno, eInCorso, formatIntervalloData } from '@/lib/utils'
 import { fotoComunePerEvento } from '@/data/comuni-immagini'
-import { getLang } from '@/lib/i18n/getLang'
+import { langDaParams } from '@/lib/i18n/getLang'
 import { strings, nomeCategoria } from '@/lib/i18n/strings'
 
 const SITE_URL = 'https://www.moesco.it'
@@ -16,7 +16,7 @@ const SITE_URL = 'https://www.moesco.it'
 export const revalidate = 3600
 
 // Pre-builda tutte le pagine evento al deploy → file HTML statici, zero serverless functions
-export async function generateStaticParams() {
+export async function generateStaticParams({ params }: { params: Promise<{ lang: string }> }) {
   const sb = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -29,12 +29,12 @@ export async function generateStaticParams() {
 }
 
 interface Props {
-  params: Promise<{ slug: string }>
+  params: Promise<{ lang: string; slug: string }>
 }
 
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params
-  const lang = await getLang()
+  const lang = await langDaParams(params)
   const evento = await getEventoBySlug(slug, lang)
   if (!evento) return {}
 
@@ -72,7 +72,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function DettaglioEvento({ params }: Props) {
   const { slug } = await params
-  const lang = await getLang()
+  const lang = await langDaParams(params)
   const t = strings[lang]
   const evento = await getEventoBySlug(slug, lang)
   if (!evento) {

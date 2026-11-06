@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { getLang } from '@/lib/i18n/getLang'
+import { langDaParams } from '@/lib/i18n/getLang'
 import InstallaApp from '@/components/pwa/InstallaApp'
 
 export const metadata = {
@@ -59,8 +59,8 @@ const VANTAGGI_EN = [
   ['🆓', 'Takes almost no space and does not go through the app stores'],
 ]
 
-export default async function AppPage() {
-  const lang = await getLang()
+export default async function AppPage({ params }: { params: Promise<{ lang: string }> }) {
+  const lang = await langDaParams(params)
   const isEn = lang === 'en'
   const guide = isEn ? PASSI_EN : PASSI_IT
   const vantaggi = isEn ? VANTAGGI_EN : VANTAGGI_IT

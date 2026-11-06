@@ -15,6 +15,8 @@ import type { Lang } from './strings'
 export function localizzaPath(path: string, lang: Lang): string {
   if (lang !== 'en') return path
   if (!path.startsWith('/')) return path
+  // Accesso, area organizzatori e admin esistono solo in italiano.
+  if (/^\/(accedi|dashboard|admin)(\/|$)/.test(path)) return path
   if (path === '/en' || path.startsWith('/en/')) return path
   return path === '/' ? '/en' : `/en${path}`
 }

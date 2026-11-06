@@ -9,12 +9,12 @@ import EventiList from '@/components/events/EventiList'
 import ActivityCard from '@/components/activities/ActivityCard'
 import { COMUNE_IMMAGINI, COMUNE_SLIDES } from '@/data/comuni-immagini'
 import HeroSlideshow from '@/components/localita/HeroSlideshow'
-import { getLang } from '@/lib/i18n/getLang'
+import { langDaParams } from '@/lib/i18n/getLang'
 import { strings } from '@/lib/i18n/strings'
 
 export const revalidate = 3600
 
-export async function generateStaticParams() {
+export async function generateStaticParams({ params }: { params: Promise<{ lang: string }> }) {
   const sb = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -24,7 +24,7 @@ export async function generateStaticParams() {
 }
 
 interface Props {
-  params: Promise<{ slug: string }>
+  params: Promise<{ lang: string; slug: string }>
 }
 
 const COVER_COMUNI: Record<string, { immagine: string; descrizione: string; descrizioneEn: string; emoji: string }> = {
@@ -40,7 +40,7 @@ const COVER_COMUNI: Record<string, { immagine: string; descrizione: string; desc
 
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params
-  const lang = await getLang()
+  const lang = await langDaParams(params)
   const isEn = lang === 'en'
   const nodo = await getGeoNodoBySlug(slug)
   if (!nodo) return {}
@@ -69,7 +69,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function LocalitaPage({ params }: Props) {
   const { slug } = await params
-  const lang = await getLang()
+  const lang = await langDaParams(params)
   const t = strings[lang]
   const [nodo, tuttiComuni, categorie] = await Promise.all([
     getGeoNodoBySlug(slug),

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { getLang } from '@/lib/i18n/getLang'
+import { langDaParams } from '@/lib/i18n/getLang'
 
 // Pagina mostrata dal service worker quando l'utente apre l'app senza rete e
 // la pagina richiesta non è in cache (vedi public/sw.js).
@@ -8,8 +8,8 @@ export const metadata = {
   robots: { index: false, follow: false },
 }
 
-export default async function OfflinePage() {
-  const lang = await getLang()
+export default async function OfflinePage({ params }: { params: Promise<{ lang: string }> }) {
+  const lang = await langDaParams(params)
   const isEn = lang === 'en'
 
   return (

@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidatePath } from '@/lib/cache'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 
 // Verifica che chi chiama sia l'admin (utente loggato con email admin).

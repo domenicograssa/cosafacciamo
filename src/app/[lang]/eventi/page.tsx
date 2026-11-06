@@ -3,10 +3,10 @@ import EventiList from '@/components/events/EventiList'
 import { getEventiApprovati } from '@/lib/queries/eventi'
 import { getCategorie } from '@/lib/queries/categorie'
 import { getComuni } from '@/lib/queries/geo'
-import { getLang } from '@/lib/i18n/getLang'
+import { langDaParams } from '@/lib/i18n/getLang'
 
-export async function generateMetadata(): Promise<Metadata> {
-  const lang = await getLang()
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const lang = await langDaParams(params)
   const isEn = lang === 'en'
   const title = isEn
     ? 'Events around the province of Trapani'
@@ -28,32 +28,28 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 interface Props {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+  params: Promise<{ lang: string }>
 }
 
-export default async function EventiPage({ searchParams }: Props) {
-  const params = await searchParams
-  const lang = await getLang()
+// Pagina statica, rigenerata al massimo una volta l'ora (come le schede).
+// I filtri dell'indirizzo (?comune=…, ?q=… dalla ricerca in homepage) li
+// legge EventiList nel browser: leggerli qui renderebbe la pagina dinamica.
+export const revalidate = 3600
+
+export default async function EventiPage({ params }: Props) {
+  const lang = await langDaParams(params)
   const [eventi, categorie, comuni] = await Promise.all([
     getEventiApprovati({ lang }),
     getCategorie(lang),
     getComuni(),
   ])
 
-  const primo = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? ''
-
   return (
     <EventiList
       eventi={eventi}
       categorie={categorie}
       comuni={comuni}
-      filtriIniziali={{
-        testo: primo(params.q),
-        comune: primo(params.comune),
-        data: primo(params.data),
-        soloGratuiti: primo(params.gratuiti) === 'true',
-        categorie: primo(params.categoria) ? [primo(params.categoria)] : [],
-      }}
+      leggiFiltriDaUrl
     />
   )
 }

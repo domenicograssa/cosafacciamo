@@ -1,4 +1,4 @@
-import { revalidatePath } from 'next/cache'
+import { revalidatePath } from '@/lib/cache'
 import { createAdminClient } from '@/lib/supabase/server'
 
 // ─── Nucleo condiviso di "cambia stato di un evento" ─────────────────────────
