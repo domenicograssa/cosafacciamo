@@ -6,7 +6,7 @@ import ActivityCard from '@/components/activities/ActivityCard'
 import ImmagineEvento from '@/components/ui/ImmagineEvento'
 import ShareButtons from '@/components/events/ShareButtons'
 import { formatPrezzo } from '@/lib/utils'
-import { getLang } from '@/lib/i18n/getLang'
+import { langDaParams } from '@/lib/i18n/getLang'
 import { strings, nomeCategoria } from '@/lib/i18n/strings'
 
 const SITE_URL = 'https://www.moesco.it'
@@ -14,7 +14,7 @@ const SITE_URL = 'https://www.moesco.it'
 export const revalidate = 3600
 
 // Pre-builda tutte le pagine attività al deploy, come per gli eventi
-export async function generateStaticParams() {
+export async function generateStaticParams({ params }: { params: Promise<{ lang: string }> }) {
   const sb = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -27,7 +27,7 @@ export async function generateStaticParams() {
 }
 
 interface Props {
-  params: Promise<{ slug: string }>
+  params: Promise<{ lang: string; slug: string }>
 }
 
 export async function generateMetadata({ params }: Props) {
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: Props) {
   const attivita = await getAttivitaBySlug(slug)
   if (!attivita) return {}
 
-  const lang = await getLang()
+  const lang = await langDaParams(params)
   const canonicalUrl = lang === 'en' ? `${SITE_URL}/en/cosa-fare/${slug}` : `${SITE_URL}/cosa-fare/${slug}`
   const descrizioneFallback = lang === 'en'
     ? `${attivita.titolo} in ${attivita.geoNodo.nome}. Find all the details on moesco.`
@@ -63,7 +63,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function DettaglioAttivita({ params }: Props) {
   const { slug } = await params
-  const lang = await getLang()
+  const lang = await langDaParams(params)
   const t = strings[lang]
   const attivita = await getAttivitaBySlug(slug)
   if (!attivita) notFound()

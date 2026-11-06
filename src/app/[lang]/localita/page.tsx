@@ -2,7 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getComuni } from '@/lib/queries/geo'
 import { COMUNE_IMMAGINI } from '@/data/comuni-immagini'
-import { getLang } from '@/lib/i18n/getLang'
+import { langDaParams } from '@/lib/i18n/getLang'
 import { localizzaPath } from '@/lib/i18n/lang-header'
 
 export const revalidate = 3600
@@ -19,8 +19,8 @@ export const metadata = {
   },
 }
 
-export default async function LocalitaIndexPage() {
-  const lang = await getLang()
+export default async function LocalitaIndexPage({ params }: { params: Promise<{ lang: string }> }) {
+  const lang = await langDaParams(params)
   const comuni = await getComuni()
   const conFoto = comuni.filter(c => COMUNE_IMMAGINI[c.slug])
   const senzaFoto = comuni.filter(c => !COMUNE_IMMAGINI[c.slug])

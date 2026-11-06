@@ -2,12 +2,12 @@ import AttivitaList from '@/components/activities/AttivitaList'
 import { getAttivita } from '@/lib/queries/attivita'
 import { getCategorie } from '@/lib/queries/categorie'
 import { getComuni } from '@/lib/queries/geo'
-import { getLang } from '@/lib/i18n/getLang'
+import { langDaParams } from '@/lib/i18n/getLang'
 
 export const revalidate = 3600
 
-export async function generateMetadata() {
-  const lang = await getLang()
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }) {
+  const lang = await langDaParams(params)
   return lang === 'en'
     ? {
         title: 'Experiences — moesco',
@@ -19,7 +19,7 @@ export async function generateMetadata() {
       }
 }
 
-export default async function CosaFarePage() {
+export default async function CosaFarePage({ params }: { params: Promise<{ lang: string }> }) {
   const [attivita, categorie, comuni] = await Promise.all([
     getAttivita(),
     getCategorie(),

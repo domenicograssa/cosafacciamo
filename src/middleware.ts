@@ -52,7 +52,9 @@ function isAdmin(email: string | undefined): boolean {
 // La lingua scelta viene passata ai Server Component tramite un header di
 // richiesta interno (LANG_HEADER), non tramite cookie.
 const PREFISSI_ESCLUSI_DA_I18N = ['/admin', '/dashboard', '/accedi', '/api', '/_next']
-const ESTENSIONI_STATICHE = /\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|txt|xml|json|webmanifest|woff|woff2|ttf)$/i
+// File di public/ (immagini, sw.js, verifica Google .html…): mai riscritti in /it/…,
+// altrimenti darebbero 404.
+const ESTENSIONI_STATICHE = /\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|css|js|map|txt|xml|json|webmanifest|woff|woff2|ttf|html|pdf|mp4|webm|mp3)$/i
 
 function gestisciLingua(request: NextRequest): NextResponse | null {
   const { pathname } = request.nextUrl
@@ -65,23 +67,47 @@ function gestisciLingua(request: NextRequest): NextResponse | null {
     return null
   }
 
-  const isEnPath = pathname === '/en' || pathname.startsWith('/en/')
-  if (!isEnPath) {
-    // Percorso italiano: nessun redirect, nessun cookie. Prosegue il middleware
-    // (auth ecc.) e i Server Component vedranno l'italiano di default.
-    return null
+  // /it/qualcosa è l'indirizzo interno delle pagine italiane: chi ci arriva
+  // (link sbagliato, vecchio bookmark) va rimandato all'indirizzo pubblico.
+  if (pathname === '/it' || pathname.startsWith('/it/')) {
+    const url = request.nextUrl.clone()
+    url.pathname = pathname.slice(3) || '/'
+    return NextResponse.redirect(url, 308)
   }
 
-  // /en/* → viene servito dagli stessi file di pagina, con l'header di lingua.
-  const nuovoPath = pathname.replace(/^\/en/, '') || '/'
-  const rewriteUrl = request.nextUrl.clone()
-  rewriteUrl.pathname = nuovoPath
+  // Dal 6/11/2026 le pagine pubbliche stanno in src/app/[lang]/: la lingua è
+  // un parametro della rotta e non più un header letto con headers(), che
+  // rendeva dinamiche tutte le pagine (rigenerate a ogni visita: CPU di
+  // Vercel). /en/... corrisponde già alla rotta; /... va riscritto in /it/...
+  // senza cambiare l'indirizzo visibile. L'header di lingua resta per le
+  // Server Action (getLang), che sono comunque dinamiche.
+  const isEnPath = pathname === '/en' || pathname.startsWith('/en/')
+
+  // Admin, area organizzatori e accesso esistono solo in italiano: /en/accedi
+  // (link del menu inglese) porta a /accedi.
+  if (isEnPath) {
+    const senzaEn = pathname.slice(3) || '/'
+    if (PREFISSI_ESCLUSI_DA_I18N.some(p => senzaEn === p || senzaEn.startsWith(p + '/'))) {
+      const url = request.nextUrl.clone()
+      url.pathname = senzaEn
+      return NextResponse.redirect(url)
+    }
+  }
+
+  const lingua = isEnPath ? 'en' : 'it'
 
   const headersRichiesta = new Headers(request.headers)
-  headersRichiesta.set(LANG_HEADER, 'en')
+  headersRichiesta.set(LANG_HEADER, lingua)
 
-  const res = NextResponse.rewrite(rewriteUrl, { request: { headers: headersRichiesta } })
-  res.headers.set('Content-Language', 'en')
+  let res: NextResponse
+  if (isEnPath) {
+    res = NextResponse.next({ request: { headers: headersRichiesta } })
+  } else {
+    const rewriteUrl = request.nextUrl.clone()
+    rewriteUrl.pathname = pathname === '/' ? '/it' : `/it${pathname}`
+    res = NextResponse.rewrite(rewriteUrl, { request: { headers: headersRichiesta } })
+  }
+  res.headers.set('Content-Language', lingua)
   return res
 }
 

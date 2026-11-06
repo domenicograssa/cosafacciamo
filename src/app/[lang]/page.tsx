@@ -3,12 +3,12 @@ import HomepageClient from '@/components/home/HomepageClient'
 import { getEventiHome, getEventiInEvidenza } from '@/lib/queries/eventi'
 import { getCategorie } from '@/lib/queries/categorie'
 import { getComuni } from '@/lib/queries/geo'
-import { getLang } from '@/lib/i18n/getLang'
+import { langDaParams } from '@/lib/i18n/getLang'
 
 export const revalidate = 300 // ricarica ogni 5 minuti
 
-export async function generateMetadata(): Promise<Metadata> {
-  const lang = await getLang()
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const lang = await langDaParams(params)
   const isEn = lang === 'en'
   const title = isEn
     ? 'Moesco — Events, festivals, concerts and things to do around Trapani, Sicily'
@@ -29,8 +29,8 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-export default async function Homepage() {
-  const lang = await getLang()
+export default async function Homepage({ params }: { params: Promise<{ lang: string }> }) {
+  const lang = await langDaParams(params)
   const [eventiOggi, categorie, comuni, articoliInEvidenza] = await Promise.all([
     getEventiHome(10, lang),
     getCategorie(lang),

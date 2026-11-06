@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { getLang } from '@/lib/i18n/getLang'
+import { langDaParams } from '@/lib/i18n/getLang'
 import { localizzaPath } from '@/lib/i18n/lang-header'
 
 export const metadata = {
@@ -30,8 +30,8 @@ const PASSI = [
   },
 ]
 
-export default async function OrganizzatoriPage() {
-  const lang = await getLang()
+export default async function OrganizzatoriPage({ params }: { params: Promise<{ lang: string }> }) {
+  const lang = await langDaParams(params)
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
