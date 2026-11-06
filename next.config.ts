@@ -44,31 +44,6 @@ const securityHeaders = [
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()' },
 ];
 
-// ─── Cache delle pagine pubbliche sul CDN di Vercel ──────────────────────────
-// Il layout legge la lingua da un header della richiesta (getLang → headers()),
-// quindi Next.js tratta TUTTE le pagine come dinamiche: gli `export const
-// revalidate` delle pagine non hanno effetto e ogni visita, bot compresi,
-// ricostruisce la pagina sul server ("Cache-Control: private, no-store",
-// "X-Vercel-Cache: BYPASS"). Il 6/11/2026 il piano Hobby era al 75% delle 4 ore
-// mensili di CPU incluse: oltre il limite Vercel sospende il sito.
-// Vercel-CDN-Cache-Control vale solo per il CDN di Vercel (non per i browser) e
-// ha la precedenza su Cache-Control: la stessa pagina viene servita dalla
-// cache per 5 minuti e poi aggiornata in background. Solo pagine pubbliche,
-// identiche per tutti i visitatori: niente admin, dashboard, login, API.
-// Conseguenza: una modifica fatta dall'admin può comparire con fino a 5 minuti
-// di ritardo.
-const cacheCdn = { key: 'Vercel-CDN-Cache-Control', value: 'max-age=300, stale-while-revalidate=3600' };
-const PAGINE_PUBBLICHE_IN_CACHE = ['', '/en'].flatMap(p => [
-  p || '/',
-  `${p}/eventi`,
-  `${p}/eventi/:slug`,
-  `${p}/localita`,
-  `${p}/localita/:slug`,
-  `${p}/cosa-fare`,
-  `${p}/cosa-fare/:slug`,
-  `${p}/organizzatori`,
-]);
-
 const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
@@ -85,8 +60,6 @@ const nextConfig: NextConfig = {
         source: '/:path*',
         headers: securityHeaders,
       },
-      // Cache sul CDN di Vercel per le pagine pubbliche.
-      ...PAGINE_PUBBLICHE_IN_CACHE.map(source => ({ source, headers: [cacheCdn] })),
     ];
   },
   async redirects() {
