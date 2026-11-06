@@ -8,4 +8,27 @@ Disallow: /registrati
 Disallow: /pubblica
 Disallow: /api/
 
+# Crawler che scaricano tutto il sito senza portare visitatori: ogni pagina
+# richiesta consuma tempo di server sul piano gratuito di Vercel (limite di
+# 4 ore al mese). Restano liberi i motori di ricerca e gli assistenti AI che
+# portano visite (Google, Bing, ChatGPT, Perplexity, Claude…) e le anteprime
+# dei link sui social (facebookexternalhit, Twitterbot, WhatsApp).
+User-agent: Bytespider
+User-agent: Amazonbot
+User-agent: meta-externalagent
+User-agent: CCBot
+User-agent: AhrefsBot
+User-agent: SemrushBot
+User-agent: MJ12bot
+User-agent: DotBot
+User-agent: PetalBot
+User-agent: DataForSeoBot
+User-agent: BLEXBot
+User-agent: Barkrowler
+User-agent: SeekportBot
+User-agent: serpstatbot
+User-agent: Timpibot
+User-agent: ImagesiftBot
+Disallow: /
+
 Sitemap: https://www.moesco.it/sitemap.xml
