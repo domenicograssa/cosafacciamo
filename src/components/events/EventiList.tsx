@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import EventCard from './EventCard'
 import { Evento, Categoria, GeoNodo } from '@/types'
 import CategoryChip, { icona } from '@/components/ui/CategoryChip'
@@ -24,9 +24,16 @@ interface EventiListProps {
   titoloIniziale?: string
   /** Filtri iniziali (es. dai parametri URL della ricerca in homepage) */
   filtriIniziali?: Partial<FiltriState>
+  /**
+   * Legge i filtri dall'indirizzo (?q=…&comune=…&data=…&gratuiti=true&categoria=…)
+   * dopo il caricamento, nel browser. Serve a /eventi: leggendo i parametri sul
+   * server la pagina diventerebbe dinamica (rigenerata a ogni visita, CPU di
+   * Vercel); così invece resta statica e il filtro si applica subito dopo.
+   */
+  leggiFiltriDaUrl?: boolean
 }
 
-export default function EventiList({ eventi, categorie, comuni, titoloIniziale, filtriIniziali }: EventiListProps) {
+export default function EventiList({ eventi, categorie, comuni, titoloIniziale, filtriIniziali, leggiFiltriDaUrl }: EventiListProps) {
   const { t, lang } = useLang()
   const [filtri, setFiltri] = useState<FiltriState>(() => ({
     testo: '',
@@ -37,6 +44,20 @@ export default function EventiList({ eventi, categorie, comuni, titoloIniziale, 
     ...filtriIniziali,
   }))
   const [filtroaperto, setFiltroAperto] = useState(false)
+
+  useEffect(() => {
+    if (!leggiFiltriDaUrl) return
+    const sp = new URLSearchParams(window.location.search)
+    const daUrl: Partial<FiltriState> = {}
+    if (sp.get('q')) daUrl.testo = sp.get('q')!
+    if (sp.get('comune')) daUrl.comune = sp.get('comune')!
+    if (sp.get('data')) daUrl.data = sp.get('data')!
+    if (sp.get('gratuiti') === 'true') daUrl.soloGratuiti = true
+    if (sp.get('categoria')) daUrl.categorie = [sp.get('categoria')!]
+    if (Object.keys(daUrl).length === 0) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sincronizzazione una tantum con l'indirizzo
+    setFiltri(f => ({ ...f, ...daUrl }))
+  }, [leggiFiltriDaUrl])
 
   const eventiFiltrati = useMemo(() => {
     return eventi.filter(e => {

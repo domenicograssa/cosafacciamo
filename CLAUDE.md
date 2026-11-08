@@ -65,12 +65,22 @@ Vercel li rifiuta nelle intestazioni HTTP (successo il 29/9/2026 con `CRON_SECRE
   costruisce anteprime delle PR: è un residuo, da scollegare su app.netlify.com.
 - Vercel Hobby: **4 ore di CPU al mese** (Fluid Active CPU), oltre il limite il sito viene
   sospeso; a ottobre-novembre 2026 il consumo era di 6-7 minuti al giorno (~80% del mese).
-  Tutte le pagine sono dinamiche perché il layout legge la lingua con `headers()`
-  (`getLang`), quindi le `revalidate` non hanno effetto e ogni visita rigenera la pagina.
+  Fino al 6/11/2026 tutte le pagine erano dinamiche perché il layout leggeva la lingua
+  con `headers()`. Ora le pagine pubbliche stanno in `src/app/[lang]/` (il middleware
+  riscrive `/x` in `/it/x`, `/en/x` resta com'è, `/it/x` fa redirect a `/x`) e sono
+  statiche con `revalidate`; admin, dashboard e accedi stanno in `src/app/(servizio)/`
+  (secondo layout radice, solo italiano). Regole per non tornare indietro:
+  - nelle pagine pubbliche la lingua si prende con `langDaParams(params)`; **mai**
+    `getLang()`, `headers()`, `cookies()` o `searchParams` lato server (rendono la pagina
+    dinamica). `getLang()` resta solo per le Server Action. I filtri di `/eventi`
+    (`?comune=`, `?q=`…) li legge `EventiList` nel browser.
+  - per invalidare usa `revalidatePath` da `@/lib/cache` (percorso visibile, es.
+    `/eventi/slug`: invalida sia `/it/…` sia `/en/…`), non quello di `next/cache`.
+  - dopo `next build` controlla nella tabella delle rotte che le pagine pubbliche siano
+    `●` (statiche) e non `ƒ`.
   `Vercel-CDN-Cache-Control` in `next.config.ts` NON funziona su route dinamiche (provato
-  il 6/11/2026: resta `X-Vercel-Cache: BYPASS`). La soluzione vera è far dipendere la
-  lingua dall'URL (segmento `[lang]`). Il robots.txt blocca i crawler che non portano
-  visite. Le ricerche complete su 26 comuni lanciate a mano consumano CPU: non abusarne.
+  il 6/11/2026). Il robots.txt blocca i crawler che non portano visite. Le ricerche
+  complete su 26 comuni lanciate a mano consumano CPU: non abusarne.
 - Vercel Hobby: i **log runtime durano 1 ora**. Per vedere l'esito della ricerca
   automatica: Settings → Cron Jobs → Run sullo slot, poi Logs entro l'ora.
 

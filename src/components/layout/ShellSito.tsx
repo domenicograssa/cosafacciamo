@@ -1,14 +1,26 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { Nunito } from 'next/font/google'
-import "./globals.css";
+import "@/app/globals.css";
 import Navbar from "@/components/layout/Navbar";
 import CookieBanner from "@/components/ui/CookieBanner";
 import Analytics from "@/components/Analytics";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import FooterClient from "@/components/layout/FooterClient";
-import { getLang } from "@/lib/i18n/getLang";
 import RegistraServiceWorker from "@/components/pwa/RegistraServiceWorker";
 import BannerInstallaApp from "@/components/pwa/BannerInstallaApp";
+import type { Lang } from "@/lib/i18n/strings";
+
+// ─── Struttura comune a tutte le pagine (html, menu, piè di pagina) ─────────
+// Il sito ha due layout radice:
+//   • src/app/[lang]/layout.tsx  → pagine pubbliche, lingua presa dall'indirizzo
+//     (il middleware riscrive /eventi in /it/eventi e lascia /en/eventi com'è);
+//   • src/app/(servizio)/layout.tsx → admin, area organizzatori, accesso
+//     (sempre in italiano).
+// Prima la lingua arrivava ai Server Component con un header letto da
+// headers(): questo rendeva TUTTE le pagine dinamiche (rigenerate a ogni
+// visita, con le revalidate ignorate) e consumava il tempo di CPU del piano
+// gratuito di Vercel. Con la lingua nei parametri della rotta le pagine
+// pubbliche tornano a essere generate una volta e rinfrescate ogni ora.
 
 const nunito = Nunito({
   subsets: ['latin'],
@@ -17,8 +29,7 @@ const nunito = Nunito({
   display: 'swap',
 })
 
-export async function generateMetadata(): Promise<Metadata> {
-  const lang = await getLang()
+export function metadataSito(lang: Lang): Metadata {
   const isEn = lang === 'en'
 
   return {
@@ -73,18 +84,7 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-// Colore della barra di sistema quando il sito gira come app installata.
-export const viewport: Viewport = {
-  themeColor: '#1B2653',
-}
-
-export default async function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  const lang = await getLang()
-
+export default function ShellSito({ lang, children }: { lang: Lang; children: React.ReactNode }) {
   return (
     <html lang={lang} translate="no" className={`h-full notranslate ${nunito.variable}`}>
       <body className="min-h-full flex flex-col bg-gray-50">
@@ -112,5 +112,5 @@ export default async function RootLayout({
         </LanguageProvider>
       </body>
     </html>
-  );
+  )
 }

@@ -1,15 +1,24 @@
 import { headers } from 'next/headers'
-import type { Lang } from './strings'
 import { LANG_HEADER } from './lang-header'
+import type { Lang } from './strings'
 
-// Legge la lingua attiva lato server dall'header interno impostato dal
-// middleware sul rewrite di /en/* (vedi src/middleware.ts).
-//
-// NB: si legge un HEADER, non un cookie. Il cookie di lingua è stato rimosso
-// il 9/8/2026 perché rendeva la lingua "appiccicosa" per un anno sull'intero
-// sito, indipendentemente dall'indirizzo aperto — vedi la nota estesa in
-// middleware.ts. Con l'header, la lingua dipende solo dall'URL richiesto:
-// /en/... è inglese, tutto il resto è italiano.
+/**
+ * Lingua delle pagine pubbliche, presa dal segmento [lang] della rotta.
+ * Il middleware riscrive /qualcosa in /it/qualcosa e lascia /en/qualcosa
+ * com'è, quindi il parametro vale sempre 'it' o 'en'.
+ * Va usata nelle pagine e nei layout: NON legge headers(), così le pagine
+ * restano statiche e si rigenerano solo ogni tanto (revalidate).
+ */
+export async function langDaParams(params: Promise<{ lang?: string }>): Promise<Lang> {
+  const { lang } = await params
+  return lang === 'en' ? 'en' : 'it'
+}
+
+/**
+ * Lingua letta dall'header interno impostato dal middleware.
+ * Solo per le Server Action, che sono comunque dinamiche: usata in una pagina
+ * la renderebbe dinamica (rigenerata a ogni visita, CPU di Vercel).
+ */
 export async function getLang(): Promise<Lang> {
   const h = await headers()
   return h.get(LANG_HEADER) === 'en' ? 'en' : 'it'
